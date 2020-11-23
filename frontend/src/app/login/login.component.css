@@ -1,0 +1,49 @@
+.login {
+    width: 400px;
+    margin: 16px auto;
+    font-size: 16px;
+  }
+  
+  .login-header,
+  .login p {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  
+  .login-triangle {
+    width: 0;
+    margin-right: auto;
+    margin-left: auto;
+    border: 12px solid transparent;
+    border-bottom-color: yellowgreen;
+  }
+  
+  .login-header {
+    background: yellowgreen;
+    padding: 20px;
+    font-size: 1.4em;
+    font-weight: normal;
+    text-align: center;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  
+  .login-container {
+    padding: 12px;
+  }
+  
+  .login p {
+    padding: 12px;
+  }
+  
+  .login input {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    border-width: 1px;
+    border-style: solid;
+    padding: 16px;
+    outline: 0;
+    font-family: inherit;
+    font-size: 0.95em;
+  }

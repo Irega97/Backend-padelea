@@ -1,0 +1,36 @@
+{
+  "name": "ProyectoEA-Backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "tsc-watch --onSuccess \"node dist/index.js\"",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Irega97/ProyectoEA-Backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Irega97/ProyectoEA-Backend/issues"
+  },
+  "homepage": "https://github.com/Irega97/ProyectoEA-Backend#readme",
+  "dependencies": {
+    "@types/cors": "^2.8.8",
+    "@types/express": "^4.17.9",
+    "@types/jsonwebtoken": "^8.5.0",
+    "@types/mongoose": "^5.10.1",
+    "@types/morgan": "^1.9.2",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.10.15",
+    "morgan": "^1.10.0",
+    "tsc-watch": "^4.2.9",
+    "typescript": "^4.1.2"
+  }
+}

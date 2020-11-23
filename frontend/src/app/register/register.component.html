@@ -1,0 +1,45 @@
+<div class="register">
+    <h2 class="register-header">REGÍSTRATE</h2>
+    <form [formGroup]="registerForm" class="register-container" (ngSubmit)="submitRegister()">
+      <input type="name" placeholder="Name*" formControlName="name" />
+      <ng-container
+        *ngIf="!formControls.name.valid &&formControls.name.touched"
+      >
+        <p *ngIf="formControls.name.errors.required">
+          Name is required
+        </p>
+      </ng-container>
+  
+      <input type="sex" placeholder="Sex*" formControlName="sex" />
+      <ng-container
+        *ngIf="!formControls.sex.valid &&formControls.sex.touched"
+      >
+        <p *ngIf="formControls.sex.errors.required">
+          Sex is required
+        </p>
+      </ng-container>
+  
+      <input type="email" placeholder="Email*" formControlName="email" />
+      <ng-container
+        *ngIf="!formControls.email.valid &&formControls.email.touched"
+      >
+        <p *ngIf="formControls.email.errors.required">
+          Email is required
+        </p>
+      </ng-container>
+  
+      <input type="password" placeholder="Password*" formControlName="password" />
+      <ng-container
+        *ngIf="!formControls.password.valid &&formControls.password.touched"
+      >
+        <p *ngIf="formControls.password.errors.required">
+          Password is required
+        </p>
+      </ng-container>
+      
+  
+      <p>
+        <input type="submit" value="Submit" [disabled]="registerForm.invalid" />
+      </p>
+    </form>
+  </div>

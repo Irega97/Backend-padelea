@@ -1,0 +1,49 @@
+.register {
+    width: 400px;
+    margin: 16px auto;
+    font-size: 16px;
+  }
+  
+  .register-header,
+  .register p {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  
+  .register-triangle {
+    width: 0;
+    margin-right: auto;
+    margin-left: auto;
+    border: 12px solid transparent;
+    border-bottom-color: yellowgreen;
+  }
+  
+  .register-header {
+    background: yellowgreen;
+    padding: 20px;
+    font-size: 1.4em;
+    font-weight: normal;
+    text-align: center;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  
+  .register-container {
+    padding: 12px;
+  }
+  
+  .register p {
+    padding: 12px;
+  }
+  
+  .register input {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    border-width: 1px;
+    border-style: solid;
+    padding: 16px;
+    outline: 0;
+    font-family: inherit;
+    font-size: 0.95em;
+  }
