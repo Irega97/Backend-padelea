@@ -25,6 +25,9 @@ const user = new userSchema({
         type: String,
         required: true
     },
+    online: {
+        type: Boolean
+    },
     friends: [{
         type: Schema.Types.ObjectId,
         ref: 'User'
@@ -38,30 +41,9 @@ export interface IUser extends Document {
     image: string;
     email: string;
     password: string;
+    online: boolean;
     friends: IUser['_id'];
-    encryptPassword(password: String): string;
-    decryptPassword(encrypter: String): string;
-    generateJWT(): JsonWebKey;
     userToJson(): JSON;
-}
-
-user.methods.encryptPassword = function(){
-
-}
-
-user.methods.decryptPassword = function(){
-
-}
-
-user.methods.generateJWT = function(){
-    const today = new Date();
-    const expirationDate = new Date(today);
-    const minutes = 60;
-    expirationDate.setTime(today.getTime() + minutes*60000);
-    return jwt.sign({
-        name: name,
-        exp: expirationDate.getTime() / 1000,
-    }, 'secret');
 }
 
 user.methods.userToJSON = function(){

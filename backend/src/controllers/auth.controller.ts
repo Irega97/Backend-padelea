@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
-import User from "../models/user"
+import User, { IUser } from "../models/user"
+import jwt from 'jsonwebtoken';
+import config from '../config/config';
+
+let user: IUser;
 
 async function login(req: Request, res: Response) {
     const name = req.body.name;
@@ -9,7 +13,11 @@ async function login(req: Request, res: Response) {
     if(!user) return res.status(404).json({message: "User not found"});
     else{
         if(user.password != password) return res.status(409).json({message: "Password don't match"});
-        else return res.status(200).json(user);
+        else {
+            await User.updateOne({"_id":user.id}, {$set: {"_id":user.id,"name":user.name,"sex":user.sex,
+                                "image":user.image, "email":user.email, "password":user.password, "online":true}});
+            return res.status(200).json({token: createToken(user)});
+        }
     }
 }
 
@@ -25,22 +33,43 @@ async function register(req:Request, res:Response) {
         const user = new User({
             "name": req.body.name,
             "sex": req.body.sex,
-            "image": req.body.image,
+            "image": req.body.image || 'default image',
             "email": req.body.email,
-            "password": req.body.password
+            "password": req.body.password,
+            "online": true
         });
         user.save().then((data) => {
-            return res.status(201).json(data);
+            return res.status(201).json({token: createToken(data)});
         }).catch((err) => {
             return res.status(500).json(err);
         })
     }
 }
 
-function signout(req:Request, res:Response){
-
+async function signout(req:Request, res:Response){
+    let t = decodeToken(req.body.token);
+    console.log(t);
+    let user = await User.findOne({"_id": t?.id});
+    if(!user) return res.status(404).json({message: "User not found"});
+    else {
+        User.updateOne({"_id":user.id}, {$set: {"_id":user.id,"name":user.name,"sex":user.sex,
+                                        "image":user.image, "email":user.email, "password":user.password, "online":false}})
+        .then((data)=>{
+            return res.status(200).json(data);
+        });
+    }
 }
 
+function createToken(user: IUser){
+    const expirationTime = 3600; //1h
+    return jwt.sign({id:user.id, name: user.name, email: user.email}, config.jwtSecret, {
+        expiresIn: expirationTime
+    });
+}
+
+function decodeToken(token: string){ 
+    return jwt.decode(token, {json: true});
+}
 
 
 export default { login, register, signout };

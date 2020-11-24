@@ -1,3 +1,4 @@
+import { Token } from './../models/token';
 import { AuthService } from './../services/auth.service';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
@@ -39,7 +40,8 @@ export class RegisterComponent implements OnInit {
     const password = this.registerForm.value.password;
     const user = {'name': name, 'sex': sex, 'image': 'default image', 'email': email, 'password': password};
     this.auth.register(user)
-    .subscribe(() => {
+    .subscribe((jwt: Token) => {
+      localStorage.setItem('token', jwt.token);
       this.router.navigateByUrl('/home');
     })
   }
