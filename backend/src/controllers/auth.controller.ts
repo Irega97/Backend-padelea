@@ -3,8 +3,6 @@ import User, { IUser } from "../models/user"
 import jwt from 'jsonwebtoken';
 import config from '../config/config';
 
-let user: IUser;
-
 async function login(req: Request, res: Response) {
     const name = req.body.name;
     const password = req.body.password;
