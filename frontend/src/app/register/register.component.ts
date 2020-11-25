@@ -38,7 +38,8 @@ export class RegisterComponent implements OnInit {
     const sex = this.registerForm.value.sex;
     const email = this.registerForm.value.email;
     const password = this.registerForm.value.password;
-    const user = {'name': name, 'sex': sex, 'image': 'default image', 'email': email, 'password': password};
+    const pass = this.auth.encryptPassword(password);
+    const user = {'name': name, 'sex': sex, 'image': 'default image', 'email': email, 'password': pass};
     this.auth.register(user)
     .subscribe((jwt: Token) => {
       localStorage.setItem('token', jwt.token);

@@ -1,3 +1,4 @@
+import { environment } from './../../environments/environment';
 import { AuthService } from './../services/auth.service';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
@@ -33,7 +34,8 @@ export class LoginComponent implements OnInit {
     }
     const name = this.loginForm.value.name;
     const password = this.loginForm.value.password;
-    const user = {'name': name, 'password': password}
+    const user = {'name': name, 'password': this.auth.encryptPassword(password)};
+    console.log(user);
     this.auth.login(user)
     .subscribe((jwt: Token) => {
       localStorage.setItem('token', jwt.token);
