@@ -12,28 +12,54 @@
   
       <input type="sex" placeholder="Sex*" formControlName="sex" />
       <ng-container
-        *ngIf="!formControls.sex.valid &&formControls.sex.touched"
+        *ngIf="!formControls.sex.valid && formControls.sex.touched"
       >
         <p *ngIf="formControls.sex.errors.required">
           Sex is required
         </p>
       </ng-container>
+
+      <input type="city" placeholder="City*" formControlName="city" />
+      <ng-container
+        *ngIf="!formControls.city.valid && formControls.city.touched"
+      >
+        <p *ngIf="formControls.city.errors.required">
+          City is required
+        </p>
+      </ng-container>
   
       <input type="email" placeholder="Email*" formControlName="email" />
       <ng-container
-        *ngIf="!formControls.email.valid &&formControls.email.touched"
+        *ngIf="!formControls.email.valid && formControls.email.touched"
       >
         <p *ngIf="formControls.email.errors.required">
           Email is required
+        </p>
+        <p *ngIf="formControls.email.errors.email">
+          Please, introduce a valid email
         </p>
       </ng-container>
   
       <input type="password" placeholder="Password*" formControlName="password" />
       <ng-container
-        *ngIf="!formControls.password.valid &&formControls.password.touched"
+        *ngIf="!formControls.password.valid && formControls.password.touched"
       >
         <p *ngIf="formControls.password.errors.required">
           Password is required
+        </p>
+      </ng-container>
+
+      <input type="password" placeholder="Confirm password*" formControlName="confirmPassword" />
+      <ng-container
+        *ngIf="!formControls.confirmPassword.valid && formControls.confirmPassword.touched"
+      >
+        <p *ngIf="formControls.confirmPassword.errors.required">
+          Please, confirm your password
+        </p>
+      </ng-container>
+      <ng-container *ngIf="this.registerForm.hasError('notSame') && formControls.confirmPassword.touched">
+        <p>
+          Passwords don't match
         </p>
       </ng-container>
       

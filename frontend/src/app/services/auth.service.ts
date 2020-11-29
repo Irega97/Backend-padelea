@@ -8,8 +8,6 @@ import * as CryptoJS from 'crypto-js';
 })
 export class AuthService {
 
-  iv;
-
   constructor(private http: HttpClient) { }
 
   login(user: Object){

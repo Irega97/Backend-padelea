@@ -13,7 +13,7 @@ async function login(req: Request, res: Response) {
         if(user.password != password) return res.status(409).json({message: "Password don't match"});
         else {
             await User.updateOne({"_id":user.id}, {$set: {"_id":user.id,"name":user.name,"sex":user.sex,
-                                "image":user.image, "email":user.email, "password":user.password, "online":true}});
+                                "image":user.image, "city":user.city, "email":user.email, "password":user.password, "online":true}});
             return res.status(200).json({token: createToken(user)});
         }
     }
@@ -31,7 +31,8 @@ async function register(req:Request, res:Response) {
         const user = new User({
             "name": req.body.name,
             "sex": req.body.sex,
-            "image": req.body.image || 'default image',
+            "image": config.defaultImage /*|| req.body.image*/,
+            "city": req.body.city,
             "email": req.body.email,
             "password": req.body.password,
             "online": true
@@ -51,7 +52,7 @@ async function signout(req:Request, res:Response){
     if(!user) return res.status(404).json({message: "User not found"});
     else {
         User.updateOne({"_id":user.id}, {$set: {"_id":user.id,"name":user.name,"sex":user.sex,
-                                        "image":user.image, "email":user.email, "password":user.password, "online":false}})
+                                        "image":user.image, "city":user.city, "email":user.email, "password":user.password, "online":false}})
         .then((data)=>{
             return res.status(200).json(data);
         });

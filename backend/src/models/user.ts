@@ -13,7 +13,10 @@ const user = new userSchema({
     sex: {
         type: String
     },
-    image: { //URL DE LA IMAGEN????
+    image: { 
+        type: String
+    },
+    city: {
         type: String
     },
     email: {
@@ -39,6 +42,7 @@ export interface IUser extends Document {
     name: string;
     sex: string;
     image: string;
+    city: string;
     email: string;
     password: string;
     online: boolean;
@@ -51,6 +55,7 @@ user.methods.userToJSON = function(){
         name: this.name,
         sex: this.sex,
         image: this.image,
+        city: this.city,
         email: this.email,
         password: this.password,
         friends: this.friends
