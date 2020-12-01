@@ -48,6 +48,7 @@ export interface IUser extends Document {
     online: boolean;
     friends: IUser['_id'];
     userToJson(): JSON;
+    googleId: string;
 }
 
 user.methods.userToJSON = function(){
@@ -58,7 +59,8 @@ user.methods.userToJSON = function(){
         city: this.city,
         email: this.email,
         password: this.password,
-        friends: this.friends
+        friends: this.friends,
+        googleId: this.googleId
     };
 }
 

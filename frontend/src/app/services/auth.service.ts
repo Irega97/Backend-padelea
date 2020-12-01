@@ -18,6 +18,10 @@ export class AuthService {
     return this.http.post(environment.apiURL + '/auth/register', user);
   }
 
+  loginGoogle(){
+    return this.http.get(environment.apiURL + '/auth/google');
+  }
+
   encryptPassword(password: string){
     try {
       var cipherPsswd = CryptoJS.SHA256(password).toString();
