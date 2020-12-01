@@ -46,6 +46,7 @@ async function register(req:Request, res:Response) {
 }
 
 async function signout(req:Request, res:Response){
+    // DUDA: Puedo usar el middleware de passport para decodificar el token?????
     let t = decodeToken(req.body.token);
     console.log(t);
     let user = await User.findOne({"_id": t?.id});

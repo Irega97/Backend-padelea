@@ -38,7 +38,7 @@ export class LoginComponent implements OnInit {
     console.log(user);
     this.auth.login(user)
     .subscribe((jwt: Token) => {
-      localStorage.setItem('token', jwt.token);
+      localStorage.setItem('ACCESS_TOKEN', jwt.token);
       this.router.navigateByUrl('/home');
     });
   }

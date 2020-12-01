@@ -52,7 +52,7 @@ export class RegisterComponent implements OnInit {
     const user = {'name': name, 'sex': sex, 'city': city, 'email': email, 'password': pass};
     this.auth.register(user)
     .subscribe((jwt: Token) => {
-      localStorage.setItem('token', jwt.token);
+      localStorage.setItem('ACCESS_TOKEN', jwt.token);
       this.router.navigateByUrl('/home');
     });
   }

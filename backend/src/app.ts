@@ -8,6 +8,10 @@ import bodyParser from'body-parser';
 import userRoutes from './routes/user.routes';
 import authRoutes from './routes/auth.routes';
 
+//Importamos middlewares
+import passport from 'passport';
+import passportMiddleware from './middlewares/passport';
+
 //Inicializamos express
 const app = express();
 
@@ -21,6 +25,8 @@ app.use(cors());
 app.use(express.urlencoded({extended:false}));
 app.use(express.json());
 app.use(bodyParser.json());
+app.use(passport.initialize());
+passport.use(passportMiddleware);
 
 //Llama a las rutas de la API
 app.use('/user', userRoutes);

@@ -26,4 +26,13 @@ export class AuthService {
       console.log(e);
     }
   }
+
+  isLoggedIn(){
+    //TRUE si esta, FALSE si no
+    return localStorage.getItem('ACCESS_TOKEN') !== null;
+  }
+
+  getToken(){
+    return localStorage.getItem('ACCESS_TOKEN');
+  }
 }

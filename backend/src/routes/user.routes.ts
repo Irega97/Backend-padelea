@@ -1,10 +1,13 @@
 import {Router} from "express"; 
 import userController from '../controllers/user.controller'
+import passport from 'passport';
 
 //Router nos permite gestionar rutas de la API
 const router = Router();
 
-router.get('/all', userController.getUsers);
+//Si no esta logeado, no le dejara ver los usuarios
+router.get('/all', passport.authenticate("jwt", {session: false}), userController.getUsers);
+
 router.get('/:id', userController.getUser);
 //router.post('/:id', userController.updateUser);
 router.delete('/:id', userController.deleteUser);
