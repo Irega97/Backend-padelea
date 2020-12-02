@@ -61,7 +61,7 @@ function getUser(req:Request, res:Response): void {
 function deleteUser (req:Request,res:Response){
     User.deleteOne({"_id":req.params.id}).then((data: any) => {
         res.status(200).json(data);
-    }).catch((err) => {
+    }).catch((err: any) => {
         res.status(500).json(err);
     })
 }
