@@ -7,8 +7,8 @@ let userSchema = mongoose.Schema;
 const user = new userSchema({
     name: {
         type: String,
-        unique: true,
-        required: true
+        unique: true
+        //required: true
     },
     sex: {
         type: String
@@ -21,12 +21,12 @@ const user = new userSchema({
     },
     email: {
         type: String,
-        unique: true,
-        required: true
+        unique: true
+        //required: true
     },
     password: {
-        type: String,
-        required: true
+        type: String
+        //required: true
     },
     online: {
         type: Boolean
@@ -34,7 +34,10 @@ const user = new userSchema({
     friends: [{
         type: Schema.Types.ObjectId,
         ref: 'User'
-    }]
+    }],
+    googleId: {
+        type: String
+    }
 });
 
 //Interfaz para tratar respuesta como documento

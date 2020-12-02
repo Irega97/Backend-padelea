@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import User, { IUser } from "../models/user"
 import jwt from 'jsonwebtoken';
 import config from '../config/config';
+import passport from 'passport';
 
 async function login(req: Request, res: Response) {
     const name = req.body.name;
@@ -48,7 +49,7 @@ async function register(req:Request, res:Response) {
 async function signout(req:Request, res:Response){
     // DUDA: Puedo usar el middleware de passport para decodificar el token?????
     let t = decodeToken(req.body.token);
-    console.log(t);
+    console.log("t: ", t);
     let user = await User.findOne({"_id": t?.id});
     if(!user) return res.status(404).json({message: "User not found"});
     else {

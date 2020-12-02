@@ -32,6 +32,7 @@ passport.use(
     }, (accessToken: any, refreshToken: any, profile: { id: any; }, done: (arg0: null, arg1: IUser) => void) => {
         // passport callback function
         //check if user already exists in our db with the given profile ID
+        console.log("PROFILEID: ", profile);
         User.findOne({googleId: profile.id}).then((currentUser)=>{
           if(currentUser){
             //if we already have a record with the given profile ID
@@ -39,8 +40,10 @@ passport.use(
           } else{
                //if not, create a new user 
               new User({
+                //PONER LOS DEMAS CAMPOS
                 googleId: profile.id,
               }).save().then((newUser) =>{
+                console.log("newUser: ", newUser);
                 done(null, newUser);
               });
            } 
