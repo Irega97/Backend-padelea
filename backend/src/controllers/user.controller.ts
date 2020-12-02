@@ -59,7 +59,7 @@ function getUser(req:Request, res:Response): void {
 } */
 
 function deleteUser (req:Request,res:Response){
-    User.deleteOne({"_id":req.params.id}).then((data) => {
+    User.deleteOne({"_id":req.params.id}).then((data: any) => {
         res.status(200).json(data);
     }).catch((err) => {
         res.status(500).json(err);

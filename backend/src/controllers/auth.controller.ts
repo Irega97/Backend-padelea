@@ -53,7 +53,7 @@ async function signout(req:Request, res:Response){
     else {
         User.updateOne({"_id":user.id}, {$set: {"_id":user.id,"name":user.name,"sex":user.sex,
                                         "image":user.image, "city":user.city, "email":user.email, "password":user.password, "online":false}})
-        .then((data)=>{
+        .then((data: any)=>{
             return res.status(200).json(data);
         });
     }

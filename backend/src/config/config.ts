@@ -1,7 +1,7 @@
 //Configuraciones para conexion con BBDD
 export default {
     DB: {
-        URI: process.env.MONGODB_URI || 'mongodb://147.83.7.156/proyectoEA',
+        URI: process.env.MONGODB_URI || 'mongodb://147.83.7.156:27018/proyectoEA',
         USER: process.env.MONGODB_USER,
         PASSWORD: process.env.MONGODB_PASSWORD
     },

@@ -5,6 +5,9 @@ import jwt from 'jsonwebtoken';
 //Modelo de objeto que se guarda en la BBDD de MongoDB
 let userSchema = mongoose.Schema;
 const user = new userSchema({
+    _id: {
+        type: String    
+    },
     name: {
         type: String,
         unique: true,
@@ -39,6 +42,7 @@ const user = new userSchema({
 
 //Interfaz para tratar respuesta como documento
 export interface IUser extends Document {
+    _id: string;
     name: string;
     sex: string;
     image: string;
