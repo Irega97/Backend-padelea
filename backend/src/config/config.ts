@@ -2,7 +2,7 @@
 export default {
     DB: {
         //    mongodb://user:password@147.83.7.156/proyectoEA ???
-        URI: process.env.MONGODB_URI || 'mongodb://147.83.7.156/proyectoEA',
+        URI: process.env.MONGODB_URI || 'mongodb://proyectoea:e4m0l4@147.83.7.156/proyectoEA',
         USER: process.env.MONGODB_USER || 'proyectoea',
         PASSWORD: process.env.MONGODB_PASSWORD || 'e4m0l4'
     },
