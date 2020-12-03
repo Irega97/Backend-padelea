@@ -1,3 +1,4 @@
+import { environment } from './../../environments/environment';
 import { AuthService } from './../services/auth.service';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
@@ -23,6 +24,6 @@ export class LandingComponent implements OnInit {
   }
 
   loginGoogle(){
-    this.authService.loginGoogle();
+    window.location.href = environment.apiURL + '/auth/google';
   }
 }

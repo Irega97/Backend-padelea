@@ -8,15 +8,15 @@ const opts: StrategyOptions = {
     secretOrKey: config.jwtSecret
 };
 
-export default new Strategy(opts, async (payload, done) => {
+export default new Strategy(opts, async (payload, next) => {
     try{
         const user = await User.findById(payload.id);
         if(user){
             console.log("PASSPORT DEVUELVE: ", user.toJSON());
-            return done(null, user);
+            return next(null, user);
         }
         console.log('Hay un error');
-        return done(null, false);
+        return next(null, false);
     } catch (error) {
         console.log(error);
     }
@@ -29,11 +29,11 @@ passport.use(
         clientID: config.google.CLIENT_ID,
         clientSecret: config.google.CLIENT_SECRET,
         callbackURL: '/auth/google/redirect'
-    }, (accessToken: any, refreshToken: any, profile: { id: any; }, done: (arg0: null, arg1: IUser) => void) => {
+    }, (accessToken: any, refreshToken: any, profile: { _json: any }, done: (arg0: null, arg1: IUser) => void) => {
         // passport callback function
         //check if user already exists in our db with the given profile ID
-        console.log("PROFILEID: ", profile);
-        User.findOne({googleId: profile.id}).then((currentUser)=>{
+        console.log("PROFILE: ", profile);
+        User.findOne({googleId: profile._json.sub}).then((currentUser)=>{
           if(currentUser){
             //if we already have a record with the given profile ID
             done(null, currentUser);
@@ -41,7 +41,10 @@ passport.use(
                //if not, create a new user 
               new User({
                 //PONER LOS DEMAS CAMPOS
-                googleId: profile.id,
+                name: profile._json.name,
+                image: profile._json.picture,
+                email: profile._json.email,
+                googleId: profile._json.sub
               }).save().then((newUser) =>{
                 console.log("newUser: ", newUser);
                 done(null, newUser);

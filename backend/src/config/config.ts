@@ -13,6 +13,5 @@ export default {
     google: {
         CLIENT_ID: '1002649055448-tjs8b5kcq4f2g4hudo41q1adnhbp1s53.apps.googleusercontent.com',
         CLIENT_SECRET: 'wdPwSZ0-_qnUYp7dKKuHm17X'
-    },
-    cookieKey: 'jaja'
+    }
 }

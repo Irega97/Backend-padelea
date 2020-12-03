@@ -27,11 +27,6 @@ app.use(cors());
 app.use(express.urlencoded({extended:false}));
 app.use(express.json());
 app.use(bodyParser.json());
-app.use(cookieSession({
-    // milliseconds of a day
-    maxAge: 24*60*60*1000,
-    keys:[config.cookieKey]
-  }));
 app.use(passport.initialize());
 passport.use(passportMiddleware);
 
