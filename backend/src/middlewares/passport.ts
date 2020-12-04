@@ -13,7 +13,8 @@ export default new Strategy(opts, async (payload, next) => {
         if(user){
             console.log("PASSPORT DEVUELVE: ", user.toJSON());
             //El usuario decodificado se inserta en req.user
-            return next(null, user);
+            let u = user.id;
+            return next(null, u);
         }
         console.log('Hay un error');
         return next(null, false, {message: "User not found"});

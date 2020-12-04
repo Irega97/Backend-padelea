@@ -56,7 +56,8 @@ user.methods.userToJSON = function(){
         email: this.email,
         password: this.password,
         provider: this.provider,
-        friends: this.friends
+        friends: this.friends,
+        online: this.online
     };
 }
 
