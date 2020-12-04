@@ -1,3 +1,4 @@
+import { SocialAuthService } from 'angularx-social-login';
 import { UserService } from './../services/user.service';
 import { Router } from '@angular/router';
 import { environment } from './../../environments/environment';
@@ -15,7 +16,7 @@ export class HomeComponent implements OnInit {
 
   users: User[];
 
-  constructor(public authService: AuthService, public usersService: UserService, private http: HttpClient, private router: Router) { }
+  constructor(public authService: AuthService, public usersService: UserService, private http: HttpClient, private router: Router, private socialAuth: SocialAuthService) { }
 
   ngOnInit(): void {
     if(!this.authService.isLoggedIn()) {
@@ -33,10 +34,17 @@ export class HomeComponent implements OnInit {
   signout(): void {
     let token = localStorage.getItem('ACCESS_TOKEN');
     const t = {'token': token};
-    this.http.put(environment.apiURL + '/auth/signout', t).subscribe(() => {
+    this.authService.signout(t).subscribe((data) => {
+      if(data.provider !== "formulario"){
+        // No hace el signout porque pasa por el login, revisar esto
+        this.signOutGoogle();
+      }
       localStorage.clear();
       this.router.navigateByUrl('');
     });
   }
 
+  signOutGoogle(): void {
+    this.socialAuth.signOut();
+  }
 }

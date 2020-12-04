@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import User from "../models/user"
+import User from "../models/user";
+import passport from 'passport';
 
 function getUsers(req:Request, res:Response): void {
     User.find({}).then((data)=>{
@@ -66,4 +67,16 @@ function deleteUser (req:Request,res:Response){
     })
 }
 
-export default { getUsers, getUser, /* postUserDemo, updateUser, */ deleteUser };
+function changeUsername (req:Request, res:Response){
+    /* const user = req.user;
+    const newUsername = req.params.username;
+    User.update({"_id": user._id}, {$set: {"nombre": nombre, "apellidos": apellidos, "edad": edad, 
+                              "correo": correo, "telefono": telefono, "grado": grado, "courses": courses}}).then((data) => {
+        res.status(201).json(data);
+    }).catch((err) => {
+        res.status(500).json(err);
+    })
+    return res.status(200).json(req.body); */
+}
+
+export default { getUsers, getUser, /* postUserDemo, updateUser, */ deleteUser, changeUsername };

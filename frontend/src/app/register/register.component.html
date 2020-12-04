@@ -1,30 +1,21 @@
 <div class="register">
     <h2 class="register-header">REGÍSTRATE</h2>
     <form [formGroup]="registerForm" class="register-container" (ngSubmit)="submitRegister()">
-      <input type="name" placeholder="Name*" formControlName="name" />
+      <input type="username" placeholder="Nombre de usuario*" formControlName="username" />
+      <ng-container
+        *ngIf="!formControls.username.valid &&formControls.username.touched"
+      >
+        <p *ngIf="formControls.username.errors.required">
+          Nombre de usuario obligatorio
+        </p>
+      </ng-container>
+      
+      <input type="name" placeholder="Nombre completo*" formControlName="name" />
       <ng-container
         *ngIf="!formControls.name.valid &&formControls.name.touched"
       >
         <p *ngIf="formControls.name.errors.required">
-          Name is required
-        </p>
-      </ng-container>
-  
-      <input type="sex" placeholder="Sex*" formControlName="sex" />
-      <ng-container
-        *ngIf="!formControls.sex.valid && formControls.sex.touched"
-      >
-        <p *ngIf="formControls.sex.errors.required">
-          Sex is required
-        </p>
-      </ng-container>
-
-      <input type="city" placeholder="City*" formControlName="city" />
-      <ng-container
-        *ngIf="!formControls.city.valid && formControls.city.touched"
-      >
-        <p *ngIf="formControls.city.errors.required">
-          City is required
+          Nombre completo obligatorio
         </p>
       </ng-container>
   
@@ -33,33 +24,33 @@
         *ngIf="!formControls.email.valid && formControls.email.touched"
       >
         <p *ngIf="formControls.email.errors.required">
-          Email is required
+          Email obligatorio
         </p>
         <p *ngIf="formControls.email.errors.email">
-          Please, introduce a valid email
+          Por favor, introduce un email válido
         </p>
       </ng-container>
   
-      <input type="password" placeholder="Password*" formControlName="password" />
+      <input type="password" placeholder="Contraseña*" formControlName="password" />
       <ng-container
         *ngIf="!formControls.password.valid && formControls.password.touched"
       >
         <p *ngIf="formControls.password.errors.required">
-          Password is required
+          Contraseña obligatoria
         </p>
       </ng-container>
 
-      <input type="password" placeholder="Confirm password*" formControlName="confirmPassword" />
+      <input type="password" placeholder="Confirma contraseña*" formControlName="confirmPassword" />
       <ng-container
         *ngIf="!formControls.confirmPassword.valid && formControls.confirmPassword.touched"
       >
         <p *ngIf="formControls.confirmPassword.errors.required">
-          Please, confirm your password
+          Por favor, introduce otra vez la contraseña
         </p>
       </ng-container>
       <ng-container *ngIf="this.registerForm.hasError('notSame') && formControls.confirmPassword.touched">
         <p>
-          Passwords don't match
+          Las contraseñas no coinciden
         </p>
       </ng-container>
       
@@ -68,4 +59,14 @@
         <input type="submit" value="Submit" [disabled]="registerForm.invalid" />
       </p>
     </form>
-  </div>
+</div>
+
+<div style="text-align: center;">
+  <button (click)="registerGoogle()" class="button">REGÍSTRATE CON GOOGLE</button>
+</div>
+<div style="text-align: center;">
+  <button (click)="registerFacebook()" class="button">REGÍSTRATE CON FACEBOOK</button>
+</div>
+<div style="text-align: center;">
+  <button (click)="registerTwitter()" class="button">REGÍSTRATE CON TWITTER</button>
+</div>

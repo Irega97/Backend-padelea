@@ -1,9 +1,16 @@
-import { environment } from './../../environments/environment';
-import { AuthService } from './../services/auth.service';
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+
+//MODELS
 import { Token } from '../models/token';
+
+// SERVICES
+import { AuthService } from './../services/auth.service';
+
+//oAUTH
+import { SocialAuthService } from 'angularx-social-login';
+import { FacebookLoginProvider, GoogleLoginProvider } from "angularx-social-login";
 
 @Component({
   selector: 'app-login',
@@ -14,8 +21,10 @@ export class LoginComponent implements OnInit {
 
   loginForm: FormGroup;
   isSubmitted = false;
+  user;
 
-  constructor(public auth: AuthService, private router: Router, private formBuilder: FormBuilder) { }
+  constructor(public authService: AuthService, private router: Router, 
+              private formBuilder: FormBuilder, private socialAuth: SocialAuthService) { }
 
   ngOnInit(): void {
     this.loginForm = this.formBuilder.group({
@@ -34,13 +43,28 @@ export class LoginComponent implements OnInit {
     }
     const name = this.loginForm.value.name;
     const password = this.loginForm.value.password;
-    const user = {'name': name, 'password': this.auth.encryptPassword(password)};
-    console.log(user);
-    this.auth.login(user)
+    const user = {'name': name, 'password': this.authService.encryptPassword(password)};
+    this.authService.login(user)
     .subscribe((jwt: Token) => {
       localStorage.setItem('ACCESS_TOKEN', jwt.token);
       this.router.navigateByUrl('/home');
     });
   }
+
+  async loginGoogle(){
+    await this.socialAuth.signIn(GoogleLoginProvider.PROVIDER_ID);
+    await this.socialAuth.authState.subscribe((user) => {
+      console.log("GOOGLE PROFILE: ", user);
+      this.user = { "email": user.email, "provider": user.provider };
+    });
+    this.authService.login(this.user).subscribe((jwt: Token) => {
+      localStorage.setItem('ACCESS_TOKEN', jwt.token);
+      this.router.navigateByUrl('/home');
+    });
+  }
+
+  async loginFacebook(){}
+
+  async loginTwitter(){}
 
 }

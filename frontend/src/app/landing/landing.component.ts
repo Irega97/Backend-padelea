@@ -1,5 +1,3 @@
-import { environment } from './../../environments/environment';
-import { AuthService } from './../services/auth.service';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
@@ -10,7 +8,7 @@ import { Router } from '@angular/router';
 })
 export class LandingComponent implements OnInit {
 
-  constructor(private router: Router, public authService: AuthService) { }
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
   }
@@ -21,9 +19,5 @@ export class LandingComponent implements OnInit {
 
   register(){
     this.router.navigateByUrl('auth/register');
-  }
-
-  loginGoogle(){
-    window.location.href = environment.apiURL + '/auth/google';
   }
 }
