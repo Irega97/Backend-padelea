@@ -36,7 +36,7 @@ export class HomeComponent implements OnInit {
     const t = {'token': token};
     this.authService.signout(t).subscribe((data) => {
       if(data.provider !== "formulario"){
-        // No hace el signout porque pasa por el login, revisar esto
+        // No hace el signout de google porque pasa por el login, revisar esto
         this.signOutGoogle();
       }
       localStorage.clear();
