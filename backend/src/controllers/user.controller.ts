@@ -22,6 +22,16 @@ function getUser(req:Request, res:Response): void {
     })
 }
 
+function getMyUser(req:Request, res:Response): void {
+    User.findById(req.user).then((data)=>{
+        let status: number = 200;
+        if(data==null) status = 404;
+        return res.status(status).json(data);
+    }).catch((err) => {
+        return res.status(500).json(err);
+    })
+}
+
 /* function postUserDemo (req: Request, res: Response): void {
     const user = new User({
         "nombre": req.body.nombre,
@@ -69,9 +79,11 @@ function deleteUser (req:Request,res:Response){
 function changeUsername (req:Request, res:Response){
     const userID = req.user;
     const newUsername = req.params.username;
+    
     User.findById({"_id": userID}).then((data) => {
-            User.update({"_id": userID}, {$set: {"name": data?.name, "username": newUsername, "image": data?.image, "email": data?.email, 
-                        "password": data?.password, "provider": data?.provider, "friends": data?.friends, "online": data?.online}})
+            /* User.update({"_id": userID}, {$set: {"name": data?.name, "username": newUsername, "image": data?.image, "email": data?.email, 
+                        "password": data?.password, "provider": data?.provider, "friends": data?.friends, "online": data?.online}}) */
+            User.findOneAndUpdate({"_id:": userID}, {"username" : newUsername})
             .then((data) => {
                 return res.status(201).json(data);
             }).catch((err) => {
@@ -80,4 +92,4 @@ function changeUsername (req:Request, res:Response){
     });
 }
 
-export default { getUsers, getUser, /* postUserDemo, updateUser, */ deleteUser, changeUsername };
+export default { getUsers, getMyUser, getUser, /* postUserDemo, updateUser, */ deleteUser, changeUsername };

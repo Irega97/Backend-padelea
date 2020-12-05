@@ -5,13 +5,12 @@ import mongoose, { Schema, Document} from 'mongoose';
 let userSchema = mongoose.Schema;
 const user = new userSchema({
     name: {
-        type: String,
-        unique: true
+        type: String
     },
     username: {
         type: String,
         //DEJAR ESTO COMENTADO HASTA QUE NO IMPLEMENTEMOS QUE EL USER PONGA USERNAME SI SE REGISTRA CON OAUTH
-        //unique: true
+        unique: true
     },
     image: { 
         type: String
