@@ -7,6 +7,7 @@ const router = Router();
 router.post('/login', authController.login);
 router.post('/register', authController.register);
 router.put('/signout', authController.signout);
+router.get('/checkSocial/:email', authController.checkSocial);
 
 // Exportamos router para usar rutas en app.ts
 export default router;

@@ -12,6 +12,7 @@ function getUsers(req:Request, res:Response): void {
     })
 }
 
+
 function getUser(req:Request, res:Response): void {
     User.findById(req.params.id).populate('friends').then((data)=>{
         let status: number = 200;
@@ -79,11 +80,9 @@ function deleteUser (req:Request,res:Response){
 function changeUsername (req:Request, res:Response){
     const userID = req.user;
     const newUsername = req.params.username;
-    
     User.findById({"_id": userID}).then((data) => {
-            /* User.update({"_id": userID}, {$set: {"name": data?.name, "username": newUsername, "image": data?.image, "email": data?.email, 
-                        "password": data?.password, "provider": data?.provider, "friends": data?.friends, "online": data?.online}}) */
-            User.findOneAndUpdate({"_id:": userID}, {"username" : newUsername})
+            User.update({"_id": userID}, {$set: {"name": data?.name, "username": newUsername, "image": data?.image, "email": data?.email, 
+                        "password": data?.password, "provider": data?.provider, "friends": data?.friends, "online": data?.online}})
             .then((data) => {
                 return res.status(201).json(data);
             }).catch((err) => {
@@ -92,4 +91,4 @@ function changeUsername (req:Request, res:Response){
     });
 }
 
-export default { getUsers, getMyUser, getUser, /* postUserDemo, updateUser, */ deleteUser, changeUsername };
+export default { getUsers, getUser, /* postUserDemo, updateUser, */ deleteUser, changeUsername, getMyUser };

@@ -16,8 +16,9 @@ async function login(req: Request, res: Response) {
     } else {
         const username = req.body.username;
         const password = req.body.password;
+        
         user = await User.findOne({ $or: [{ "username": username }, { "email": username }]});
-
+    
         if(!user) return res.status(404).json({message: "User not found"});
         else{
             if(user.password != password) return res.status(409).json({message: "Password don't match"});
@@ -37,7 +38,8 @@ async function login(req: Request, res: Response) {
 
 async function register(req:Request, res:Response) {
     let user = req.body;
-    let checkUsername = await User.findOne({ $or: [ {"name": user.name}, {"username": user.username} ] });
+    console.log("body: ", user);
+    let checkUsername = await User.findOne({"username": user.username});
     let checkEmail = await User.findOne({"email": user.email});
 
     if(checkUsername) return res.status(409).json({code: 409, message: "Username already exists"});
@@ -93,5 +95,13 @@ async function setOnlineStatus(user: any, value: boolean){
                     
 }
 
+async function checkSocial(req: Request, res: Response){
+    let email = req.params.email;
+    await User.findOne({'email': email}).then((data) => {
+        if(data) return res.status(200).json({value: true});
+        else return res.status(200).json({value: false});
+    })
+}
 
-export default { login, register, signout };
+
+export default { login, register, signout, checkSocial };
