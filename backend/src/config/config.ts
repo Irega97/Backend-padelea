@@ -1,9 +1,8 @@
 //Configuraciones para conexion con BBDD
 export default {
     DB: {
-        URI: process.env.MONGODB_URI || 'mongodb://game:gameEA@147.83.7.155:27018/proyectoEA',
-        USER: process.env.MONGODB_USER,
-        PASSWORD: process.env.MONGODB_PASSWORD
+        URI: process.env.MONGODB_URI || 'mongodb://localhost/proyectoEA',
+        //URI: process.env.MONGODB_URI || 'mongodb://game:gameEA@147.83.7.155:27018/proyectoEA',
     },
     apiURL: 'http://localhost:3000',
     jwtSecret: 'chulibobito',
