@@ -70,9 +70,9 @@ function getMyUser(req:Request, res:Response): void {
 } */
 
 function deleteUser (req:Request,res:Response){
-    User.deleteOne({"_id":req.params.id}).then((data) => {
+    User.deleteOne({"_id":req.params.id}).then((data:any) => {
         res.status(200).json(data);
-    }).catch((err) => {
+    }).catch((err:any) => {
         res.status(500).json(err);
     })
 }
@@ -80,12 +80,12 @@ function deleteUser (req:Request,res:Response){
 function changeUsername (req:Request, res:Response){
     const userID = req.user;
     const newUsername = req.params.username;
-    User.findById({"_id": userID}).then((data) => {
+    User.findById({"_id": userID}).then((data:any) => {
             User.update({"_id": userID}, {$set: {"name": data?.name, "username": newUsername, "image": data?.image, "email": data?.email, 
                         "password": data?.password, "provider": data?.provider, "friends": data?.friends, "online": data?.online}})
-            .then((data) => {
+            .then((data: any) => {
                 return res.status(201).json(data);
-            }).catch((err) => {
+            }).catch((err: any) => {
                 return res.status(500).json(err);
             })
     });
