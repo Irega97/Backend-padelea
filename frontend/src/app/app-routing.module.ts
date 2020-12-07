@@ -1,3 +1,4 @@
+import { UsernameComponent } from './username/username.component';
 import { HomeComponent } from './home/home.component';
 import { RegisterComponent } from './register/register.component';
 import { LoginComponent } from './login/login.component';
@@ -9,7 +10,8 @@ const routes: Routes = [
   {path: '', component: LandingComponent},
   {path: 'auth/login', component: LoginComponent},
   {path: 'auth/register', component: RegisterComponent},
-  {path: 'home', component: HomeComponent}
+  {path: 'home', component: HomeComponent},
+  {path: 'setusername', component: UsernameComponent}
 ];
 
 @NgModule({

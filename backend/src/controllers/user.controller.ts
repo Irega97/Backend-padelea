@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import User from "../models/user"
+import User from "../models/user";
 
 function getUsers(req:Request, res:Response): void {
     User.find({}).then((data)=>{
@@ -12,8 +12,19 @@ function getUsers(req:Request, res:Response): void {
     })
 }
 
+
 function getUser(req:Request, res:Response): void {
     User.findById(req.params.id).populate('friends').then((data)=>{
+        let status: number = 200;
+        if(data==null) status = 404;
+        return res.status(status).json(data);
+    }).catch((err) => {
+        return res.status(500).json(err);
+    })
+}
+
+function getMyUser(req:Request, res:Response): void {
+    User.findById(req.user).then((data)=>{
         let status: number = 200;
         if(data==null) status = 404;
         return res.status(status).json(data);
@@ -59,11 +70,25 @@ function getUser(req:Request, res:Response): void {
 } */
 
 function deleteUser (req:Request,res:Response){
-    User.deleteOne({"_id":req.params.id}).then((data: any) => {
+    User.deleteOne({"_id":req.params.id}).then((data:any) => {
         res.status(200).json(data);
-    }).catch((err: any) => {
+    }).catch((err:any) => {
         res.status(500).json(err);
     })
 }
 
-export default { getUsers, getUser, /* postUserDemo, updateUser, */ deleteUser };
+function changeUsername (req:Request, res:Response){
+    const userID = req.user;
+    const newUsername = req.params.username;
+    User.findById({"_id": userID}).then((data:any) => {
+            User.update({"_id": userID}, {$set: {"name": data?.name, "username": newUsername, "image": data?.image, "email": data?.email, 
+                        "password": data?.password, "provider": data?.provider, "friends": data?.friends, "online": data?.online}})
+            .then((data: any) => {
+                return res.status(201).json(data);
+            }).catch((err: any) => {
+                return res.status(500).json(err);
+            })
+    });
+}
+
+export default { getUsers, getUser, /* postUserDemo, updateUser, */ deleteUser, changeUsername, getMyUser };

@@ -23,4 +23,14 @@
         <input type="submit" value="Submit" [disabled]="loginForm.invalid" />
       </p>
     </form>
-  </div>
+</div>
+
+<div style="text-align: center;">
+  <button (click)="loginGoogle()" class="button">INICIA SESIÓN CON GOOGLE</button>
+</div>
+<div style="text-align: center;">
+  <button (click)="loginFacebook()" class="button">INICIA SESIÓN CON FACEBOOK</button>
+</div>
+<div style="text-align: center;">
+  <button (click)="loginTwitter()" class="button">INICIA SESIÓN CON TWITTER</button>
+</div>

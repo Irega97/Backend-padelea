@@ -1,0 +1,13 @@
+<h3>INTRODUCE NOMBRE DE USUARIO</h3>
+<div class="username">
+    <form [formGroup]="usernameForm" (ngSubmit)="submitUsername()">
+        <input type="username" placeholder="Nombre de usuario*" formControlName="username" />
+        <ng-container
+          *ngIf="!formControls.username.valid &&formControls.username.touched"
+        >
+          <p *ngIf="formControls.username.errors.required">
+            Nombre de usuario obligatorio
+          </p>
+        </ng-container>
+    </form>
+</div>

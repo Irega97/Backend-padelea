@@ -1,1 +1,11 @@
+<div style="text-align: center">
+    <h2>USERS</h2>
+</div>
+<hr />
+<div *ngFor="let user of users; index as i">
+    <div style="text-align: center">
+        <h3>NAME: {{user.name}}, EMAIL: {{user.email}}</h3>
+    </div>
+</div>
+<hr />
 <button (click)="signout()" class="button">CERRAR SESIÓN</button>

@@ -20,5 +20,4 @@ export class LandingComponent implements OnInit {
   register(){
     this.router.navigateByUrl('auth/register');
   }
-
 }

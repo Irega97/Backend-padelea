@@ -1,6 +1,5 @@
 /* nombre, descripcion, url, responsable */
 import mongoose, { Schema, Document} from 'mongoose';
-import jwt from 'jsonwebtoken';
 
 //Modelo de objeto que se guarda en la BBDD de MongoDB
 let userSchema = mongoose.Schema;
@@ -9,27 +8,25 @@ const user = new userSchema({
         type: String    
     },
     name: {
-        type: String,
-        unique: true,
-        required: true
-    },
-    sex: {
         type: String
+    },
+    username: {
+        type: String,
+        //DEJAR ESTO COMENTADO HASTA QUE NO IMPLEMENTEMOS QUE EL USER PONGA USERNAME SI SE REGISTRA CON OAUTH
+        unique: true
     },
     image: { 
         type: String
     },
-    city: {
-        type: String
-    },
     email: {
         type: String,
-        unique: true,
-        required: true
+        unique: true
     },
     password: {
-        type: String,
-        required: true
+        type: String
+    },
+    provider: {
+        type: String
     },
     online: {
         type: Boolean
@@ -44,25 +41,26 @@ const user = new userSchema({
 export interface IUser extends Document {
     _id: string;
     name: string;
-    sex: string;
+    username: string;
     image: string;
-    city: string;
     email: string;
     password: string;
     online: boolean;
     friends: IUser['_id'];
+    provider: string;
     userToJson(): JSON;
 }
 
 user.methods.userToJSON = function(){
     return {
         name: this.name,
-        sex: this.sex,
+        username: this.username,
         image: this.image,
-        city: this.city,
         email: this.email,
         password: this.password,
-        friends: this.friends
+        provider: this.provider,
+        friends: this.friends,
+        online: this.online
     };
 }
 
