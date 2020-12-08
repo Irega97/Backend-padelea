@@ -4,9 +4,9 @@ import mongoose, { Schema, Document} from 'mongoose';
 //Modelo de objeto que se guarda en la BBDD de MongoDB
 let userSchema = mongoose.Schema;
 const user = new userSchema({
-    _id: {
-        type: String    
-    },
+    /* _id: {
+        type: Schema.Types.ObjectId    
+    }, */
     name: {
         type: String
     },
@@ -32,21 +32,29 @@ const user = new userSchema({
         type: Boolean
     },
     friends: [{
-        type: Schema.Types.ObjectId,
-        ref: 'User'
+        user: {
+            type: Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        status: {
+            type: Number
+            // 0 : Solicitud enviada
+            // 1 : Solicitud recibida
+            // 2 : Colegas
+        }
     }]
 });
 
 //Interfaz para tratar respuesta como documento
 export interface IUser extends Document {
-    _id: string;
+    /* _id: string; */
     name: string;
     username: string;
     image: string;
     email: string;
     password: string;
     online: boolean;
-    friends: IUser['_id'];
+    friends: Array<any>;
     provider: string;
     userToJson(): JSON;
 }

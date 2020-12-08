@@ -12,6 +12,8 @@ const dbOptions: ConnectionOptions = {
 
 mongoose.connect(config.DB.URI, dbOptions);
 
+mongoose.set('useFindAndModify', false);
+
 const connection = mongoose.connection;
 
 connection.once('open', () => {

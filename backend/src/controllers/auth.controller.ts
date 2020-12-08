@@ -9,9 +9,13 @@ async function login(req: Request, res: Response) {
         user = await User.findOne({"email": req.body.email});
         if(!user) return res.status(404).json({message: "User not found"});
         else {
-            let t = {token: createToken(user)}
-            console.log("New token: ", t.token);
-            return res.status(200).json(t);
+            user = await User.findOne({"provider": req.body.provider});
+            if (!user) return res.status(409).json({message: "Este email está registrado pero no con esta red social"});
+            else{
+                let t = {token: createToken(user)}
+                console.log("New token: ", t.token);
+                return res.status(200).json(t);
+            }
         }
     } else {
         const username = req.body.username;
@@ -65,7 +69,6 @@ async function register(req:Request, res:Response) {
 }
 
 async function signout(req:Request, res:Response){
-    // DUDA: Puedo usar el middleware de passport para decodificar el token ?????
     let t = decodeToken(req.body.token);
     console.log("Decoded token: ", t);
     let user = await User.findOne({"_id": t?.id});
@@ -102,6 +105,5 @@ async function checkSocial(req: Request, res: Response){
         else return res.status(200).json({value: false});
     })
 }
-
 
 export default { login, register, signout, checkSocial };
