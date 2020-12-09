@@ -34,10 +34,11 @@ function getMyUser(req:Request, res:Response): void {
 }
 
 function updateUser (req: Request, res: Response){
-    const id: string = req.params.id;
+    const id = req.user;
     const name: string = req.body.name;
     const username: string = req.body.username;
     const email: string = req.body.email;
+    console.log("El id es:" + id);
     User.update({"_id": id}, {$set: {"name": name, "username": username, "email": email, 
                               "image": req.body.image, "password": req.body.password, "online": true, "public": req.body.public, "provider": req.body.provider, "friends": req.body.friends}}).then((data) => {
         res.status(201).json(data);

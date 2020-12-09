@@ -9,7 +9,7 @@ const router = Router();
 router.get('/all', passport.authenticate("jwt", {session: false}), userController.getUsers);
 router.get('/me', passport.authenticate("jwt", {session:false}), userController.getMyUser);
 router.get('/:id', passport.authenticate("jwt", {session: false}), userController.getUser);
-router.post('/:id', passport.authenticate("jwt", {session: false}), userController.updateUser);
+router.post('/me', passport.authenticate("jwt", {session: false}), userController.updateUser);
 //router.post('/:id', userController.updateUser);
 router.delete('/:id', passport.authenticate("jwt", {session: false}), userController.deleteUser);
 
