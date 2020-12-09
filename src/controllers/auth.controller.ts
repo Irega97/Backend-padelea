@@ -51,6 +51,8 @@ async function register(req:Request, res:Response) {
     else {
         let u = new User({
             "name": user.name,
+            "firstName": user.firstName,
+            "lastName": user.lastName,
             "username": user.username,
             "image": user.image,
             "email": user.email,
