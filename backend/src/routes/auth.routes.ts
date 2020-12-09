@@ -6,6 +6,7 @@ const router = Router();
 
 router.post('/login', authController.login);
 router.post('/register', authController.register);
+router.post('/update', authController.update);
 router.put('/signout', authController.signout);
 router.get('/checkSocial/:email', authController.checkSocial);
 

@@ -78,6 +78,27 @@ async function signout(req:Request, res:Response){
     }
 }
 
+async function update(req:Request, res:Response) {
+    let user = req.body;
+    console.log("body: ", user);
+    let u = new User({
+        "name": user.name,
+        "username": user.username,
+        "image": user.image,
+        "email": user.email,
+        "password": user.password,
+        "provider": user.provider,
+        "online": false
+    });
+    u.save().then((data) => {
+    console.log("NEW USER: ", u);
+    setOnlineStatus(u, true);
+        return res.status(201).json({token: createToken(data)});
+    }).catch((err) => {
+        return res.status(500).json(err);
+    });
+}
+
 function createToken(user: IUser){
     const expirationTime = 3600; //1h
     return jwt.sign({id:user.id, name: user.name, email: user.email}, config.jwtSecret, {
@@ -104,4 +125,4 @@ async function checkSocial(req: Request, res: Response){
 }
 
 
-export default { login, register, signout, checkSocial };
+export default { login, register,update, signout, checkSocial };
