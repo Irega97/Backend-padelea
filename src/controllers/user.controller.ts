@@ -28,7 +28,7 @@ function getUser(req:Request, res:Response): void { //Usuari, Correo, Foto, Onli
 }
 
 function getMyUser(req:Request, res:Response): void {
-    User.findById(req.user).then((data)=>{
+    User.findById(req.user, {username: 1, name: 1, image: 1, email: 1, firstName: 1, lastName: 1, provider: 1}).then((data)=>{
         let status: number = 200;
         if(data==null) status = 404;
         return res.status(status).json(data);

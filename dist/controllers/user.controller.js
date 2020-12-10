@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_1 = __importDefault(require("../models/user"));
-<<<<<<< HEAD
 //EN LOS GETS DEVOLVER SOLO LO NECESARIO 
 function getUsers(req, res) {
     user_1.default.find({}, { username: 1, image: 1 }).then((data) => {
@@ -21,13 +20,6 @@ function getUsers(req, res) {
         if (data == null)
             status = 404;
         console.log("micky tontito", data);
-=======
-function getUsers(req, res) {
-    user_1.default.find({}).then((data) => {
-        let status = 200;
-        if (data == null)
-            status = 404;
->>>>>>> e5d6b15c544a2ece5893bf801f49ed2ef211808e
         return res.status(status).json(data);
     }).catch((err) => {
         console.log(err);
@@ -35,25 +27,18 @@ function getUsers(req, res) {
     });
 }
 function getUser(req, res) {
-<<<<<<< HEAD
     user_1.default.findById(req.params.id, { username: 1, image: 1, email: 1 }).then((data) => {
         let status = 200;
         if (data == null)
             status = 404;
         console.log("micky tontito2", data);
-=======
-    user_1.default.findById(req.params.id).populate('friends').then((data) => {
-        let status = 200;
-        if (data == null)
-            status = 404;
->>>>>>> e5d6b15c544a2ece5893bf801f49ed2ef211808e
         return res.status(status).json(data);
     }).catch((err) => {
         return res.status(500).json(err);
     });
 }
 function getMyUser(req, res) {
-    user_1.default.findById(req.user).then((data) => {
+    user_1.default.findById(req.user, { username: 1, name: 1, image: 1, email: 1, firstName: 1, lastName: 1, provider: 1 }).then((data) => {
         let status = 200;
         if (data == null)
             status = 404;
@@ -62,7 +47,6 @@ function getMyUser(req, res) {
         return res.status(500).json(err);
     });
 }
-<<<<<<< HEAD
 //ESTO ESTA HECHO PARA HACERLO EN DOS RUTAS; NO HACE FALTA ENVIAR TODO EN EL AddFriends();
 function getFriends(req, res) {
     user_1.default.findById(req.params.id, { friends: 1 }).then((data) => {
@@ -85,14 +69,6 @@ function getMyFriends(req, res) {
     });
 }
 function updateUser(req, res) {
-    const id = req.params.id;
-    const name = req.body.name;
-    const username = req.body.username;
-    const email = req.body.email;
-    user_1.default.update({ "_id": id }, { $set: { "name": name, "username": username, "email": email,
-            "image": req.body.image, "password": req.body.password, "online": true, "public": req.body.public, "provider": req.body.provider, "friends": req.body.friends } }).then((data) => {
-=======
-function updateUser(req, res) {
     const id = req.user;
     const name = req.body.name;
     const firstName = req.body.firstName;
@@ -101,7 +77,6 @@ function updateUser(req, res) {
     const email = req.body.email;
     user_1.default.update({ "_id": id }, { $set: { "name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email,
             "image": req.body.image, "password": req.body.password, "public": req.body.public } }).then((data) => {
->>>>>>> e5d6b15c544a2ece5893bf801f49ed2ef211808e
         res.status(201).json(data);
     }).catch((err) => {
         res.status(500).json(err);
@@ -147,19 +122,11 @@ function addFriend(req, res) {
         };
         console.log("friends: ", friend1, friend2);
         user_1.default.findById(myID).then(data => {
-<<<<<<< HEAD
             if (!(data === null || data === void 0 ? void 0 : data.friends.includes(friend1.user))) {
                 try {
                     user_1.default.findOneAndUpdate({ "_id": myID }, { $addToSet: { friends: friend1 } }).then(() => {
                         user_1.default.findOneAndUpdate({ "_id": receptorID }, { $addToSet: { friends: friend2 } }).then(() => {
                             return res.status(200).json({ message: "Amigo añadido correctamente" });
-=======
-            if (!(data === null || data === void 0 ? void 0 : data.friends.includes(friend1))) {
-                try {
-                    user_1.default.findOneAndUpdate({ "_id": myID }, { $addToSet: { friends: friend1 } }).then(() => {
-                        user_1.default.findOneAndUpdate({ "_id": receptorID }, { $addToSet: { friends: friend2 } }).then(() => {
-                            return res.status(200).json();
->>>>>>> e5d6b15c544a2ece5893bf801f49ed2ef211808e
                         });
                     });
                 }
@@ -230,8 +197,4 @@ function delFriend(req, res) {
         }
     });
 }
-<<<<<<< HEAD
 exports.default = { getUsers, getUser, updateUser, deleteUser, changeUsername, getMyUser, addFriend, changeFriendStatus, delFriend, getFriends, getMyFriends };
-=======
-exports.default = { getUsers, getUser, updateUser, deleteUser, changeUsername, getMyUser, addFriend, changeFriendStatus, delFriend };
->>>>>>> e5d6b15c544a2ece5893bf801f49ed2ef211808e
