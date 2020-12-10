@@ -16,6 +16,8 @@ router.delete('/:id', passport.authenticate("jwt", {session: false}), userContro
 router.post('/setusername/:username', passport.authenticate("jwt", { session: false }), userController.changeUsername);
 
 // FRIENDS ROUTES
+router.get('/:id/friends/all', passport.authenticate("jwt", {session: false}), userController.getFriends)
+router.get('/me/friends/all', passport.authenticate("jwt", {session: false}), userController.getMyFriends)
 router.post('/friends/:idfriend', passport.authenticate("jwt", {session: false}), userController.addFriend);
 router.post('/friends/:idfriend/status', passport.authenticate("jwt", {session: false}), userController.changeFriendStatus);
 router.delete('/friends/:idfriend', passport.authenticate("jwt", {session: false}), userController.delFriend);

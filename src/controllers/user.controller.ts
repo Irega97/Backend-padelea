@@ -1,10 +1,13 @@
 import { Request, Response } from "express";
 import User from "../models/user";
 
+
+//EN LOS GETS DEVOLVER SOLO LO NECESARIO 
 function getUsers(req:Request, res:Response): void {
-    User.find({}).then((data)=>{
+    User.find({}, {username : 1, image : 1}).then((data)=>{
         let status: number = 200;
         if(data==null) status = 404;
+        console.log("micky tontito", data)
         return res.status(status).json(data);
     }).catch((err) => {
         console.log(err);
@@ -13,10 +16,11 @@ function getUsers(req:Request, res:Response): void {
 }
 
 
-function getUser(req:Request, res:Response): void {
-    User.findById(req.params.id).populate('friends').then((data)=>{
+function getUser(req:Request, res:Response): void { //Usuari, Correo, Foto, Online (AMIGOS)
+    User.findById(req.params.id, {username : 1, image : 1, email : 1}).then((data)=>{
         let status: number = 200;
         if(data==null) status = 404;
+        console.log("micky tontito2",data);
         return res.status(status).json(data);
     }).catch((err) => {
         return res.status(500).json(err);
@@ -25,6 +29,27 @@ function getUser(req:Request, res:Response): void {
 
 function getMyUser(req:Request, res:Response): void {
     User.findById(req.user).then((data)=>{
+        let status: number = 200;
+        if(data==null) status = 404;
+        return res.status(status).json(data);
+    }).catch((err) => {
+        return res.status(500).json(err);
+    })
+}
+
+//ESTO ESTA HECHO PARA HACERLO EN DOS RUTAS; NO HACE FALTA ENVIAR TODO EN EL AddFriends();
+function getFriends(req:Request, res:Response): void {
+    User.findById(req.params.id, {friends : 1}).then((data)=>{
+        let status: number = 200;
+        if(data==null) status = 404;
+        return res.status(status).json(data);
+    }).catch((err) => {
+        return res.status(500).json(err);
+    })
+}
+
+function getMyFriends(req:Request, res:Response): void {
+    User.findById(req.user, {friends : 1}).then((data)=>{
         let status: number = 200;
         if(data==null) status = 404;
         return res.status(status).json(data);
@@ -88,11 +113,11 @@ async function addFriend(req: Request, res: Response) {
     };
     console.log("friends: ", friend1, friend2);
     User.findById(myID).then(data => {
-        if(!data?.friends.includes(friend1)){
+        if(!data?.friends.includes(friend1.user)){
             try {
                 User.findOneAndUpdate({"_id":myID},{$addToSet: {friends: friend1}}).then(() => {
                     User.findOneAndUpdate({"_id":receptorID},{$addToSet: {friends: friend2}}).then(() => {
-                        return res.status(200).json();
+                        return res.status(200).json({message: "Amigo añadido correctamente"});
                     });
                 });
             } catch (err) {
@@ -160,4 +185,4 @@ async function delFriend(req: Request, res: Response){
     }
 }
 
-export default { getUsers, getUser, updateUser, deleteUser, changeUsername, getMyUser, addFriend, changeFriendStatus, delFriend };
+export default { getUsers, getUser, updateUser, deleteUser, changeUsername, getMyUser, addFriend, changeFriendStatus, delFriend, getFriends, getMyFriends };
