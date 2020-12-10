@@ -2,13 +2,16 @@ import { Request, Response } from "express";
 import User from "../models/user";
 
 
-//EN LOS GETS DEVOLVER SOLO LO NECESARIO 
 function getUsers(req:Request, res:Response): void {
-    User.find({}, {username : 1, image : 1, friends: 1}).then((data)=>{
-        let status: number = 200;
-        if(data==null) status = 404;
+    User.find({}, {username : 1, image : 1}).then((data)=>{
+        if(data==null) return res.status(404).json({message: "Users not found"});
+        data.forEach((item) => {
+            let i = data.indexOf(item)
+            if(req.user == item.id)
+                data.splice(i,1);
+        })
         console.log("micky tontito", data)
-        return res.status(status).json(data);
+        return res.status(200).json(data);
     }).catch((err) => {
         console.log(err);
         return res.status(500).json(err);

@@ -36,5 +36,7 @@ app.use('/user', userRoutes);
 app.use('/auth', authRoutes);
 app.use('/friends', friendsRoutes)
 
+console.log("PREGUNTAR A CRISTIAN X EL COMPONENT DE IONIC: COMO HACER QUE REDIRIJA AL PULSAR OK CUANDO CADUCA LA SESION (interceptor)")
+
 //Exportamos fichero como 'app'
 export default app;

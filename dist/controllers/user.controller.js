@@ -13,14 +13,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_1 = __importDefault(require("../models/user"));
-//EN LOS GETS DEVOLVER SOLO LO NECESARIO 
 function getUsers(req, res) {
-    user_1.default.find({}, { username: 1, image: 1, friends: 1 }).then((data) => {
-        let status = 200;
+    user_1.default.find({}, { username: 1, image: 1 }).then((data) => {
         if (data == null)
-            status = 404;
+            return res.status(404).json({ message: "Users not found" });
+        data.forEach((item) => {
+            let i = data.indexOf(item);
+            if (req.user == item.id)
+                data.splice(i, 1);
+        });
         console.log("micky tontito", data);
-        return res.status(status).json(data);
+        return res.status(200).json(data);
     }).catch((err) => {
         console.log(err);
         return res.status(500).json(err);
