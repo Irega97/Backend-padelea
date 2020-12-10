@@ -70,6 +70,11 @@ function register(req, res) {
         else {
             let u = new user_1.default({
                 "name": user.name,
+<<<<<<< HEAD
+=======
+                "firstName": user.firstName,
+                "lastName": user.lastName,
+>>>>>>> e5d6b15c544a2ece5893bf801f49ed2ef211808e
                 "username": user.username,
                 "image": user.image,
                 "email": user.email,
