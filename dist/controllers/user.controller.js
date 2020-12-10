@@ -75,12 +75,22 @@ function updateUser(req, res) {
     const lastName = req.body.lastName;
     const username = req.body.username;
     const email = req.body.email;
-    user_1.default.update({ "_id": id }, { $set: { "name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email,
-            "image": req.body.image, "password": req.body.password, "public": req.body.public } }).then((data) => {
-        res.status(201).json(data);
-    }).catch((err) => {
-        res.status(500).json(err);
-    });
+    if (req.body.password == "") {
+        user_1.default.update({ "_id": id }, { $set: { "name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email,
+                "image": req.body.image, "public": req.body.public } }).then((data) => {
+            res.status(201).json(data);
+        }).catch((err) => {
+            res.status(500).json(err);
+        });
+    }
+    else {
+        user_1.default.update({ "_id": id }, { $set: { "name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email,
+                "image": req.body.image, "password": req.body.password, "public": req.body.public } }).then((data) => {
+            res.status(201).json(data);
+        }).catch((err) => {
+            res.status(500).json(err);
+        });
+    }
 }
 function deleteUser(req, res) {
     user_1.default.deleteOne({ "_id": req.params.id }).then((data) => {

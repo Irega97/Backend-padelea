@@ -65,12 +65,22 @@ function updateUser (req: Request, res: Response){
     const lastName: string = req.body.lastName;
     const username: string = req.body.username;
     const email: string = req.body.email;
-    User.update({"_id": id}, {$set: {"name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email, 
-                              "image": req.body.image, "password": req.body.password,"public": req.body.public}}).then((data) => {
+    if (req.body.password == ""){
+        User.update({"_id": id}, {$set: {"name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email, 
+                              "image": req.body.image, "public": req.body.public}}).then((data) => {
         res.status(201).json(data);
     }).catch((err) => {
         res.status(500).json(err);
     })
+    }
+    else{
+        User.update({"_id": id}, {$set: {"name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email, 
+        "image": req.body.image, "password": req.body.password, "public": req.body.public}}).then((data) => {
+        res.status(201).json(data);
+        }).catch((err) => {
+        res.status(500).json(err);
+        })
+    }
 } 
 
 function deleteUser (req:Request,res:Response){
