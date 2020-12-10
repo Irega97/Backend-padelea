@@ -4,7 +4,7 @@ import User from "../models/user";
 
 //EN LOS GETS DEVOLVER SOLO LO NECESARIO 
 function getUsers(req:Request, res:Response): void {
-    User.find({}, {username : 1, image : 1}).then((data)=>{
+    User.find({}, {username : 1, image : 1, friends: 1}).then((data)=>{
         let status: number = 200;
         if(data==null) status = 404;
         console.log("micky tontito", data)
@@ -16,12 +16,25 @@ function getUsers(req:Request, res:Response): void {
 }
 
 
-function getUser(req:Request, res:Response): void { //Usuari, Correo, Foto, Online (AMIGOS)
+async function getUser(req:Request, res:Response) { //Usuari, Correo, Foto, Online (AMIGOS)
+    let me = await User.findById(req.user, {friends: 1});
     User.findById(req.params.id, {username : 1, image : 1, email : 1}).then((data)=>{
-        let status: number = 200;
-        if(data==null) status = 404;
+        if(data==null) return res.status(404).json({message: "User not found"});
         console.log("micky tontito2",data);
-        return res.status(status).json(data);
+        let friendStatus = -1;
+        me?.friends.forEach((item) => {
+            console.log(item);
+            if(item.user == req.params.id){
+                friendStatus = item.status
+            }
+        });
+        let dataToSend = {
+            username: data.username,
+            image: data.image,
+            email: data.email,
+            friendStatus: friendStatus
+        }
+        return res.status(200).json(dataToSend);
     }).catch((err) => {
         return res.status(500).json(err);
     })
@@ -58,28 +71,36 @@ function getMyFriends(req:Request, res:Response): void {
     })
 }
 
-function updateUser (req: Request, res: Response){
+async function updateUser (req: Request, res: Response){
     const id = req.user;
-    const name: string = req.body.name;
-    const firstName: string = req.body.firstName;
-    const lastName: string = req.body.lastName;
-    const username: string = req.body.username;
-    const email: string = req.body.email;
-    if (req.body.password == ""){
-        User.update({"_id": id}, {$set: {"name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email, 
-                              "image": req.body.image, "public": req.body.public}}).then((data) => {
-        res.status(201).json(data);
-    }).catch((err) => {
-        res.status(500).json(err);
-    })
-    }
-    else{
-        User.update({"_id": id}, {$set: {"name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email, 
-        "image": req.body.image, "password": req.body.password, "public": req.body.public}}).then((data) => {
-        res.status(201).json(data);
+
+    let checkUsername = await User.findOne({"username": req.body.username});
+    let checkEmail = await User.findOne({"email": req.body.email});
+
+    if(checkUsername && checkUsername?._id != id) return res.status(409).json({code: 409, message: "Username already exists"});
+    else if (checkEmail && checkEmail?._id != id) return res.status(410).json({code: 410, message: "Email already exists"});
+    else {
+        const name: string = req.body.name;
+        const firstName: string = req.body.firstName;
+        const lastName: string = req.body.lastName;
+        const username: string = req.body.username;
+        const email: string = req.body.email;
+        if (req.body.password == ""){
+            await User.update({"_id": id}, {$set: {"name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email, 
+                                "image": req.body.image, "public": req.body.public}}).then((data) => {
+            res.status(201).json(data);
         }).catch((err) => {
-        res.status(500).json(err);
+            res.status(500).json(err);
         })
+        }
+        else{
+            await User.update({"_id": id}, {$set: {"name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email, 
+            "image": req.body.image, "password": req.body.password, "public": req.body.public}}).then((data) => {
+            res.status(201).json(data);
+            }).catch((err) => {
+            res.status(500).json(err);
+            })
+        }
     }
 } 
 

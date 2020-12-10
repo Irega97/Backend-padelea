@@ -25,8 +25,8 @@ exports.default = new passport_jwt_1.Strategy(opts, (payload, next) => __awaiter
         if (user) {
             console.log("PASSPORT DEVUELVE: ", user.toJSON());
             //El usuario decodificado se inserta en req.user
-            let u = user.id;
-            return next(null, u);
+            let id = user.id;
+            return next(null, id);
         }
         console.log('Hay un error');
         return next(null, false, { message: "User not found" });

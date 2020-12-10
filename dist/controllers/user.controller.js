@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const user_1 = __importDefault(require("../models/user"));
 //EN LOS GETS DEVOLVER SOLO LO NECESARIO 
 function getUsers(req, res) {
-    user_1.default.find({}, { username: 1, image: 1 }).then((data) => {
+    user_1.default.find({}, { username: 1, image: 1, friends: 1 }).then((data) => {
         let status = 200;
         if (data == null)
             status = 404;
@@ -27,14 +27,29 @@ function getUsers(req, res) {
     });
 }
 function getUser(req, res) {
-    user_1.default.findById(req.params.id, { username: 1, image: 1, email: 1 }).then((data) => {
-        let status = 200;
-        if (data == null)
-            status = 404;
-        console.log("micky tontito2", data);
-        return res.status(status).json(data);
-    }).catch((err) => {
-        return res.status(500).json(err);
+    return __awaiter(this, void 0, void 0, function* () {
+        let me = yield user_1.default.findById(req.user, { friends: 1 });
+        user_1.default.findById(req.params.id, { username: 1, image: 1, email: 1 }).then((data) => {
+            if (data == null)
+                return res.status(404).json({ message: "User not found" });
+            console.log("micky tontito2", data);
+            let friendStatus = -1;
+            me === null || me === void 0 ? void 0 : me.friends.forEach((item) => {
+                console.log(item);
+                if (item.user == req.params.id) {
+                    friendStatus = item.status;
+                }
+            });
+            let dataToSend = {
+                username: data.username,
+                image: data.image,
+                email: data.email,
+                friendStatus: friendStatus
+            };
+            return res.status(200).json(dataToSend);
+        }).catch((err) => {
+            return res.status(500).json(err);
+        });
     });
 }
 function getMyUser(req, res) {
@@ -69,28 +84,38 @@ function getMyFriends(req, res) {
     });
 }
 function updateUser(req, res) {
-    const id = req.user;
-    const name = req.body.name;
-    const firstName = req.body.firstName;
-    const lastName = req.body.lastName;
-    const username = req.body.username;
-    const email = req.body.email;
-    if (req.body.password == "") {
-        user_1.default.update({ "_id": id }, { $set: { "name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email,
-                "image": req.body.image, "public": req.body.public } }).then((data) => {
-            res.status(201).json(data);
-        }).catch((err) => {
-            res.status(500).json(err);
-        });
-    }
-    else {
-        user_1.default.update({ "_id": id }, { $set: { "name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email,
-                "image": req.body.image, "password": req.body.password, "public": req.body.public } }).then((data) => {
-            res.status(201).json(data);
-        }).catch((err) => {
-            res.status(500).json(err);
-        });
-    }
+    return __awaiter(this, void 0, void 0, function* () {
+        const id = req.user;
+        let checkUsername = yield user_1.default.findOne({ "username": req.body.username });
+        let checkEmail = yield user_1.default.findOne({ "email": req.body.email });
+        if (checkUsername && (checkUsername === null || checkUsername === void 0 ? void 0 : checkUsername._id) != id)
+            return res.status(409).json({ code: 409, message: "Username already exists" });
+        else if (checkEmail && (checkEmail === null || checkEmail === void 0 ? void 0 : checkEmail._id) != id)
+            return res.status(410).json({ code: 410, message: "Email already exists" });
+        else {
+            const name = req.body.name;
+            const firstName = req.body.firstName;
+            const lastName = req.body.lastName;
+            const username = req.body.username;
+            const email = req.body.email;
+            if (req.body.password == "") {
+                yield user_1.default.update({ "_id": id }, { $set: { "name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email,
+                        "image": req.body.image, "public": req.body.public } }).then((data) => {
+                    res.status(201).json(data);
+                }).catch((err) => {
+                    res.status(500).json(err);
+                });
+            }
+            else {
+                yield user_1.default.update({ "_id": id }, { $set: { "name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email,
+                        "image": req.body.image, "password": req.body.password, "public": req.body.public } }).then((data) => {
+                    res.status(201).json(data);
+                }).catch((err) => {
+                    res.status(500).json(err);
+                });
+            }
+        }
+    });
 }
 function deleteUser(req, res) {
     user_1.default.deleteOne({ "_id": req.params.id }).then((data) => {
