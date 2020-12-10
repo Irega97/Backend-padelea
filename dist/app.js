@@ -12,6 +12,7 @@ const cookieSession = require("cookie-session");
 //Importamos fichero de rutas
 const user_routes_1 = __importDefault(require("./routes/user.routes"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
+const friends_routes_1 = __importDefault(require("./routes/friends.routes"));
 //Importamos middlewares
 const passport_1 = __importDefault(require("passport"));
 const passport_2 = __importDefault(require("./middlewares/passport"));
@@ -31,5 +32,6 @@ passport_1.default.use(passport_2.default);
 //Llama a las rutas de la API
 app.use('/user', user_routes_1.default);
 app.use('/auth', auth_routes_1.default);
+app.use('/friends', friends_routes_1.default);
 //Exportamos fichero como 'app'
 exports.default = app;

@@ -8,6 +8,7 @@ const cookieSession = require("cookie-session");
 //Importamos fichero de rutas
 import userRoutes from './routes/user.routes';
 import authRoutes from './routes/auth.routes';
+import friendsRoutes from './routes/friends.routes';
 
 //Importamos middlewares
 import passport from 'passport';
@@ -33,6 +34,7 @@ passport.use(passportMiddleware);
 //Llama a las rutas de la API
 app.use('/user', userRoutes);
 app.use('/auth', authRoutes);
+app.use('/friends', friendsRoutes)
 
 //Exportamos fichero como 'app'
 export default app;
