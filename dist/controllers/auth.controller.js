@@ -23,14 +23,11 @@ function login(req, res) {
             if (!user)
                 return res.status(404).json({ message: "User not found" });
             else {
-                user = yield user_1.default.findOne({ "provider": req.body.provider });
-                if (!user)
+                if (user.provider != req.body.provider)
                     return res.status(409).json({ message: "Este email está registrado pero no con esta red social" });
-                else {
-                    let t = { token: createToken(user) };
-                    console.log("New token: ", t.token);
-                    return res.status(200).json(t);
-                }
+                let t = { token: createToken(user) };
+                console.log("New token: ", t.token);
+                return res.status(200).json(t);
             }
         }
         else {
@@ -60,7 +57,7 @@ function login(req, res) {
 function register(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         let user = req.body;
-        console.log("body: ", user);
+        console.log("Nuevo Usuario (Formulario): ", user);
         let checkUsername = yield user_1.default.findOne({ "username": user.username });
         let checkEmail = yield user_1.default.findOne({ "email": user.email });
         if (checkUsername)
@@ -77,8 +74,8 @@ function register(req, res) {
                 "email": user.email,
                 "password": user.password,
                 "provider": user.provider,
-                "online": false,
-                "public": true
+                "online": user.online,
+                "public": user.public
             });
             u.save().then((data) => {
                 console.log("NEW USER: ", u);

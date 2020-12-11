@@ -9,13 +9,10 @@ async function login(req: Request, res: Response) {
         user = await User.findOne({"email": req.body.email});
         if(!user) return res.status(404).json({message: "User not found"});
         else {
-            user = await User.findOne({"provider": req.body.provider});
-            if (!user) return res.status(409).json({message: "Este email está registrado pero no con esta red social"});
-            else{
-                let t = {token: createToken(user)}
-                console.log("New token: ", t.token);
-                return res.status(200).json(t);
-            }
+            if (user.provider != req.body.provider) return res.status(409).json({message: "Este email está registrado pero no con esta red social"});
+            let t = {token: createToken(user)}
+            console.log("New token: ", t.token);
+            return res.status(200).json(t);
         }
     } else {
         const username = req.body.username;
@@ -42,7 +39,7 @@ async function login(req: Request, res: Response) {
 
 async function register(req:Request, res:Response) {
     let user = req.body;
-    console.log("body: ", user);
+    console.log("Nuevo Usuario (Formulario): ", user);
     let checkUsername = await User.findOne({"username": user.username});
     let checkEmail = await User.findOne({"email": user.email});
 
@@ -58,8 +55,8 @@ async function register(req:Request, res:Response) {
             "email": user.email,
             "password": user.password,
             "provider": user.provider,
-            "online": false,
-            "public": true
+            "online": user.online,
+            "public": user.public
         });
         u.save().then((data) => {
             console.log("NEW USER: ", u);
