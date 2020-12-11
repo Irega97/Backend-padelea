@@ -13,7 +13,6 @@ import friendsRoutes from './routes/friends.routes';
 //Importamos middlewares
 import passport from 'passport';
 import passportMiddleware from './middlewares/passport';
-import config from './config/config';
 
 //Inicializamos express
 const app = express();
@@ -34,7 +33,7 @@ passport.use(passportMiddleware);
 //Llama a las rutas de la API
 app.use('/user', userRoutes);
 app.use('/auth', authRoutes);
-app.use('/friends', friendsRoutes)
+app.use('/friends', friendsRoutes);
 
 console.log("PREGUNTAR A CRISTIAN X EL COMPONENT DE IONIC: COMO HACER QUE REDIRIJA AL PULSAR OK CUANDO CADUCA LA SESION (interceptor)")
 

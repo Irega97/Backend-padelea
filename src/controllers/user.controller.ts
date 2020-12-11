@@ -10,7 +10,6 @@ function getUsers(req:Request, res:Response): void {
             if(req.user == item.id)
                 data.splice(i,1);
         })
-        console.log("micky tontito", data)
         return res.status(200).json(data);
     }).catch((err) => {
         console.log(err);
@@ -23,7 +22,6 @@ async function getUser(req:Request, res:Response) { //Usuari, Correo, Foto, Onli
     let me = await User.findById(req.user, {friends: 1});
     User.findById(req.params.id, {username : 1, image : 1, email : 1}).then((data)=>{
         if(data==null) return res.status(404).json({message: "User not found"});
-        console.log("micky tontito2",data);
         let friendStatus = -1;
         me?.friends.forEach((item) => {
             console.log(item);
