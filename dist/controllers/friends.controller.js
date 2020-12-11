@@ -14,11 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_1 = __importDefault(require("../models/user"));
 function getFriends(req, res) {
-    user_1.default.findById(req.params.id, { friends: 1 }).then((data) => {
-        let status = 200;
+    user_1.default.findById(req.params.id, { friends: 1 }).populate({ path: 'friends', populate: { path: 'user', select: 'username image' } }).then((data) => {
         if (data == null)
-            status = 404;
-        return res.status(status).json(data);
+            return res.status(404).json();
+        return res.status(200).json(data);
     }).catch((err) => {
         return res.status(500).json(err);
     });

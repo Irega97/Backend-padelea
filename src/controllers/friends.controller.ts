@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
-import User from "../models/user";
+import User, { IUser } from "../models/user";
 
 function getFriends(req:Request, res:Response): void {
-    User.findById(req.params.id, {friends : 1}).then((data)=>{
-        let status: number = 200;
-        if(data==null) status = 404;
-        return res.status(status).json(data);
+    User.findById(req.params.id, {friends : 1}).populate({ path: 'friends', populate: 
+                    {path: 'user', select: 'username image'}}).then((data)=>{ 
+        
+        if(data==null) return res.status(404).json();
+        return res.status(200).json(data);
     }).catch((err) => {
         return res.status(500).json(err);
     })
