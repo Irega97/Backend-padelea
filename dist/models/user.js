@@ -61,7 +61,7 @@ const user = new userSchema({
         type: Boolean
     },
     friends: [{
-            _id: {
+            user: {
                 type: mongoose_1.Schema.Types.ObjectId,
                 ref: 'User'
             },

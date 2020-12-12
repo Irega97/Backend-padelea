@@ -23,7 +23,7 @@ async function getUser(req:Request, res:Response) { //Usuari, Correo, Foto, Onli
         let friendStatus = -1;
         me?.friends.forEach((item) => {
             console.log(item);
-            if(item._id == req.params.id){
+            if(item.user == req.params.id){
                 friendStatus = item.status
             }
         });

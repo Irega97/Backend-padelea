@@ -41,7 +41,7 @@ const user = new userSchema({
         type: Boolean
     },
     friends: [{
-        _id: {
+        user: {
             type: Schema.Types.ObjectId,
             ref: 'User'
         },

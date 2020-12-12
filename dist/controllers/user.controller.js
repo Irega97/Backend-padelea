@@ -37,7 +37,7 @@ function getUser(req, res) {
             let friendStatus = -1;
             me === null || me === void 0 ? void 0 : me.friends.forEach((item) => {
                 console.log(item);
-                if (item._id == req.params.id) {
+                if (item.user == req.params.id) {
                     friendStatus = item.status;
                 }
             });
