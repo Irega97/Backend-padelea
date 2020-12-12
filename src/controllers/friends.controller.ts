@@ -3,7 +3,7 @@ import User from "../models/user";
 
 function getFriends(req:Request, res:Response): void {
     User.findById(req.params.id, {friends : 1}).populate({path: 'friends', populate: 
-    {path: 'user', select: 'username image'}}).then((data)=>{ 
+    {path: '_id', select: 'username image'}}).then((data)=>{ 
         
         if(data==null) return res.status(404).json();
         data.friends.forEach(friend => {
@@ -40,15 +40,15 @@ async function addFriend(req: Request, res: Response) {
     const myID = req.user;
     const receptorID = req.params.idfriend;
     let friend1 = {
-        user: receptorID,
+        _id: receptorID,
         status: 0
     };
     let friend2 = {
-        user: req.user,
+        _id: req.user,
         status: 1
     };
     User.findById(myID).then(data => {
-        if(!data?.friends.includes(friend2.user)){
+        if(!data?.friends.includes(friend2._id)){
             try {
                 User.findOneAndUpdate({"_id":myID},{$addToSet: {friends: friend1}}).then(() => {
                     User.findOneAndUpdate({"_id":receptorID},{$addToSet: {friends: friend2}}).then(() => {
@@ -71,7 +71,7 @@ async function changeFriendStatus(req: Request, res: Response){
 
     await User.findById(myID, {friends : 1}).then((data) => {
         data?.friends.forEach((friend) => {
-            if(friend.user == friendID){ 
+            if(friend._id == friendID){ 
                 if(accept === true){
                     friend.status = 2;
                 } else{
@@ -87,7 +87,7 @@ async function changeFriendStatus(req: Request, res: Response){
 
     await User.findById(friendID, {friends: 1}).then((data) => {
         data?.friends.forEach((friend) => {
-            if(friend.user == myID){ 
+            if(friend._id == myID){ 
                 if(accept === true){
                     friend.status = 2;
                 } else{
@@ -110,7 +110,7 @@ async function delFriend(req: Request, res: Response){
 
     await User.findById(myID, {friends: 1}).then((data) => {
         data?.friends.forEach((friend) => {
-            if(friend.user == friendID && friend.status == 2){
+            if(friend._id == friendID && friend.status == 2){
                 data.friends.splice(data.friends.indexOf(friendID), 1);
             }
         });
@@ -121,7 +121,7 @@ async function delFriend(req: Request, res: Response){
 
     await User.findById(friendID, {friends: 1}).then((data) => {
         data?.friends.forEach((friend) => {
-            if(friend.user == myID && friend.status == 2){
+            if(friend._id == myID && friend.status == 2){
                 data.friends.splice(data.friends.indexOf(friendID), 1);
             }
         });

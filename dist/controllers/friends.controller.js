@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_1 = __importDefault(require("../models/user"));
 function getFriends(req, res) {
-    user_1.default.findById(req.params.id, { friends: 1 }).populate({ path: 'friends', populate: { path: 'user', select: 'username image' } }).then((data) => {
+    user_1.default.findById(req.params.id, { friends: 1 }).populate({ path: 'friends', populate: { path: '_id', select: 'username image' } }).then((data) => {
         if (data == null)
             return res.status(404).json();
         data.friends.forEach(friend => {
@@ -49,15 +49,15 @@ function addFriend(req, res) {
         const myID = req.user;
         const receptorID = req.params.idfriend;
         let friend1 = {
-            user: receptorID,
+            _id: receptorID,
             status: 0
         };
         let friend2 = {
-            user: req.user,
+            _id: req.user,
             status: 1
         };
         user_1.default.findById(myID).then(data => {
-            if (!(data === null || data === void 0 ? void 0 : data.friends.includes(friend2.user))) {
+            if (!(data === null || data === void 0 ? void 0 : data.friends.includes(friend2._id))) {
                 try {
                     user_1.default.findOneAndUpdate({ "_id": myID }, { $addToSet: { friends: friend1 } }).then(() => {
                         user_1.default.findOneAndUpdate({ "_id": receptorID }, { $addToSet: { friends: friend2 } }).then(() => {
@@ -82,7 +82,7 @@ function changeFriendStatus(req, res) {
         const friendID = req.params.idfriend;
         yield user_1.default.findById(myID, { friends: 1 }).then((data) => {
             data === null || data === void 0 ? void 0 : data.friends.forEach((friend) => {
-                if (friend.user == friendID) {
+                if (friend._id == friendID) {
                     if (accept === true) {
                         friend.status = 2;
                     }
@@ -98,7 +98,7 @@ function changeFriendStatus(req, res) {
         });
         yield user_1.default.findById(friendID, { friends: 1 }).then((data) => {
             data === null || data === void 0 ? void 0 : data.friends.forEach((friend) => {
-                if (friend.user == myID) {
+                if (friend._id == myID) {
                     if (accept === true) {
                         friend.status = 2;
                     }
@@ -121,7 +121,7 @@ function delFriend(req, res) {
         const friendID = req.params.idfriend;
         yield user_1.default.findById(myID, { friends: 1 }).then((data) => {
             data === null || data === void 0 ? void 0 : data.friends.forEach((friend) => {
-                if (friend.user == friendID && friend.status == 2) {
+                if (friend._id == friendID && friend.status == 2) {
                     data.friends.splice(data.friends.indexOf(friendID), 1);
                 }
             });
@@ -131,7 +131,7 @@ function delFriend(req, res) {
         });
         yield user_1.default.findById(friendID, { friends: 1 }).then((data) => {
             data === null || data === void 0 ? void 0 : data.friends.forEach((friend) => {
-                if (friend.user == myID && friend.status == 2) {
+                if (friend._id == myID && friend.status == 2) {
                     data.friends.splice(data.friends.indexOf(friendID), 1);
                 }
             });

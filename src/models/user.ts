@@ -41,7 +41,7 @@ const user = new userSchema({
         type: Boolean
     },
     friends: [{
-        user: {
+        _id: {
             type: Schema.Types.ObjectId,
             ref: 'User'
         },
@@ -50,6 +50,12 @@ const user = new userSchema({
             // 0 : Solicitud enviada
             // 1 : Solicitud recibida
             // 2 : Colegas
+        }
+    }],
+    torneos: [{
+        _id: {
+            type: Schema.Types.ObjectId,
+            ref: 'Torneo'
         }
     }],
     notifications: [{
@@ -83,6 +89,7 @@ export interface IUser extends Document {
     online: boolean;
     public: boolean;
     friends: Array<any>;
+    torneos: Array<any>;
     provider: string;
     userToJson(): JSON;
 }

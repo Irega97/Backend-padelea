@@ -9,6 +9,7 @@ const cookieSession = require("cookie-session");
 import userRoutes from './routes/user.routes';
 import authRoutes from './routes/auth.routes';
 import friendsRoutes from './routes/friends.routes';
+import torneoRoutes from './routes/torneo.routes'
 
 //Importamos middlewares
 import passport from 'passport';
@@ -34,6 +35,7 @@ passport.use(passportMiddleware);
 app.use('/user', userRoutes);
 app.use('/auth', authRoutes);
 app.use('/friends', friendsRoutes);
+app.use('/torneo', torneoRoutes);
 
 console.log("PREGUNTAR A CRISTIAN X EL COMPONENT DE IONIC: COMO HACER QUE REDIRIJA AL PULSAR OK CUANDO CADUCA LA SESION (interceptor)")
 

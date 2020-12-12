@@ -61,7 +61,7 @@ const user = new userSchema({
         type: Boolean
     },
     friends: [{
-            user: {
+            _id: {
                 type: mongoose_1.Schema.Types.ObjectId,
                 ref: 'User'
             },
@@ -70,6 +70,12 @@ const user = new userSchema({
                 // 0 : Solicitud enviada
                 // 1 : Solicitud recibida
                 // 2 : Colegas
+            }
+        }],
+    torneos: [{
+            _id: {
+                type: mongoose_1.Schema.Types.ObjectId,
+                ref: 'Torneo'
             }
         }],
     notifications: [{
