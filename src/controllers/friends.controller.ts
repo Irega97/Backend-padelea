@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import User, { IUser } from "../models/user";
+import User from "../models/user";
 
 function getFriends(req:Request, res:Response): void {
     User.findById(req.params.id, {friends : 1}).populate({path: 'friends', populate: 

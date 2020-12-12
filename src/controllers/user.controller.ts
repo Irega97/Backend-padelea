@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import User from "../models/user";
 
-
 function getUsers(req:Request, res:Response): void {
     User.find({}, {username : 1, image : 1}).then((data)=>{
         if(data==null) return res.status(404).json({message: "Users not found"});
@@ -16,7 +15,6 @@ function getUsers(req:Request, res:Response): void {
         return res.status(500).json(err);
     })
 }
-
 
 async function getUser(req:Request, res:Response) { //Usuari, Correo, Foto, Online (AMIGOS)
     let me = await User.findById(req.user, {friends: 1});
