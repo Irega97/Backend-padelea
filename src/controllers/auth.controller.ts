@@ -25,7 +25,6 @@ async function login(req: Request, res: Response) {
             if(user.password != password) return res.status(409).json({message: "Password don't match"});
             else {
                 try{
-                    setOnlineStatus(user, true);
                     let t = {token: createToken(user)}
                     console.log("New token: ", t.token);
                     return res.status(200).json(t);
@@ -55,12 +54,11 @@ async function register(req:Request, res:Response) {
             "email": user.email,
             "password": user.password,
             "provider": user.provider,
-            "online": user.online,
+            "online": false,
             "public": user.public
         });
         u.save().then((data) => {
             console.log("NEW USER: ", u);
-            setOnlineStatus(u, true);
             return res.status(201).json({token: createToken(data)});
         }).catch((err) => {
             return res.status(500).json(err);
@@ -74,10 +72,7 @@ async function signout(req:Request, res:Response){
     let user = await User.findOne({"_id": t?.id});
     if(!user) return res.status(404).json({message: "User not found"});
     else {
-        const provider = user.provider;
-        setOnlineStatus(user, false).then(()=>{
-            return res.status(200).json({'provider': provider});
-        });
+        return res.status(200).json({message: "Usuario desconectado"});
     }
 }
 
@@ -92,13 +87,12 @@ function decodeToken(token: string){
     return jwt.decode(token, {json: true});
 }
 
-async function setOnlineStatus(user: any, value: boolean){
-    await User.updateOne({"_id":user.id}, {$set: {"_id":user.id,"name":user.name,"username": user.username, "image":user.image, 
-                          "email":user.email, "provider": user.provider,"password":user.password, "friends":user.friends, "online":value, "public":user.public}});
+async function setOnlineStatus(id: String, value: boolean){
+    await User.updateOne({"_id":id}, {$set: {"online":value}});
                     
 }
 
-async function checkSocial(req: Request, res: Response){
+async function checkemail(req: Request, res: Response){
     let email = req.params.email;
     await User.findOne({'email': email}).then((data) => {
         if(data) return res.status(200).json({value: true});
@@ -106,4 +100,4 @@ async function checkSocial(req: Request, res: Response){
     })
 }
 
-export default { login, register, signout, checkSocial };
+export default { login, register, signout, checkemail };

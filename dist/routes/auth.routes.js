@@ -10,6 +10,6 @@ const router = express_1.Router();
 router.post('/login', auth_controller_1.default.login);
 router.post('/register', auth_controller_1.default.register);
 router.put('/signout', auth_controller_1.default.signout);
-router.get('/checkSocial/:email', auth_controller_1.default.checkSocial);
+router.get('/checkemail/:email', auth_controller_1.default.checkemail);
 // Exportamos router para usar rutas en app.ts
 exports.default = router;

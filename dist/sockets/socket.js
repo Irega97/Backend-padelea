@@ -8,6 +8,7 @@ io.on('connection', (socket) => {
         socket.username = user.username;
         socket.id = user.id;
         console.log("El nuevo usuario es: " + socket.username + " con id: " + socket.id);
+        io.emit();
     });
     socket.on('disconnect', function () {
         console.log("Desconectado");

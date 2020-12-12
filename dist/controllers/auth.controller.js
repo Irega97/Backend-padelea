@@ -41,7 +41,6 @@ function login(req, res) {
                     return res.status(409).json({ message: "Password don't match" });
                 else {
                     try {
-                        setOnlineStatus(user, true);
                         let t = { token: createToken(user) };
                         console.log("New token: ", t.token);
                         return res.status(200).json(t);
@@ -74,12 +73,11 @@ function register(req, res) {
                 "email": user.email,
                 "password": user.password,
                 "provider": user.provider,
-                "online": user.online,
+                "online": false,
                 "public": user.public
             });
             u.save().then((data) => {
                 console.log("NEW USER: ", u);
-                setOnlineStatus(u, true);
                 return res.status(201).json({ token: createToken(data) });
             }).catch((err) => {
                 return res.status(500).json(err);
@@ -95,10 +93,7 @@ function signout(req, res) {
         if (!user)
             return res.status(404).json({ message: "User not found" });
         else {
-            const provider = user.provider;
-            setOnlineStatus(user, false).then(() => {
-                return res.status(200).json({ 'provider': provider });
-            });
+            return res.status(200).json({ message: "Usuario desconectado" });
         }
     });
 }
@@ -111,13 +106,12 @@ function createToken(user) {
 function decodeToken(token) {
     return jsonwebtoken_1.default.decode(token, { json: true });
 }
-function setOnlineStatus(user, value) {
+function setOnlineStatus(id, value) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield user_1.default.updateOne({ "_id": user.id }, { $set: { "_id": user.id, "name": user.name, "username": user.username, "image": user.image,
-                "email": user.email, "provider": user.provider, "password": user.password, "friends": user.friends, "online": value, "public": user.public } });
+        yield user_1.default.updateOne({ "_id": id }, { $set: { "online": value } });
     });
 }
-function checkSocial(req, res) {
+function checkemail(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         let email = req.params.email;
         yield user_1.default.findOne({ 'email': email }).then((data) => {
@@ -128,4 +122,4 @@ function checkSocial(req, res) {
         });
     });
 }
-exports.default = { login, register, signout, checkSocial };
+exports.default = { login, register, signout, checkemail };

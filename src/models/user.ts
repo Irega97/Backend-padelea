@@ -51,6 +51,22 @@ const user = new userSchema({
             // 1 : Solicitud recibida
             // 2 : Colegas
         }
+    }],
+    notifications: [{
+        type: {
+            type: String
+            //Notificación de amigos, de chat ...
+        },
+        description: {
+            type: String
+            //Username te ha enviado una solicitud de amistad, username te ha escrito un mensaje...
+        },
+        status: {
+            type: Number
+            //0: No leído
+            //1: Leído pero no resuelto
+            //Si se resuelve se elimina
+        }
     }]
 });
 
