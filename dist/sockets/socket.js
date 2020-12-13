@@ -1,18 +1,23 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 const { io } = require('../index');
+const auth_controller_1 = __importDefault(require("../controllers/auth.controller"));
 // Mensajes de Sockets
 io.on('connection', (socket) => {
-    //console.log(socket);
     console.log("Nueva conexion");
-    socket.on('set-name', (user) => {
+    socket.on('nuevoConectado', (user) => {
         socket.username = user.username;
         socket.id = user.id;
-        console.log("El nuevo usuario es: " + socket.username + " con id: " + socket.id);
-        io.emit();
+        auth_controller_1.default.setOnlineStatus(socket.id, true);
+        console.log("El nuevo usuario es " + socket.username);
     });
     socket.on('disconnect', function () {
-        console.log("Desconectado");
-        io.emit('users-changed', { user: socket.username, event: 'left' });
+        auth_controller_1.default.setOnlineStatus(socket.id, false);
+        console.log("Desconectado el usuario " + socket.username);
+        io.emit('usuarioDesconectado', { user: socket.username, event: 'left' });
     });
     /*socket.on('set-name', (name: any) => {
       socket.username = name;

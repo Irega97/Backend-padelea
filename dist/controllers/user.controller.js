@@ -31,7 +31,7 @@ function getUsers(req, res) {
 function getUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         let me = yield user_1.default.findById(req.user, { friends: 1 });
-        user_1.default.findById(req.params.id, { username: 1, image: 1, email: 1 }).then((data) => {
+        user_1.default.findById(req.params.id, { username: 1, image: 1, email: 1, online: 1 }).then((data) => {
             if (data == null)
                 return res.status(404).json({ message: "User not found" });
             let friendStatus = -1;

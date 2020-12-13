@@ -90,6 +90,7 @@ export interface IUser extends Document {
     public: boolean;
     friends: Array<any>;
     torneos: Array<any>;
+    notifications: Array<any>;
     provider: string;
     userToJson(): JSON;
 }
