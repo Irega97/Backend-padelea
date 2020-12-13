@@ -93,6 +93,12 @@ const user = new userSchema({
                 //1: Leído pero no resuelto
                 //Si se resuelve se elimina
             }
+        }],
+    chats: [{
+            _id: {
+                type: mongoose_1.Schema.Types.ObjectId,
+                ref: 'Chat'
+            }
         }]
 });
 user.methods.userToJSON = function () {
@@ -107,7 +113,8 @@ user.methods.userToJSON = function () {
         provider: this.provider,
         friends: this.friends,
         online: this.online,
-        public: this.public
+        public: this.public,
+        chat: this.chats
     };
 };
 //Exportamos modelo para poder usarlo

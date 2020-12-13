@@ -1,5 +1,6 @@
 /* nombre, descripcion, url, responsable */
 import mongoose, { Schema, Document} from 'mongoose';
+import { IChat} from './chat';
 
 //Modelo de objeto que se guarda en la BBDD de MongoDB
 let userSchema = mongoose.Schema;
@@ -73,7 +74,15 @@ const user = new userSchema({
             //1: Leído pero no resuelto
             //Si se resuelve se elimina
         }
+    }],
+
+    chats: [{
+        _id: {
+            type: Schema.Types.ObjectId,
+            ref: 'Chat'
+        }
     }]
+
 });
 
 //Interfaz para tratar respuesta como documento
@@ -92,6 +101,7 @@ export interface IUser extends Document {
     torneos: Array<any>;
     notifications: Array<any>;
     provider: string;
+    chats: Array<any>;
     userToJson(): JSON;
 }
 
@@ -107,7 +117,8 @@ user.methods.userToJSON = function(){
         provider: this.provider,
         friends: this.friends,
         online: this.online,
-        public: this.public
+        public: this.public,
+        chat: this.chats
     };
 }
 
