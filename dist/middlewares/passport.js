@@ -23,9 +23,9 @@ exports.default = new passport_jwt_1.Strategy(opts, (payload, next) => __awaiter
     try {
         const user = yield user_1.default.findById(payload.id);
         if (user) {
-            console.log("PASSPORT DEVUELVE: ", user.toJSON());
             //El usuario decodificado se inserta en req.user
             let id = user.id;
+            console.log("PASSPORT DEVUELVE: ", id);
             return next(null, id);
         }
         console.log('Hay un error');
