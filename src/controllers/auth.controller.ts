@@ -100,4 +100,4 @@ async function checkemail(req: Request, res: Response){
     })
 }
 
-export default { login, register, signout, checkemail };
+export default { login, register, signout, checkemail, setOnlineStatus };

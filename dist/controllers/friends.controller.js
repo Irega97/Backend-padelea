@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_1 = __importDefault(require("../models/user"));
+const notifications_controller_1 = __importDefault(require("./notifications.controller"));
 function getFriends(req, res) {
     user_1.default.findById(req.params.id, { friends: 1 }).populate({ path: 'friends', populate: { path: 'user', select: 'username image' } }).then((data) => {
         if (data == null)
@@ -61,7 +62,14 @@ function addFriend(req, res) {
                 try {
                     user_1.default.findOneAndUpdate({ "_id": myID }, { $addToSet: { friends: friend1 } }).then(() => {
                         user_1.default.findOneAndUpdate({ "_id": receptorID }, { $addToSet: { friends: friend2 } }).then(() => {
-                            return res.status(200).json({ message: "Amigo añadido correctamente" });
+                            notifications_controller_1.default.addNotification("Amigos", receptorID, myID).then(data => {
+                                if (data == 0) {
+                                    return res.status(200).json({ message: "Amigo añadido correctamente" });
+                                }
+                                else {
+                                    return res.status(200).json({ message: "Error al guardar la notificacion" });
+                                }
+                            });
                         });
                     });
                 }

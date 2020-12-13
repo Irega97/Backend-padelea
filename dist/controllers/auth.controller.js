@@ -122,4 +122,4 @@ function checkemail(req, res) {
         });
     });
 }
-exports.default = { login, register, signout, checkemail };
+exports.default = { login, register, signout, checkemail, setOnlineStatus };

@@ -1,5 +1,10 @@
 /* nombre, descripcion, url, responsable */
 import mongoose, { Schema, Document} from 'mongoose';
+<<<<<<< HEAD
+import { INotification } from './notification';
+=======
+import { IChat} from './chat';
+>>>>>>> 645675b45aa03e8c1ba6c3a606019d856d10d72a
 
 //Modelo de objeto que se guarda en la BBDD de MongoDB
 let userSchema = mongoose.Schema;
@@ -59,21 +64,19 @@ const user = new userSchema({
         }
     }],
     notifications: [{
-        type: {
-            type: String
-            //Notificación de amigos, de chat ...
-        },
-        description: {
-            type: String
-            //Username te ha enviado una solicitud de amistad, username te ha escrito un mensaje...
-        },
-        status: {
-            type: Number
-            //0: No leído
-            //1: Leído pero no resuelto
-            //Si se resuelve se elimina
+        _id: {
+            type: Object,
+            ref: 'Notification'
+        }
+    }],
+
+    chats: [{
+        _id: {
+            type: Schema.Types.ObjectId,
+            ref: 'Chat'
         }
     }]
+
 });
 
 //Interfaz para tratar respuesta como documento
@@ -90,7 +93,9 @@ export interface IUser extends Document {
     public: boolean;
     friends: Array<any>;
     torneos: Array<any>;
+    notifications: Array<any>;
     provider: string;
+    chats: Array<any>;
     userToJson(): JSON;
 }
 
@@ -105,8 +110,10 @@ user.methods.userToJSON = function(){
         password: this.password,
         provider: this.provider,
         friends: this.friends,
+        notifications: this.notifications,
         online: this.online,
-        public: this.public
+        public: this.public,
+        chat: this.chats
     };
 }
 

@@ -79,19 +79,15 @@ const user = new userSchema({
             }
         }],
     notifications: [{
-            type: {
-                type: String
-                //Notificación de amigos, de chat ...
-            },
-            description: {
-                type: String
-                //Username te ha enviado una solicitud de amistad, username te ha escrito un mensaje...
-            },
-            status: {
-                type: Number
-                //0: No leído
-                //1: Leído pero no resuelto
-                //Si se resuelve se elimina
+            _id: {
+                type: Object,
+                ref: 'Notification'
+            }
+        }],
+    chats: [{
+            _id: {
+                type: mongoose_1.Schema.Types.ObjectId,
+                ref: 'Chat'
             }
         }]
 });
@@ -106,8 +102,10 @@ user.methods.userToJSON = function () {
         password: this.password,
         provider: this.provider,
         friends: this.friends,
+        notifications: this.notifications,
         online: this.online,
-        public: this.public
+        public: this.public,
+        chat: this.chats
     };
 };
 //Exportamos modelo para poder usarlo
