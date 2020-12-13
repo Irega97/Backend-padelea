@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import User from "../models/user";
+import notController from "./notifications.controller";
 
 function getFriends(req:Request, res:Response): void {
     User.findById(req.params.id, {friends : 1}).populate({path: 'friends', populate: 
@@ -52,7 +53,14 @@ async function addFriend(req: Request, res: Response) {
             try {
                 User.findOneAndUpdate({"_id":myID},{$addToSet: {friends: friend1}}).then(() => {
                     User.findOneAndUpdate({"_id":receptorID},{$addToSet: {friends: friend2}}).then(() => {
-                        return res.status(200).json({message: "Amigo añadido correctamente"});
+                        notController.addNotification("Amigos", receptorID, myID).then(data =>{
+                            if (data == 0){
+                                return res.status(200).json({message: "Amigo añadido correctamente"});
+                            }
+                            else{
+                                return res.status(200).json({message: "Error al guardar la notificacion"});
+                            }
+                        })
                     });
                 });
             } catch (err) {

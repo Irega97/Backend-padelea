@@ -1,5 +1,6 @@
 /* nombre, descripcion, url, responsable */
 import mongoose, { Schema, Document} from 'mongoose';
+import { INotification } from './notification';
 
 //Modelo de objeto que se guarda en la BBDD de MongoDB
 let userSchema = mongoose.Schema;
@@ -59,19 +60,9 @@ const user = new userSchema({
         }
     }],
     notifications: [{
-        type: {
-            type: String
-            //Notificación de amigos, de chat ...
-        },
-        description: {
-            type: String
-            //Username te ha enviado una solicitud de amistad, username te ha escrito un mensaje...
-        },
-        status: {
-            type: Number
-            //0: No leído
-            //1: Leído pero no resuelto
-            //Si se resuelve se elimina
+        _id: {
+            type: Object,
+            ref: 'Notification'
         }
     }]
 });
@@ -106,6 +97,7 @@ user.methods.userToJSON = function(){
         password: this.password,
         provider: this.provider,
         friends: this.friends,
+        notifications: this.notifications,
         online: this.online,
         public: this.public
     };
