@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const { io } = require('../index');
 const auth_controller_1 = __importDefault(require("../controllers/auth.controller"));
+let chatId;
 // Mensajes de Sockets
 io.on('connection', (socket) => {
     console.log("Nueva conexion");
@@ -19,12 +20,16 @@ io.on('connection', (socket) => {
         console.log("Desconectado el usuario " + socket.username);
         io.emit('usuarioDesconectado', { user: socket.username, event: 'left' });
     });
+    socket.on('nuevaSala', (chatid) => {
+        socket.join(chatid);
+        chatId = chatid;
+        console.log("Sala " + chatid + " creada");
+    });
     /*socket.on('set-name', (name: any) => {
       socket.username = name;
       io.emit('users-changed', {user: name, event: 'joined'});
-    });
-    
-    socket.on('send-message', (message: any) => {
-      io.emit('message', {msg: message.text, user: socket.username, createdAt: new Date()});
     });*/
+    socket.on('send-message', (message) => {
+        socket.to(chatId).emit('message', { msg: message.text, user: socket.username, createdAt: new Date() });
+    });
 });

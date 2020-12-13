@@ -83,6 +83,12 @@ const user = new userSchema({
                 type: Object,
                 ref: 'Notification'
             }
+        }],
+    chats: [{
+            _id: {
+                type: mongoose_1.Schema.Types.ObjectId,
+                ref: 'Chat'
+            }
         }]
 });
 user.methods.userToJSON = function () {
@@ -98,7 +104,8 @@ user.methods.userToJSON = function () {
         friends: this.friends,
         notifications: this.notifications,
         online: this.online,
-        public: this.public
+        public: this.public,
+        chat: this.chats
     };
 };
 //Exportamos modelo para poder usarlo
