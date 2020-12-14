@@ -11,9 +11,9 @@ export default new Strategy(opts, async (payload, next) => {
     try{
         const user = await User.findById(payload.id);
         if(user){
-            console.log("PASSPORT DEVUELVE: ", user.toJSON());
             //El usuario decodificado se inserta en req.user
             let id = user.id;
+            console.log("PASSPORT DEVUELVE: ", id);
             return next(null, id);
         }
         console.log('Hay un error');

@@ -1,9 +1,10 @@
 /* nombre, descripcion, url, responsable */
 import mongoose, { Schema, Document} from 'mongoose';
+import { IChat } from './chat';
 import { INotification } from './notification';
-import { IChat} from './chat';
 
 //Modelo de objeto que se guarda en la BBDD de MongoDB
+
 let userSchema = mongoose.Schema;
 const user = new userSchema({
     /* _id: {
