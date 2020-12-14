@@ -38,7 +38,6 @@ async function login(req: Request, res: Response) {
 
 async function register(req:Request, res:Response) {
     let user = req.body;
-    console.log("Nuevo Usuario (Formulario): ", user);
     let checkUsername = await User.findOne({"username": user.username});
     let checkEmail = await User.findOne({"email": user.email});
 

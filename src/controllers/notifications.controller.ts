@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import User from "../models/user";
+//import Socket from '../sockets/socket';
 
 function getMyNotifications(req:Request, res:Response): void {
     User.findById(req.user, {notifications : 1}).then((data)=>{
@@ -19,6 +20,7 @@ async function addNotification(type: String, description: String, destino: Strin
         status: 0,
         origen: origen
     }
+    //Socket.sendNotificacion(destino, newNotification);
     return User.updateOne({"_id": destino}, {$addToSet: {notifications: newNotification}})
 }
 

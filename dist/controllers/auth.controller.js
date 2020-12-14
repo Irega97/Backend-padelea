@@ -56,7 +56,6 @@ function login(req, res) {
 function register(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         let user = req.body;
-        console.log("Nuevo Usuario (Formulario): ", user);
         let checkUsername = yield user_1.default.findOne({ "username": user.username });
         let checkEmail = yield user_1.default.findOne({ "email": user.email });
         if (checkUsername)

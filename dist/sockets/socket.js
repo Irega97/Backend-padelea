@@ -8,11 +8,16 @@ const auth_controller_1 = __importDefault(require("../controllers/auth.controlle
 let chatId;
 // Mensajes de Sockets
 io.on('connection', (socket) => {
-    console.log("Nueva conexion");
+    /*function sendNotificacion(id: String, notification: any){
+      io.to(id).emit('newNotification', notification)
+    }
+  
+    export default { sendNotificacion };*/
     socket.on('nuevoConectado', (user) => {
         socket.username = user.username;
         socket.id = user.id;
         auth_controller_1.default.setOnlineStatus(socket.id, true);
+        socket.join(socket.id);
         console.log("El nuevo usuario es " + socket.username);
     });
     socket.on('disconnect', function () {

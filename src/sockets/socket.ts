@@ -5,12 +5,18 @@ import authController from '../controllers/auth.controller'
 
 // Mensajes de Sockets
 io.on('connection', (socket: any) => {
-  console.log("Nueva conexion");
  
+  /*function sendNotificacion(id: String, notification: any){
+    io.to(id).emit('newNotification', notification)
+  }
+
+  export default { sendNotificacion };*/
+
   socket.on('nuevoConectado', (user:any) =>{
     socket.username = user.username;
     socket.id = user.id;
     authController.setOnlineStatus(socket.id, true);
+    socket.join(socket.id);
     console.log("El nuevo usuario es " + socket.username);
   });
 
