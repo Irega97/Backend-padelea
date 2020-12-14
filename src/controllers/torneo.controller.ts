@@ -38,7 +38,7 @@ async function createTorneo(req: Request, res: Response){
     })
     torneo.save().then((data) => {
         if (data == null) return res.status(500).json({message: "Error"})
-        User.updateOne({"_id": req.user}, {$addToSet: {torneos: torneo?._id}}).then(user => {
+        User.updateOne({"_id": req.user}, {$addToSet: {torneos : torneo}}).then(user => {
             if (user == null) return res.status(500).json({message: "Error"});
         }, error =>{
             return res.status(500).json(error);
@@ -48,16 +48,24 @@ async function createTorneo(req: Request, res: Response){
 }
 
 async function joinTorneo(req: Request, res: Response){
-    let t = await Torneo.findById(req.params.id);
-    await User.findById(req.user, {torneos: 1}).then(data => {
-        console.log(data);
-        data?.torneos.forEach(torneo => {
-            if(t?._id == torneo._id) return res.status(400).json({message: "Ya estas inscrito"});
+    try{
+        let t = await Torneo.findById(req.params.id);
+        await User.findById(req.user).then(data => {
+            console.log("eo", data);
+            User.updateOne({"_id": req.user}, {$addToSet: {torneos: t}}).then(user => {
+                console.log("user: ", user);
+                if(user.nModified == 1){
+                    Torneo.updateOne({"_id": t?._id},{$addToSet: {players: data}}).then(torneo => {
+                        console.log("torneo: ", torneo);
+                        if(torneo.nModified == 1) return res.status(200).json(torneo);
+                        else return res.status(400).json({message: "Ya estás inscrito"});
+                    });
+                } else return res.status(400).json({message: "Ya estás inscrito"});
+            });
         });
-        User.updateOne({"_id": req.user}, {$addToSet: {torneos: t?._id}});
-        Torneo.updateOne({"_id": t?._id},{$addToSet: {players: data?._id}});
-    });
-    return res.status(200).json();
+    } catch(error){
+        return res.status(500).json(error);
+    }
 }
 
 export default { getTorneo, getTorneos, getMyTorneos, createTorneo, joinTorneo }

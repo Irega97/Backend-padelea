@@ -30,7 +30,7 @@ export interface ITorneo extends Document {
     /* _id: string; */
     name: string;
     admin: Array<IUser>
-    players: Array<IUser>
+    players: Array<any>
     torneoToJson(): JSON;
 }
 

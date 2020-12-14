@@ -58,7 +58,7 @@ function createTorneo(req, res) {
         torneo.save().then((data) => {
             if (data == null)
                 return res.status(500).json({ message: "Error" });
-            user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: torneo === null || torneo === void 0 ? void 0 : torneo._id } }).then(user => {
+            user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: torneo } }).then(user => {
                 if (user == null)
                     return res.status(500).json({ message: "Error" });
             }, error => {
@@ -70,17 +70,29 @@ function createTorneo(req, res) {
 }
 function joinTorneo(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        let t = yield torneo_1.default.findById(req.params.id);
-        yield user_1.default.findById(req.user, { torneos: 1 }).then(data => {
-            console.log(data);
-            data === null || data === void 0 ? void 0 : data.torneos.forEach(torneo => {
-                if ((t === null || t === void 0 ? void 0 : t._id) == torneo._id)
-                    return res.status(400).json({ message: "Ya estas inscrito" });
+        try {
+            let t = yield torneo_1.default.findById(req.params.id);
+            yield user_1.default.findById(req.user).then(data => {
+                console.log("eo", data);
+                user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: t } }).then(user => {
+                    console.log("user: ", user);
+                    if (user.nModified == 1) {
+                        torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { players: data } }).then(torneo => {
+                            console.log("torneo: ", torneo);
+                            if (torneo.nModified == 1)
+                                return res.status(200).json(torneo);
+                            else
+                                return res.status(400).json({ message: "Ya estás inscrito" });
+                        });
+                    }
+                    else
+                        return res.status(400).json({ message: "Ya estás inscrito" });
+                });
             });
-            user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: t === null || t === void 0 ? void 0 : t._id } });
-            torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { players: data === null || data === void 0 ? void 0 : data._id } });
-        });
-        return res.status(200).json();
+        }
+        catch (error) {
+            return res.status(500).json(error);
+        }
     });
 }
 exports.default = { getTorneo, getTorneos, getMyTorneos, createTorneo, joinTorneo };
