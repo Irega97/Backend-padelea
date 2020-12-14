@@ -59,8 +59,7 @@ async function addFriend(req: Request, res: Response) {
             try {
                 User.findOneAndUpdate({"_id":myID},{$addToSet: {friends: friend1}}).then(() => {
                     User.findOneAndUpdate({"_id":receptorID},{$addToSet: {friends: friend2}}).then(() => {
-                        notController.addNotification("Amigos", receptorID, myID).then(data =>{
-                            console.log("data", data);
+                        notController.addNotification("Amigos", "Alguien quiere ser tu amigo", receptorID, myID).then(data =>{
                             if (data.nModified == 1){
                                 return res.status(200).json({message: "Amigo añadido correctamente"});
                             }
@@ -97,6 +96,9 @@ async function changeFriendStatus(req: Request, res: Response){
                     data.friends.splice(i, 1);
                 }
             }
+        });
+        notController.deleteNotification("Amigos", myID, friendID).then(null, error =>{
+            return res.status(500).json(error);
         });
         User.updateOne({"_id": myID}, {$set: {friends: data?.friends}}).then(null, error =>{
             return res.status(500).json(error);

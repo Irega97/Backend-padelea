@@ -23,15 +23,27 @@ function getMyNotifications(req, res) {
         return res.status(500).json(err);
     });
 }
-function addNotification(type, destino, origen) {
+function addNotification(type, description, destino, origen) {
     return __awaiter(this, void 0, void 0, function* () {
         let newNotification = {
             type: type,
-            description: "Alguien quiere ser tu amigo",
+            description: description,
             status: 0,
             origen: origen
         };
         return user_1.default.updateOne({ "_id": destino }, { $addToSet: { notifications: newNotification } });
     });
 }
-exports.default = { getMyNotifications, addNotification };
+function deleteNotification(type, destino, origen) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield user_1.default.findById(destino, { notifications: 1 }).then(data => {
+            data === null || data === void 0 ? void 0 : data.notifications.forEach((notification) => {
+                if (notification.type == type && notification.origen == origen) {
+                    data.notifications.splice(data.notifications.indexOf(origen), 1);
+                }
+            });
+            return user_1.default.updateOne({ "_id": destino }, { $set: { notifications: data === null || data === void 0 ? void 0 : data.notifications } });
+        });
+    });
+}
+exports.default = { getMyNotifications, addNotification, deleteNotification };

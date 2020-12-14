@@ -67,8 +67,7 @@ function addFriend(req, res) {
                 try {
                     user_1.default.findOneAndUpdate({ "_id": myID }, { $addToSet: { friends: friend1 } }).then(() => {
                         user_1.default.findOneAndUpdate({ "_id": receptorID }, { $addToSet: { friends: friend2 } }).then(() => {
-                            notifications_controller_1.default.addNotification("Amigos", receptorID, myID).then(data => {
-                                console.log("data", data);
+                            notifications_controller_1.default.addNotification("Amigos", "Alguien quiere ser tu amigo", receptorID, myID).then(data => {
                                 if (data.nModified == 1) {
                                     return res.status(200).json({ message: "Amigo añadido correctamente" });
                                 }
@@ -108,6 +107,9 @@ function changeFriendStatus(req, res) {
                         data.friends.splice(i, 1);
                     }
                 }
+            });
+            notifications_controller_1.default.deleteNotification("Amigos", myID, friendID).then(null, error => {
+                return res.status(500).json(error);
             });
             user_1.default.updateOne({ "_id": myID }, { $set: { friends: data === null || data === void 0 ? void 0 : data.friends } }).then(null, error => {
                 return res.status(500).json(error);
