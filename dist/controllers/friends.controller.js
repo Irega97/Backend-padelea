@@ -30,11 +30,16 @@ function getFriends(req, res) {
     });
 }
 function getMyFriends(req, res) {
-    user_1.default.findById(req.user, { friends: 1 }).then((data) => {
-        let status = 200;
+    user_1.default.findById(req.user, { friends: 1 }).populate({ path: 'friends', populate: { path: 'user', select: '_id username image' } }).then((data) => {
         if (data == null)
-            status = 404;
-        return res.status(status).json(data);
+            return res.status(404).json();
+        data.friends.forEach(friend => {
+            if (friend.status != 2) {
+                let i = data.friends.indexOf(friend);
+                data.friends.splice(i, 1);
+            }
+        });
+        return res.status(200).json(data);
     }).catch((err) => {
         return res.status(500).json(err);
     });

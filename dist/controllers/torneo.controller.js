@@ -39,7 +39,7 @@ function getTorneos(req, res) {
 }
 function getMyTorneos(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        user_1.default.findById(req.user, { select: { torneos: 1 } }).populate({ path: 'torneos', populate: '_id' }).then((data) => {
+        user_1.default.findById(req.user, { select: { torneos: 1 } }).populate('torneos').then((data) => {
             if (data == null)
                 return res.status(404).json({ message: "Torneos no encontrados" });
             return res.status(200).json(data);
@@ -58,7 +58,7 @@ function createTorneo(req, res) {
         torneo.save().then((data) => {
             if (data == null)
                 return res.status(500).json({ message: "Error" });
-            user_1.default.updateOne({ "_id": req.user }, { $set: { torneos: torneo === null || torneo === void 0 ? void 0 : torneo._id } }).then(user => {
+            user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: torneo === null || torneo === void 0 ? void 0 : torneo._id } }).then(user => {
                 if (user == null)
                     return res.status(500).json({ message: "Error" });
             }, error => {
@@ -70,14 +70,15 @@ function createTorneo(req, res) {
 }
 function joinTorneo(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        let torneo = yield torneo_1.default.findById(req.params.id);
+        let t = yield torneo_1.default.findById(req.params.id);
         yield user_1.default.findById(req.user, { torneos: 1 }).then(data => {
             console.log(data);
             data === null || data === void 0 ? void 0 : data.torneos.forEach(torneo => {
-                if (torneo._id == torneo._id)
+                if ((t === null || t === void 0 ? void 0 : t._id) == torneo._id)
                     return res.status(400).json({ message: "Ya estas inscrito" });
             });
-            user_1.default.findByIdAndUpdate({ "_id": req.user }, { $set: { torneos: torneo === null || torneo === void 0 ? void 0 : torneo._id } });
+            user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: t === null || t === void 0 ? void 0 : t._id } });
+            torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { players: data === null || data === void 0 ? void 0 : data._id } });
         });
         return res.status(200).json();
     });
