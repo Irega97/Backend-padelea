@@ -78,12 +78,12 @@ const user = new userSchema({
                 ref: 'Torneo'
             }
         }],
-    notifications: [{
-            _id: {
-                type: Object,
-                ref: 'Notification'
-            }
-        }],
+    notifications: [
+        {
+            type: Object,
+            ref: 'Notification'
+        }
+    ],
     chats: [{
             _id: {
                 type: mongoose_1.Schema.Types.ObjectId,

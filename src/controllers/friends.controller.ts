@@ -54,11 +54,15 @@ async function addFriend(req: Request, res: Response) {
                 User.findOneAndUpdate({"_id":myID},{$addToSet: {friends: friend1}}).then(() => {
                     User.findOneAndUpdate({"_id":receptorID},{$addToSet: {friends: friend2}}).then(() => {
                         notController.addNotification("Amigos", receptorID, myID).then(data =>{
-                            if (data == 0){
+                            console.log("data", data);
+                            if (data.nModified == 1){
                                 return res.status(200).json({message: "Amigo añadido correctamente"});
                             }
-                            else{
+                            else if (data.nModified == 0){
                                 return res.status(200).json({message: "Error al guardar la notificacion"});
+                            }
+                            else{
+                                return res.status(500).json(data);
                             }
                         })
                     });

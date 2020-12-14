@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_1 = __importDefault(require("../models/user"));
-function getNotificationsMyUser(req, res) {
+function getMyNotifications(req, res) {
     user_1.default.findById(req.user, { notifications: 1 }).then((data) => {
         let status = 200;
         if (data == null)
@@ -31,11 +31,7 @@ function addNotification(type, destino, origen) {
             status: 0,
             origen: origen
         };
-        console.log("Notificacion", newNotification);
-        yield user_1.default.findOneAndUpdate({ "_id": destino }, { $addToSet: { notifications: newNotification } }).then(data => {
-            return 0;
-        });
-        return -1;
+        return user_1.default.updateOne({ "_id": destino }, { $addToSet: { notifications: newNotification } });
     });
 }
-exports.default = { getNotificationsMyUser, addNotification };
+exports.default = { getMyNotifications, addNotification };

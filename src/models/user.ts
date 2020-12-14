@@ -1,10 +1,7 @@
 /* nombre, descripcion, url, responsable */
 import mongoose, { Schema, Document} from 'mongoose';
-<<<<<<< HEAD
 import { INotification } from './notification';
-=======
 import { IChat} from './chat';
->>>>>>> 645675b45aa03e8c1ba6c3a606019d856d10d72a
 
 //Modelo de objeto que se guarda en la BBDD de MongoDB
 let userSchema = mongoose.Schema;
@@ -63,12 +60,12 @@ const user = new userSchema({
             ref: 'Torneo'
         }
     }],
-    notifications: [{
-        _id: {
+    notifications: [
+        {
             type: Object,
             ref: 'Notification'
         }
-    }],
+    ],
 
     chats: [{
         _id: {
