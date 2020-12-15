@@ -73,7 +73,7 @@ const user = new userSchema({
             }
         }],
     torneos: [{
-            _id: {
+            torneo: {
                 type: mongoose_1.Schema.Types.ObjectId,
                 ref: 'Torneo'
             }
@@ -85,7 +85,7 @@ const user = new userSchema({
         }
     ],
     chats: [{
-            _id: {
+            chat: {
                 type: mongoose_1.Schema.Types.ObjectId,
                 ref: 'Chat'
             }

@@ -55,7 +55,7 @@ function getTorneos(req, res) {
 }
 function getMyTorneos(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        user_1.default.findById(req.user, { select: { torneos: 1 } }).populate('torneos').then((data) => {
+        user_1.default.findById(req.user, { select: { torneos: 1 } }).populate({ path: 'torneos', populate: { path: 'torneo', select: 'name' } }).then((data) => {
             if (data == null)
                 return res.status(404).json({ message: "Torneos no encontrados" });
             return res.status(200).json(data);
@@ -74,7 +74,7 @@ function createTorneo(req, res) {
         torneo.save().then((data) => {
             if (data == null)
                 return res.status(500).json({ message: "Error" });
-            user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: torneo } }).then(user => {
+            user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: { torneo: torneo } } }).then(user => {
                 if (user == null)
                     return res.status(500).json({ message: "Error" });
             }, error => {
@@ -90,7 +90,7 @@ function joinTorneo(req, res) {
             let t = yield torneo_1.default.findById(req.params.id);
             yield user_1.default.findById(req.user).then(data => {
                 console.log("eo", data);
-                user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: t } }).then(user => {
+                user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: { torneo: t } } }).then(user => {
                     console.log("user: ", user);
                     if (user.nModified == 1) {
                         torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { players: { user: data === null || data === void 0 ? void 0 : data.id } } }).then(torneo => {

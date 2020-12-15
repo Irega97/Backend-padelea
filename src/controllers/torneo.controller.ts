@@ -36,7 +36,8 @@ async function getTorneos(req: Request, res: Response){
 }
 
 async function getMyTorneos(req: Request, res: Response){
-    User.findById(req.user, {select: {torneos: 1}}).populate('torneos').then((data) => {
+    User.findById(req.user, {select: {torneos: 1}}).populate({path: 'torneos', populate:
+                    {path:'torneo', select: 'name'}}).then((data) => {
         if(data==null) return res.status(404).json({message: "Torneos no encontrados"});
         return res.status(200).json(data);
     });
@@ -52,7 +53,7 @@ async function createTorneo(req: Request, res: Response){
     })
     torneo.save().then((data) => {
         if (data == null) return res.status(500).json({message: "Error"})
-        User.updateOne({"_id": req.user}, {$addToSet: {torneos : torneo}}).then(user => {
+        User.updateOne({"_id": req.user}, {$addToSet: {torneos : {torneo: torneo}}}).then(user => {
             if (user == null) return res.status(500).json({message: "Error"});
         }, error =>{
             return res.status(500).json(error);
@@ -66,7 +67,7 @@ async function joinTorneo(req: Request, res: Response){
         let t = await Torneo.findById(req.params.id);
         await User.findById(req.user).then(data => {
             console.log("eo", data);
-            User.updateOne({"_id": req.user}, {$addToSet: {torneos: t}}).then(user => {
+            User.updateOne({"_id": req.user}, {$addToSet: {torneos: {torneo: t}}}).then(user => {
                 console.log("user: ", user);
                 if(user.nModified == 1){
                     Torneo.updateOne({"_id": t?._id},{$addToSet: {players: {user: data?.id}}}).then(torneo => {
