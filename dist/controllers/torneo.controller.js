@@ -17,10 +17,26 @@ const user_1 = __importDefault(require("../models/user"));
 function getTorneo(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const torneoID = req.params.id;
+        const userID = req.user;
+        let joined = false;
+        let isAdmin = false;
         torneo_1.default.findById(torneoID).populate({ path: 'players admin', populate: { path: 'user', select: 'name username image' } }).then((data) => {
             if (data == null)
                 return res.status(404).json({ message: 'Torneo not found' });
-            return res.status(200).json(data);
+            data.admin.forEach((admin) => {
+                if (admin.user._id == userID)
+                    isAdmin = true;
+            });
+            data.players.forEach((player) => {
+                if (player.user._id == userID)
+                    joined = true;
+            });
+            let dataToSend = {
+                torneo: data,
+                isAdmin: isAdmin,
+                joined: joined
+            };
+            return res.status(200).json(dataToSend);
         }, (error) => {
             return res.status(500).json(error);
         });
@@ -77,7 +93,7 @@ function joinTorneo(req, res) {
                 user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: t } }).then(user => {
                     console.log("user: ", user);
                     if (user.nModified == 1) {
-                        torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { players: { user: data } } }).then(torneo => {
+                        torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { players: { user: data === null || data === void 0 ? void 0 : data.id } } }).then(torneo => {
                             console.log("torneo: ", torneo);
                             if (torneo.nModified == 1)
                                 return res.status(200).json(torneo);

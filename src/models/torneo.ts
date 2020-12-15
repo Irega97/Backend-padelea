@@ -29,7 +29,7 @@ const torneo = new torneoSchema({
 export interface ITorneo extends Document {
     /* _id: string; */
     name: string;
-    admin: Array<IUser>
+    admin: Array<any>
     players: Array<any>
     torneoToJson(): JSON;
 }

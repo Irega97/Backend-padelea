@@ -4,9 +4,23 @@ import User from "../models/user";
 
 async function getTorneo(req: Request, res: Response){
     const torneoID = req.params.id;
+    const userID = req.user;
+    let joined = false;
+    let isAdmin = false;
     Torneo.findById(torneoID).populate({path: 'players admin', populate:{path:'user', select: 'name username image'}}).then((data) => {
         if (data==null) return res.status(404).json({message: 'Torneo not found'});
-        return res.status(200).json(data);
+        data.admin.forEach((admin)=>{
+            if(admin.user._id == userID) isAdmin = true;
+        })
+        data.players.forEach((player) => {
+            if(player.user._id == userID) joined = true;
+        });
+        let dataToSend = {
+            torneo: data,
+            isAdmin: isAdmin,
+            joined: joined
+        }
+        return res.status(200).json(dataToSend);
     }, (error) => {
         return res.status(500).json(error);
     })
@@ -55,7 +69,7 @@ async function joinTorneo(req: Request, res: Response){
             User.updateOne({"_id": req.user}, {$addToSet: {torneos: t}}).then(user => {
                 console.log("user: ", user);
                 if(user.nModified == 1){
-                    Torneo.updateOne({"_id": t?._id},{$addToSet: {players: {user: data}}}).then(torneo => {
+                    Torneo.updateOne({"_id": t?._id},{$addToSet: {players: {user: data?.id}}}).then(torneo => {
                         console.log("torneo: ", torneo);
                         if(torneo.nModified == 1) return res.status(200).json(torneo);
                         else return res.status(400).json({message: "Ya estás inscrito"});
