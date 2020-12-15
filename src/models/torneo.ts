@@ -12,13 +12,13 @@ const torneo = new torneoSchema({
         type: String
     },
     admin: [{
-        _id: {
+        user: {
             type: Schema.Types.ObjectId,
             ref: 'User'
         }
     }],
     players: [{
-        _id: {
+        user: {
             type: Schema.Types.ObjectId,
             ref: 'User'
         }

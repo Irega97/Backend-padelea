@@ -17,7 +17,7 @@ const user_1 = __importDefault(require("../models/user"));
 function getTorneo(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const torneoID = req.params.id;
-        torneo_1.default.findById(torneoID).populate({ path: 'admin players', select: 'name username image' }).then((data) => {
+        torneo_1.default.findById(torneoID).populate({ path: 'players admin', populate: { path: 'user', select: 'name username image' } }).then((data) => {
             if (data == null)
                 return res.status(404).json({ message: 'Torneo not found' });
             return res.status(200).json(data);
@@ -52,8 +52,8 @@ function createTorneo(req, res) {
         let admin = req.user;
         let torneo = new torneo_1.default({
             name: name,
-            admin: [{ _id: admin }],
-            players: [{ _id: admin }]
+            admin: [{ user: admin }],
+            players: [{ user: admin }]
         });
         torneo.save().then((data) => {
             if (data == null)
@@ -77,7 +77,7 @@ function joinTorneo(req, res) {
                 user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: t } }).then(user => {
                     console.log("user: ", user);
                     if (user.nModified == 1) {
-                        torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { players: data } }).then(torneo => {
+                        torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { players: { user: data } } }).then(torneo => {
                             console.log("torneo: ", torneo);
                             if (torneo.nModified == 1)
                                 return res.status(200).json(torneo);
