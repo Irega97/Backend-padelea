@@ -4,17 +4,17 @@ import { IMensaje} from './mensaje';
 
 let chatSchema = mongoose.Schema;
 const chat = new chatSchema({
-    /* _id: {
+    /*_id: {
         type: Schema.Types.ObjectId    
-    }, */
+    },*/
     users: [{
-        _id: {
+        user: {
             type: Schema.Types.ObjectId,
             ref: 'User'
         }
     }],
     mensajes: [{
-        _id: {
+        mensaje: {
             type: Schema.Types.ObjectId,
             ref: 'Mensaje'
         }
@@ -22,7 +22,7 @@ const chat = new chatSchema({
 });
 
 export interface IChat extends Document {
-    /* _id: string; */
+    /*_id: string;*/
     users: Array<IUser>
     mensajes: Array<IMensaje>
     chatToJson(): JSON;
@@ -35,5 +35,4 @@ chat.methods.chatToJSON = function(){
     };
 }
 
-//Exportamos modelo para poder usarlo
 export default mongoose.model<IChat>('Chat', chat);
