@@ -76,6 +76,9 @@ const user = new userSchema({
             torneo: {
                 type: mongoose_1.Schema.Types.ObjectId,
                 ref: 'Torneo'
+            },
+            statistics: {
+                type: String
             }
         }],
     notifications: [

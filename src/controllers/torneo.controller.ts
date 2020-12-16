@@ -43,6 +43,18 @@ async function getMyTorneos(req: Request, res: Response){
     });
 }
 
+/*  name: this.name,
+    description: this.description,
+    rondas: this.rondas,
+    duracionRondas: this.duracionRondas,
+    ubicacion: this.ubicacion,
+    reglamento: this.reglamento,
+    admin : this.admin,
+    players : this.players,
+    cola: this.cola,
+    previa: this.previa,
+    grupos: this.grupos */
+
 async function createTorneo(req: Request, res: Response){
     let name = req.body.name;
     let admin = req.user;

@@ -24,10 +24,30 @@ const mongoose_1 = __importStar(require("mongoose"));
 //Modelo de objeto que se guarda en la BBDD de MongoDB
 let torneoSchema = mongoose_1.default.Schema;
 const torneo = new torneoSchema({
-    /* _id: {
-        type: Schema.Types.ObjectId
-    }, */
     name: {
+        type: String
+    },
+    type: {
+        type: String
+    },
+    description: {
+        type: String
+    },
+    fechaInicio: {
+        type: Date
+    },
+    inscripcion: {
+        duracion: {
+            type: Date
+        },
+        isOpen: {
+            type: Boolean
+        }
+    },
+    ubicacion: {
+        type: String
+    },
+    reglamento: {
         type: String
     },
     admin: [{
@@ -41,13 +61,63 @@ const torneo = new torneoSchema({
                 type: mongoose_1.Schema.Types.ObjectId,
                 ref: 'User'
             }
+        }],
+    cola: [{
+            user: {
+                type: mongoose_1.Schema.Types.ObjectId,
+                ref: 'User'
+            }
+        }],
+    rondas: [{
+            numero: {
+                type: Number
+            },
+            fechaFin: {
+                type: Date
+            }
+        }],
+    previa: [{
+            groupName: {
+                type: String
+            },
+            classification: [{
+                    member: {
+                        type: mongoose_1.Schema.Types.ObjectId,
+                        ref: 'User'
+                    },
+                    position: {
+                        type: Number
+                    }
+                }]
+        }],
+    grupos: [{
+            groupName: {
+                type: String
+            },
+            classification: [{
+                    member: {
+                        type: mongoose_1.Schema.Types.ObjectId,
+                        ref: 'User'
+                    },
+                    position: {
+                        type: Number
+                    }
+                }]
         }]
 });
 torneo.methods.torneoToJSON = function () {
     return {
         name: this.name,
+        description: this.description,
+        rondas: this.rondas,
+        duracionRondas: this.duracionRondas,
+        ubicacion: this.ubicacion,
+        reglamento: this.reglamento,
         admin: this.admin,
-        players: this.players
+        players: this.players,
+        cola: this.cola,
+        previa: this.previa,
+        grupos: this.grupos
     };
 };
 //Exportamos modelo para poder usarlo

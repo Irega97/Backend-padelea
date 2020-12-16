@@ -59,6 +59,9 @@ const user = new userSchema({
         torneo: {
             type: Schema.Types.ObjectId,
             ref: 'Torneo'
+        },
+        statistics: {
+            type: String
         }
     }],
     notifications: [
@@ -67,7 +70,6 @@ const user = new userSchema({
             ref: 'Notification'
         }
     ],
-
     chats: [{
         chat: {
             type: Schema.Types.ObjectId,

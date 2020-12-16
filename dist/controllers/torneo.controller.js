@@ -62,6 +62,17 @@ function getMyTorneos(req, res) {
         });
     });
 }
+/*  name: this.name,
+    description: this.description,
+    rondas: this.rondas,
+    duracionRondas: this.duracionRondas,
+    ubicacion: this.ubicacion,
+    reglamento: this.reglamento,
+    admin : this.admin,
+    players : this.players,
+    cola: this.cola,
+    previa: this.previa,
+    grupos: this.grupos */
 function createTorneo(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         let name = req.body.name;
