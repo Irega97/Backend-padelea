@@ -11,6 +11,7 @@ import authRoutes from './routes/auth.routes';
 import friendsRoutes from './routes/friends.routes';
 import torneoRoutes from './routes/torneo.routes';
 import notificationsRoutes from './routes/notifications.routes';
+import chatRoutes from './routes/chat.routes';
 
 //Importamos middlewares
 import passport from 'passport';
@@ -37,7 +38,8 @@ app.use('/user', userRoutes);
 app.use('/auth', authRoutes);
 app.use('/friends', friendsRoutes);
 app.use('/torneo', torneoRoutes);
-app.use('/notifications', notificationsRoutes)
+app.use('/notifications', notificationsRoutes);
+app.use('/chat', chatRoutes)
 
 console.log("PREGUNTAR A CRISTIAN X EL COMPONENT DE IONIC: COMO HACER QUE REDIRIJA AL PULSAR OK CUANDO CADUCA LA SESION (interceptor)")
 
