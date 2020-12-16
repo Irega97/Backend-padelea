@@ -22,17 +22,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 let chatSchema = mongoose_1.default.Schema;
 const chat = new chatSchema({
-    /* _id: {
+    /*_id: {
         type: Schema.Types.ObjectId
-    }, */
+    },*/
     users: [{
-            _id: {
+            user: {
                 type: mongoose_1.Schema.Types.ObjectId,
                 ref: 'User'
             }
         }],
     mensajes: [{
-            _id: {
+            mensaje: {
                 type: mongoose_1.Schema.Types.ObjectId,
                 ref: 'Mensaje'
             }
@@ -44,5 +44,4 @@ chat.methods.chatToJSON = function () {
         mensajes: this.mensajes
     };
 };
-//Exportamos modelo para poder usarlo
 exports.default = mongoose_1.default.model('Chat', chat);
