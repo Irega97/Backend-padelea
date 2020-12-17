@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import User from "../models/user";
 import notController from "./notifications.controller";
 
+
 function getFriends(req:Request, res:Response): void {
     User.findById(req.params.id, {friends : 1}).populate({path: 'friends', populate: 
     {path: 'user', select: 'username image'}}).then((data)=>{ 

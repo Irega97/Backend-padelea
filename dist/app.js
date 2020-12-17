@@ -15,6 +15,7 @@ const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const friends_routes_1 = __importDefault(require("./routes/friends.routes"));
 const torneo_routes_1 = __importDefault(require("./routes/torneo.routes"));
 const notifications_routes_1 = __importDefault(require("./routes/notifications.routes"));
+const chat_routes_1 = __importDefault(require("./routes/chat.routes"));
 //Importamos middlewares
 const passport_1 = __importDefault(require("passport"));
 const passport_2 = __importDefault(require("./middlewares/passport"));
@@ -37,5 +38,6 @@ app.use('/auth', auth_routes_1.default);
 app.use('/friends', friends_routes_1.default);
 app.use('/torneo', torneo_routes_1.default);
 app.use('/notifications', notifications_routes_1.default);
+app.use('/chat', chat_routes_1.default);
 //Exportamos fichero como 'app'
 exports.default = app;

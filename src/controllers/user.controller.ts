@@ -28,6 +28,7 @@ async function getUser(req:Request, res:Response) { //Usuari, Correo, Foto, Onli
             }
         });
         let dataToSend = {
+            _id: req.user,
             username: data.username,
             image: data.image,
             email: data.email,

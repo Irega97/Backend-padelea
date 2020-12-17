@@ -5,20 +5,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const { io } = require('../index');
 const auth_controller_1 = __importDefault(require("../controllers/auth.controller"));
-let chatId;
 // Mensajes de Sockets
 io.on('connection', (socket) => {
-    /*function sendNotificacion(id: String, notification: any){
-      io.to(id).emit('newNotification', notification)
-    }
-  
-    export default { sendNotificacion };*/
     socket.on('nuevoConectado', (user) => {
         socket.username = user.username;
         socket.id = user.id;
         auth_controller_1.default.setOnlineStatus(socket.id, true);
-        socket.join(socket.id);
+        socket.join('prueba');
+        io.to('prueba').emit('nuevaNotificacion');
         console.log("El nuevo usuario es " + socket.username);
+    });
+    socket.on('nuevaNotificacion', (notification) => {
+        console.log("Notificacion recibida", notification);
+        io.emit('nuevaNotificacion', { "notificacion": notification });
     });
     socket.on('disconnect', function () {
         auth_controller_1.default.setOnlineStatus(socket.id, false);
@@ -27,14 +26,14 @@ io.on('connection', (socket) => {
     });
     socket.on('nuevaSala', (chatid) => {
         socket.join(chatid);
-        chatId = chatid;
+        //chatId = chatid;
         console.log("Sala " + chatid + " creada");
     });
     /*socket.on('set-name', (name: any) => {
       socket.username = name;
       io.emit('users-changed', {user: name, event: 'joined'});
     });*/
-    socket.on('send-message', (message) => {
-        socket.to(chatId).emit('message', { msg: message.text, user: socket.username, createdAt: new Date() });
-    });
+    /*socket.on('send-message', (message: any) => {
+      socket.to(chatId).emit('message', {msg: message.text, user: socket.username, createdAt: new Date()});
+    });*/
 });

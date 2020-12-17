@@ -42,6 +42,7 @@ function getUser(req, res) {
                 }
             });
             let dataToSend = {
+                _id: req.user,
                 username: data.username,
                 image: data.image,
                 email: data.email,
