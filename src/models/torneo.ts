@@ -16,13 +16,8 @@ const torneo = new torneoSchema({
     fechaInicio: {
         type: Date
     },
-    inscripcion: {
-        duracion: {
-            type: Date
-        },
-        isOpen: {
-            type: Boolean
-        }
+    finInscripcion: {
+        type: Date
     },
     ubicacion: {
         type: String
@@ -30,23 +25,23 @@ const torneo = new torneoSchema({
     reglamento: { // FOTO
         type: String
     },
+    numRondas: {
+        type: Number
+    },
     admin: [{
-        user: {
-            type: Schema.Types.ObjectId,
-            ref: 'User'
-        }
+        type: Schema.Types.ObjectId,
+        ref: 'User'
     }],
+    maxPlayers: {
+        type: Number
+    },
     players: [{
-        user: {
-            type: Schema.Types.ObjectId,
-            ref: 'User'
-        }
+        type: Schema.Types.ObjectId,
+        ref: 'User'
     }],
     cola: [{
-        user: {
-            type: Schema.Types.ObjectId,
-            ref: 'User'
-        }
+        type: Schema.Types.ObjectId,
+        ref: 'User'
     }],
     rondas: [{
         numero: {
@@ -90,14 +85,18 @@ const torneo = new torneoSchema({
 export interface ITorneo extends Document {
     /* _id: string; */
     name: string;
+    type: string;
     description: string;
-    rondas: number;
-    duracionRondas: number;
+    fechaInicio: Date;
+    finInscripcion: Date;
     ubicacion: string;
     reglamento: string;
+    numRondas: number;
     admin: Array<any>;
+    maxPlayers: number;
     players: Array<any>;
     cola: Array<any>;
+    rondas: Array<any>;
     previa: Array<any>;
     grupos: Array<any>;
     torneoToJson(): JSON;
@@ -106,14 +105,18 @@ export interface ITorneo extends Document {
 torneo.methods.torneoToJSON = function(){
     return {
         name: this.name,
+        type: this.type,
         description: this.description,
-        rondas: this.rondas,
-        duracionRondas: this.duracionRondas,
+        fechaInicio: this.fechaInicio,
+        finInscripcion: this.finInscripcion,
         ubicacion: this.ubicacion,
         reglamento: this.reglamento,
+        numRondas: this.numRondas,
         admin : this.admin,
+        maxPlayers: this.maxPlayers,
         players : this.players,
         cola: this.cola,
+        rondas: this.rondas,
         previa: this.previa,
         grupos: this.grupos
     };

@@ -36,13 +36,8 @@ const torneo = new torneoSchema({
     fechaInicio: {
         type: Date
     },
-    inscripcion: {
-        duracion: {
-            type: Date
-        },
-        isOpen: {
-            type: Boolean
-        }
+    finInscripcion: {
+        type: Date
     },
     ubicacion: {
         type: String
@@ -50,23 +45,23 @@ const torneo = new torneoSchema({
     reglamento: {
         type: String
     },
+    numRondas: {
+        type: Number
+    },
     admin: [{
-            user: {
-                type: mongoose_1.Schema.Types.ObjectId,
-                ref: 'User'
-            }
+            type: mongoose_1.Schema.Types.ObjectId,
+            ref: 'User'
         }],
+    maxPlayers: {
+        type: Number
+    },
     players: [{
-            user: {
-                type: mongoose_1.Schema.Types.ObjectId,
-                ref: 'User'
-            }
+            type: mongoose_1.Schema.Types.ObjectId,
+            ref: 'User'
         }],
     cola: [{
-            user: {
-                type: mongoose_1.Schema.Types.ObjectId,
-                ref: 'User'
-            }
+            type: mongoose_1.Schema.Types.ObjectId,
+            ref: 'User'
         }],
     rondas: [{
             numero: {
@@ -108,14 +103,18 @@ const torneo = new torneoSchema({
 torneo.methods.torneoToJSON = function () {
     return {
         name: this.name,
+        type: this.type,
         description: this.description,
-        rondas: this.rondas,
-        duracionRondas: this.duracionRondas,
+        fechaInicio: this.fechaInicio,
+        finInscripcion: this.finInscripcion,
         ubicacion: this.ubicacion,
         reglamento: this.reglamento,
+        numRondas: this.numRondas,
         admin: this.admin,
+        maxPlayers: this.maxPlayers,
         players: this.players,
         cola: this.cola,
+        rondas: this.rondas,
         previa: this.previa,
         grupos: this.grupos
     };
