@@ -8,10 +8,8 @@ const chat = new chatSchema({
         type: Schema.Types.ObjectId    
     },*/
     users: [{
-        user: {
-            type: Schema.Types.ObjectId,
-            ref: 'User'
-        }
+        type: Schema.Types.ObjectId,
+        ref: 'User'
     }],
     mensajes: [{
         mensaje: {
