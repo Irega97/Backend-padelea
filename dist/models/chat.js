@@ -26,10 +26,8 @@ const chat = new chatSchema({
         type: Schema.Types.ObjectId
     },*/
     users: [{
-            user: {
-                type: mongoose_1.Schema.Types.ObjectId,
-                ref: 'User'
-            }
+            type: mongoose_1.Schema.Types.ObjectId,
+            ref: 'User'
         }],
     mensajes: [{
             mensaje: {
