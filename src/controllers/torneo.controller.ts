@@ -7,6 +7,7 @@ async function getTorneo(req: Request, res: Response){
     const userID = req.user;
     let joined = false;
     let isAdmin = false;
+    let inscription = false;
     Torneo.findById(torneoID).populate({path: 'players admin', select: 'name username image'}).then((data) => {
         if (data==null) return res.status(404).json({message: 'Torneo not found'});
         data.admin.forEach((admin)=>{
@@ -15,10 +16,12 @@ async function getTorneo(req: Request, res: Response){
         data.players.forEach((player) => {
             if(player._id == userID) joined = true;
         });
+        if(data.finInscripcion.valueOf() - Date.now() > 0) inscription = true;
         let dataToSend = {
             torneo: data,
             isAdmin: isAdmin,
-            joined: joined
+            joined: joined,
+            inscription: inscription
         }
         return res.status(200).json(dataToSend);
     }, (error) => {

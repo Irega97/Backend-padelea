@@ -38,7 +38,6 @@ const user = new userSchema({
     },
     username: {
         type: String,
-        //DEJAR ESTO COMENTADO HASTA QUE NO IMPLEMENTEMOS QUE EL USER PONGA USERNAME SI SE REGISTRA CON OAUTH
         unique: true
     },
     image: {

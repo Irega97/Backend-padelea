@@ -20,6 +20,7 @@ function getTorneo(req, res) {
         const userID = req.user;
         let joined = false;
         let isAdmin = false;
+        let inscription = false;
         torneo_1.default.findById(torneoID).populate({ path: 'players admin', select: 'name username image' }).then((data) => {
             if (data == null)
                 return res.status(404).json({ message: 'Torneo not found' });
@@ -31,10 +32,13 @@ function getTorneo(req, res) {
                 if (player._id == userID)
                     joined = true;
             });
+            if (data.finInscripcion.valueOf() - Date.now() > 0)
+                inscription = true;
             let dataToSend = {
                 torneo: data,
                 isAdmin: isAdmin,
-                joined: joined
+                joined: joined,
+                inscription: inscription
             };
             return res.status(200).json(dataToSend);
         }, (error) => {
