@@ -113,7 +113,7 @@ function checkemail(req, res) {
         let email = req.params.email;
         yield user_1.default.findOne({ 'email': email }).then((data) => {
             if (data)
-                return res.status(200).json({ value: true });
+                return res.status(200).json({ value: true, provider: data.provider });
             else
                 return res.status(200).json({ value: false });
         });
