@@ -59,7 +59,8 @@ const user = new userSchema({
             ref: 'Torneo'
         },
         statistics: {
-            type: String
+            type: Schema.Types.ObjectId,
+            ref: 'Statistics'
         },
         status: {
             type: Number

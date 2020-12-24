@@ -43,20 +43,6 @@ async function getMyTorneos(req: Request, res: Response){
     });
 }
 
-/*  name;
-    type;
-    description;
-    fechaInicio;
-    finInscripcion;
-    ubicacion;
-    reglamento;
-    admin: user;
-    players: user;
-    cola: user;
-    rondas: numero, fechaFin;
-    previa: groupName, classification (member, position);
-    grupos: groupName, classification (member, position); */
-
 async function createTorneo(req: Request, res: Response){
     console.log("body torneo: ", req.body);
     let name = req.body.name;
@@ -87,18 +73,23 @@ async function createTorneo(req: Request, res: Response){
         maxPlayers: maxPlayers,
         players: [user]
     });
-    if(participa!=true){
+    if(participa==false){
         torneo.players = [];
     }
     console.log("torneo: ", torneo);
     torneo.save().then((data) => {
-        User.updateOne({"_id": req.user}, {$addToSet: {torneos : {torneo: torneo}}}).then(user => {
-            if (user == null) return res.status(404).json({message: "User not found"});
-        }, (error) =>{
-            console.log(error);
-            return res.status(500).json({message: "Internal Server Error"});
-        });
+        if(participa == true){
+            User.updateOne({"_id": req.user}, {$addToSet: {torneos : {torneo: data.id, statistics: null, status: 1}}}).then(user => {
+                if (user == null) return res.status(404).json({message: "User not found"});
+            }, (error) =>{
+                console.log(error);
+                return res.status(500).json({message: "Internal Server Error"});
+            });
+        }
         return res.status(201).json(data);
+    }, (error) =>{
+        console.log(error);
+        return res.status(500).json({message: "Internal Server Error"});
     });
 }
 
@@ -119,7 +110,7 @@ async function joinTorneo(req: Request, res: Response){
                         if(torneo.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
                         t = torneo;
                     });
-                    await User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: t._id, status: 1}]}}).then(user => {
+                    await User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: t._id, statistics: null, status: 1}]}}).then(user => {
                         if(user.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
                     });
                     return res.status(200).json(t);
@@ -128,7 +119,7 @@ async function joinTorneo(req: Request, res: Response){
                         if(torneo.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
                         t = torneo;
                     });
-                    await User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: t._id, status: 0}]}}).then(user => {
+                    await User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: t._id, statistics: null, status: 0}]}}).then(user => {
                         if(user.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
                     });
                     return res.status(200).json(t);
