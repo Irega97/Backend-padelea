@@ -41,7 +41,7 @@ async function getUser(req:Request, res:Response) { //Usuari, Correo, Foto, Onli
 }
 
 function getMyUser(req:Request, res:Response): void {
-    User.findById(req.user, {username: 1, name: 1, image: 1, email: 1, firstName: 1, lastName: 1, provider: 1}).then((data)=>{
+    User.findById(req.user, {username: 1, name: 1, image: 1, email: 1, firstName: 1, lastName: 1, provider: 1, private: 1}).then((data)=>{
         let status: number = 200;
         if(data==null) status = 404;
         return res.status(status).json(data);
@@ -66,7 +66,7 @@ async function updateUser (req: Request, res: Response){
         const email: string = req.body.email;
         if (req.body.password == ""){
             await User.update({"_id": id}, {$set: {"name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email, 
-                                "image": req.body.image, "public": req.body.public}}).then((data) => {
+                                "image": req.body.image, "private": req.body.private}}).then((data) => {
             res.status(201).json(data);
         }).catch((err) => {
             res.status(500).json(err);
@@ -74,7 +74,7 @@ async function updateUser (req: Request, res: Response){
         }
         else{
             await User.update({"_id": id}, {$set: {"name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email, 
-            "image": req.body.image, "password": req.body.password, "public": req.body.public}}).then((data) => {
+            "image": req.body.image, "password": req.body.password, "private": req.body.private}}).then((data) => {
             res.status(201).json(data);
             }).catch((err) => {
             res.status(500).json(err);
@@ -91,18 +91,4 @@ function deleteUser (req:Request,res:Response){
     })
 }
 
-function changeUsername (req:Request, res:Response){
-    const userID = req.user;
-    const newUsername = req.params.username;
-    User.findById({"_id": userID}).then((data:any) => {
-            User.update({"_id": userID}, {$set: {"name": data?.name, "username": newUsername, "image": data?.image, "email": data?.email, 
-                        "password": data?.password, "provider": data?.provider, "friends": data?.friends, "online": data?.online, "public": data?.public}})
-            .then((data: any) => {
-                return res.status(201).json(data);
-            }).catch((err: any) => {
-                return res.status(500).json(err);
-            })
-    });
-}
-
-export default { getUsers, getUser, updateUser, deleteUser, changeUsername, getMyUser };
+export default { getUsers, getUser, updateUser, deleteUser, getMyUser };

@@ -57,7 +57,7 @@ const user = new userSchema({
     online: {
         type: Boolean
     },
-    public: {
+    private: {
         type: Boolean
     },
     friends: [{
@@ -113,7 +113,7 @@ user.methods.userToJSON = function () {
         friends: this.friends,
         notifications: this.notifications,
         online: this.online,
-        public: this.public,
+        private: this.private,
         chat: this.chats
     };
 };

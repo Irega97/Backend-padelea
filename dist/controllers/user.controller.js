@@ -55,7 +55,7 @@ function getUser(req, res) {
     });
 }
 function getMyUser(req, res) {
-    user_1.default.findById(req.user, { username: 1, name: 1, image: 1, email: 1, firstName: 1, lastName: 1, provider: 1 }).then((data) => {
+    user_1.default.findById(req.user, { username: 1, name: 1, image: 1, email: 1, firstName: 1, lastName: 1, provider: 1, private: 1 }).then((data) => {
         let status = 200;
         if (data == null)
             status = 404;
@@ -81,7 +81,7 @@ function updateUser(req, res) {
             const email = req.body.email;
             if (req.body.password == "") {
                 yield user_1.default.update({ "_id": id }, { $set: { "name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email,
-                        "image": req.body.image, "public": req.body.public } }).then((data) => {
+                        "image": req.body.image, "private": req.body.private } }).then((data) => {
                     res.status(201).json(data);
                 }).catch((err) => {
                     res.status(500).json(err);
@@ -89,7 +89,7 @@ function updateUser(req, res) {
             }
             else {
                 yield user_1.default.update({ "_id": id }, { $set: { "name": name, "firstName": firstName, "lastName": lastName, "username": username, "email": email,
-                        "image": req.body.image, "password": req.body.password, "public": req.body.public } }).then((data) => {
+                        "image": req.body.image, "password": req.body.password, "private": req.body.private } }).then((data) => {
                     res.status(201).json(data);
                 }).catch((err) => {
                     res.status(500).json(err);
@@ -105,17 +105,4 @@ function deleteUser(req, res) {
         res.status(500).json(err);
     });
 }
-function changeUsername(req, res) {
-    const userID = req.user;
-    const newUsername = req.params.username;
-    user_1.default.findById({ "_id": userID }).then((data) => {
-        user_1.default.update({ "_id": userID }, { $set: { "name": data === null || data === void 0 ? void 0 : data.name, "username": newUsername, "image": data === null || data === void 0 ? void 0 : data.image, "email": data === null || data === void 0 ? void 0 : data.email,
-                "password": data === null || data === void 0 ? void 0 : data.password, "provider": data === null || data === void 0 ? void 0 : data.provider, "friends": data === null || data === void 0 ? void 0 : data.friends, "online": data === null || data === void 0 ? void 0 : data.online, "public": data === null || data === void 0 ? void 0 : data.public } })
-            .then((data) => {
-            return res.status(201).json(data);
-        }).catch((err) => {
-            return res.status(500).json(err);
-        });
-    });
-}
-exports.default = { getUsers, getUser, updateUser, deleteUser, changeUsername, getMyUser };
+exports.default = { getUsers, getUser, updateUser, deleteUser, getMyUser };

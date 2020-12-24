@@ -54,10 +54,9 @@ async function register(req:Request, res:Response) {
             "password": user.password,
             "provider": user.provider,
             "online": false,
-            "public": user.public
+            "private": user.private
         });
         u.save().then((data) => {
-            console.log("NEW USER: ", u);
             return res.status(201).json({token: createToken(data)});
         }).catch((err) => {
             return res.status(500).json(err);

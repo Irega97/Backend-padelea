@@ -15,6 +15,5 @@ router.get('/:id', passport_1.default.authenticate("jwt", { session: false }), u
 router.post('/me', passport_1.default.authenticate("jwt", { session: false }), user_controller_1.default.updateUser);
 //router.post('/:id', userController.updateUser);
 router.delete('/:id', passport_1.default.authenticate("jwt", { session: false }), user_controller_1.default.deleteUser);
-router.post('/setusername/:username', passport_1.default.authenticate("jwt", { session: false }), user_controller_1.default.changeUsername);
 //Exportamos router para usar rutas en app.ts
 exports.default = router;
