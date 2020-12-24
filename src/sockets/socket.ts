@@ -6,20 +6,20 @@ io.on('connection', (socket: any) => {
   console.log("conectado");
 
   socket.on('nuevoConectado', (user:any) =>{
-    authController.setOnlineStatus(socket.id, true);
+    authController.setOnlineStatus(user.id, true);
+    socket.username = user.username;
+    socket.id = user.id;
     socket.join(user.id);
     console.log("El nuevo usuario es " + user.username);
   });
 
   socket.on('nuevaNotificacion', (notification:any) => {
-    console.log("Sala destino", notification.destino);
-    console.log("Salas del socket", socket.rooms);
     io.in(notification.destino).emit('nuevaNotificacion', notification);
   })
 
   socket.on('disconnect', function(){
     authController.setOnlineStatus(socket.id, false);
-    console.log("Desconectado el usuario " + socket.username);
+    console.log(socket.username + " se ha desconectado del servidor");
     //io.emit('usuarioDesconectado', {user: socket.username, event: 'left'});  
   });
 
