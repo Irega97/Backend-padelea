@@ -31,9 +31,11 @@ function getUsers(req, res) {
 function getUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         let me = yield user_1.default.findById(req.user, { friends: 1 });
-        user_1.default.findById(req.params.id, { username: 1, image: 1, email: 1, online: 1 }).then((data) => {
+        user_1.default.findById(req.params.id, { username: 1, image: 1, email: 1, online: 1, name: 1 }).then((data) => {
             if (data == null)
                 return res.status(404).json({ message: "User not found" });
+            if (data.id == req.user)
+                return res.status(200).json(data);
             let friendStatus = -1;
             me === null || me === void 0 ? void 0 : me.friends.forEach((item) => {
                 console.log(item);
@@ -46,6 +48,7 @@ function getUser(req, res) {
                 username: data.username,
                 image: data.image,
                 email: data.email,
+                name: data.name,
                 friendStatus: friendStatus
             };
             return res.status(200).json(dataToSend);

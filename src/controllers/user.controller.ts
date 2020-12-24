@@ -18,8 +18,9 @@ function getUsers(req:Request, res:Response): void {
 
 async function getUser(req:Request, res:Response) { //Usuari, Correo, Foto, Online (AMIGOS)
     let me = await User.findById(req.user, {friends: 1});
-    User.findById(req.params.id, {username : 1, image : 1, email : 1, online: 1}).then((data)=>{
+    User.findById(req.params.id, {username : 1, image : 1, email : 1, online: 1, name: 1}).then((data)=>{
         if(data==null) return res.status(404).json({message: "User not found"});
+        if(data.id == req.user) return res.status(200).json(data);
         let friendStatus = -1;
         me?.friends.forEach((item) => {
             console.log(item);
@@ -32,6 +33,7 @@ async function getUser(req:Request, res:Response) { //Usuari, Correo, Foto, Onli
             username: data.username,
             image: data.image,
             email: data.email,
+            name: data.name,
             friendStatus: friendStatus
         }
         return res.status(200).json(dataToSend);
