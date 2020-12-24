@@ -3,12 +3,11 @@ import authController from '../controllers/auth.controller'
 
 // Mensajes de Sockets
 io.on('connection', (socket: any) => {
-  console.log("conectado");
 
   socket.on('nuevoConectado', (user:any) =>{
     authController.setOnlineStatus(user.id, true);
     socket.username = user.username;
-    socket.id = user.id;
+    socket._id = user.id;
     socket.join(user.id);
     console.log("El nuevo usuario es " + user.username);
   });
@@ -18,10 +17,9 @@ io.on('connection', (socket: any) => {
   })
 
   socket.on('disconnect', function(){
-    authController.setOnlineStatus(socket.id, false);
-    console.log(socket);
+    authController.setOnlineStatus(socket._id, false);
     console.log("Desconectado el usuario " + socket.username);
-    io.emit('usuarioDesconectado', {user: socket.username, event: 'left'});  
+    //io.emit('usuarioDesconectado', {user: socket.username, event: 'left'});  
   });
 
   socket.on('nuevaSala', (chatid : any) =>{
