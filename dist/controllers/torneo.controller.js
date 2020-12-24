@@ -20,15 +20,15 @@ function getTorneo(req, res) {
         const userID = req.user;
         let joined = false;
         let isAdmin = false;
-        torneo_1.default.findById(torneoID).populate({ path: 'players admin', populate: { path: 'user', select: 'name username image' } }).then((data) => {
+        torneo_1.default.findById(torneoID).populate({ path: 'players admin', select: 'name username image' }).then((data) => {
             if (data == null)
                 return res.status(404).json({ message: 'Torneo not found' });
             data.admin.forEach((admin) => {
-                if (admin.user._id == userID)
+                if (admin._id == userID)
                     isAdmin = true;
             });
             data.players.forEach((player) => {
-                if (player.user._id == userID)
+                if (player._id == userID)
                     joined = true;
             });
             let dataToSend = {
@@ -77,7 +77,11 @@ function getMyTorneos(req, res) {
     grupos: groupName, classification (member, position); */
 function createTorneo(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
+        console.log("body torneo: ", req.body);
         let name = req.body.name;
+        let checkName = yield torneo_1.default.findOne({ "name": name });
+        if (checkName)
+            return res.status(409).json("Este torneo ya existe");
         let user = req.user;
         let type = req.body.type;
         let description = req.body.description;
@@ -87,6 +91,7 @@ function createTorneo(req, res) {
         let reglamento = req.body.reglamento;
         let numRondas = req.body.numRondas;
         let maxPlayers = req.body.maxPlayers;
+        let participa = req.body.participa;
         let torneo = new torneo_1.default({
             name: name,
             type: type,
@@ -100,15 +105,17 @@ function createTorneo(req, res) {
             maxPlayers: maxPlayers,
             players: [user]
         });
+        if (participa != true) {
+            torneo.players = [];
+        }
         console.log("torneo: ", torneo);
         torneo.save().then((data) => {
-            if (data == null)
-                return res.status(500).json({ message: "Error" });
             user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: { torneo: torneo } } }).then(user => {
                 if (user == null)
-                    return res.status(500).json({ message: "Error" });
-            }, error => {
-                return res.status(500).json(error);
+                    return res.status(404).json({ message: "User not found" });
+            }, (error) => {
+                console.log(error);
+                return res.status(500).json({ message: "Internal Server Error" });
             });
             return res.status(201).json(data);
         });
@@ -117,36 +124,46 @@ function createTorneo(req, res) {
 function joinTorneo(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            console.log("hola");
             let t = yield torneo_1.default.findById(req.params.id);
-            yield user_1.default.findById(req.user).then(data => {
-                user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: { torneo: t } } }).then(user => {
-                    console.log("user: ", user);
-                    if (user.nModified == 1) {
-                        if (t != null) {
-                            if ((t === null || t === void 0 ? void 0 : t.players.length) < (t === null || t === void 0 ? void 0 : t.maxPlayers) || t.finInscripcion.valueOf() < Date.now().valueOf()) {
-                                torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { players: data === null || data === void 0 ? void 0 : data.id } }).then(torneo => {
-                                    console.log("torneo: ", torneo);
-                                    if (torneo.nModified == 1)
-                                        return res.status(200).json(torneo);
-                                    else
-                                        return res.status(400).json({ message: "Ya estás inscrito" });
-                                });
-                            }
-                            else {
-                                torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { cola: data === null || data === void 0 ? void 0 : data.id } }).then(torneo => {
-                                    console.log("torneo: ", torneo);
-                                    if (torneo.nModified == 1)
-                                        return res.status(200).json(torneo);
-                                    else
-                                        return res.status(400).json({ message: "Ya estás inscrito" });
-                                });
-                            }
-                        }
+            let inscriptionsPeriod;
+            user_1.default.findById(req.user).then((data) => __awaiter(this, void 0, void 0, function* () {
+                console.log("user: ", data);
+                console.log("torneo: ", t);
+                if (t != null) {
+                    if (t.finInscripcion.valueOf() - Date.now() > 0) {
+                        inscriptionsPeriod = true;
                     }
                     else
-                        return res.status(400).json({ message: "Ya estás inscrito" });
-                });
-            });
+                        inscriptionsPeriod = false;
+                    if ((t === null || t === void 0 ? void 0 : t.players.length) < (t === null || t === void 0 ? void 0 : t.maxPlayers) && inscriptionsPeriod && t.type == "public") {
+                        yield torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { players: data === null || data === void 0 ? void 0 : data.id } }).then(torneo => {
+                            if (torneo.nModified != 1)
+                                return res.status(400).json({ message: "Ya estás inscrito" });
+                            t = torneo;
+                        });
+                        yield user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: t._id, status: 1 }] } }).then(user => {
+                            if (user.nModified != 1)
+                                return res.status(400).json({ message: "Ya estás inscrito" });
+                        });
+                        return res.status(200).json(t);
+                    }
+                    else {
+                        yield torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { cola: data === null || data === void 0 ? void 0 : data.id } }).then(torneo => {
+                            if (torneo.nModified != 1)
+                                return res.status(400).json({ message: "Ya estás inscrito" });
+                            t = torneo;
+                        });
+                        yield user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: t._id, status: 0 }] } }).then(user => {
+                            if (user.nModified != 1)
+                                return res.status(400).json({ message: "Ya estás inscrito" });
+                        });
+                        return res.status(200).json(t);
+                    }
+                }
+                else
+                    return res.status(404).json({ message: "Torneo not found" });
+            }));
         }
         catch (error) {
             console.log(error);

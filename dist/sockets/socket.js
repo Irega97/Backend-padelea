@@ -20,8 +20,9 @@ io.on('connection', (socket) => {
     });
     socket.on('disconnect', function () {
         auth_controller_1.default.setOnlineStatus(socket.id, false);
+        console.log(socket);
         console.log("Desconectado el usuario " + socket.username);
-        //io.emit('usuarioDesconectado', {user: socket.username, event: 'left'});  
+        io.emit('usuarioDesconectado', { user: socket.username, event: 'left' });
     });
     socket.on('nuevaSala', (chatid) => {
         socket.join(chatid);

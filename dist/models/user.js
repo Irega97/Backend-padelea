@@ -79,6 +79,12 @@ const user = new userSchema({
             },
             statistics: {
                 type: String
+            },
+            status: {
+                type: Number
+                // 0 -> Esta en cola
+                // 1 -> Esta inscrito
+                // 2 -> Torneo finalizado
             }
         }],
     notifications: [

@@ -87,7 +87,6 @@ function register(req, res) {
 function signout(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         let t = decodeToken(req.body.token);
-        console.log("Decoded token: ", t);
         let user = yield user_1.default.findOne({ "_id": t === null || t === void 0 ? void 0 : t.id });
         if (!user)
             return res.status(404).json({ message: "User not found" });

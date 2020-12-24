@@ -12,5 +12,4 @@ router.get('/:id', passport.authenticate("jwt", {session: false}), torneoControl
 router.post('/new', passport.authenticate("jwt", {session: false}), torneoController.createTorneo);
 router.post('/join/:id', passport.authenticate("jwt", {session: false}), torneoController.joinTorneo);
 
-
 export default router;

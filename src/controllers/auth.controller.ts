@@ -67,7 +67,6 @@ async function register(req:Request, res:Response) {
 
 async function signout(req:Request, res:Response){
     let t = decodeToken(req.body.token);
-    console.log("Decoded token: ", t);
     let user = await User.findOne({"_id": t?.id});
     if(!user) return res.status(404).json({message: "User not found"});
     else {
