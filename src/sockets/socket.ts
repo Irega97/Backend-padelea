@@ -14,7 +14,7 @@ io.on('connection', (socket: any) => {
 
   socket.on('nuevaNotificacion', (notification:any) => {
     io.in(notification.destino).emit('nuevaNotificacion', notification);
-  })
+  });
 
   socket.on('disconnect', function(){
     authController.setOnlineStatus(socket._id, false);

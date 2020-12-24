@@ -73,10 +73,9 @@ function register(req, res) {
                 "password": user.password,
                 "provider": user.provider,
                 "online": false,
-                "public": user.public
+                "private": user.private
             });
             u.save().then((data) => {
-                console.log("NEW USER: ", u);
                 return res.status(201).json({ token: createToken(data) });
             }).catch((err) => {
                 return res.status(500).json(err);
@@ -114,7 +113,7 @@ function checkemail(req, res) {
         let email = req.params.email;
         yield user_1.default.findOne({ 'email': email }).then((data) => {
             if (data)
-                return res.status(200).json({ value: true });
+                return res.status(200).json({ value: true, provider: data.provider });
             else
                 return res.status(200).json({ value: false });
         });

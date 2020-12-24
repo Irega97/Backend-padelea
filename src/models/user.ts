@@ -1,7 +1,5 @@
 /* nombre, descripcion, url, responsable */
 import mongoose, { Schema, Document} from 'mongoose';
-import { IChat } from './chat';
-import { INotification } from './notification';
 
 //Modelo de objeto que se guarda en la BBDD de MongoDB
 
@@ -40,7 +38,7 @@ const user = new userSchema({
     online: {
         type: Boolean
     },
-    public: {
+    private: {
         type: Boolean
     },
     friends: [{
@@ -97,7 +95,7 @@ export interface IUser extends Document {
     email: string;
     password: string;
     online: boolean;
-    public: boolean;
+    private: boolean;
     friends: Array<any>;
     torneos: Array<any>;
     notifications: Array<any>;
@@ -119,7 +117,7 @@ user.methods.userToJSON = function(){
         friends: this.friends,
         notifications: this.notifications,
         online: this.online,
-        public: this.public,
+        private: this.private,
         chat: this.chats
     };
 }
