@@ -62,19 +62,6 @@ function getMyTorneos(req, res) {
         });
     });
 }
-/*  name;
-    type;
-    description;
-    fechaInicio;
-    finInscripcion;
-    ubicacion;
-    reglamento;
-    admin: user;
-    players: user;
-    cola: user;
-    rondas: numero, fechaFin;
-    previa: groupName, classification (member, position);
-    grupos: groupName, classification (member, position); */
 function createTorneo(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log("body torneo: ", req.body);
@@ -105,19 +92,24 @@ function createTorneo(req, res) {
             maxPlayers: maxPlayers,
             players: [user]
         });
-        if (participa != true) {
+        if (participa == false) {
             torneo.players = [];
         }
         console.log("torneo: ", torneo);
         torneo.save().then((data) => {
-            user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: { torneo: torneo } } }).then(user => {
-                if (user == null)
-                    return res.status(404).json({ message: "User not found" });
-            }, (error) => {
-                console.log(error);
-                return res.status(500).json({ message: "Internal Server Error" });
-            });
+            if (participa == true) {
+                user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: { torneo: data.id, statistics: null, status: 1 } } }).then(user => {
+                    if (user == null)
+                        return res.status(404).json({ message: "User not found" });
+                }, (error) => {
+                    console.log(error);
+                    return res.status(500).json({ message: "Internal Server Error" });
+                });
+            }
             return res.status(201).json(data);
+        }, (error) => {
+            console.log(error);
+            return res.status(500).json({ message: "Internal Server Error" });
         });
     });
 }
@@ -142,7 +134,7 @@ function joinTorneo(req, res) {
                                 return res.status(400).json({ message: "Ya estás inscrito" });
                             t = torneo;
                         });
-                        yield user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: t._id, status: 1 }] } }).then(user => {
+                        yield user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: t._id, statistics: null, status: 1 }] } }).then(user => {
                             if (user.nModified != 1)
                                 return res.status(400).json({ message: "Ya estás inscrito" });
                         });
@@ -154,7 +146,7 @@ function joinTorneo(req, res) {
                                 return res.status(400).json({ message: "Ya estás inscrito" });
                             t = torneo;
                         });
-                        yield user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: t._id, status: 0 }] } }).then(user => {
+                        yield user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: t._id, statistics: null, status: 0 }] } }).then(user => {
                             if (user.nModified != 1)
                                 return res.status(400).json({ message: "Ya estás inscrito" });
                         });

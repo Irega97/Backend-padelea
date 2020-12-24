@@ -78,7 +78,8 @@ const user = new userSchema({
                 ref: 'Torneo'
             },
             statistics: {
-                type: String
+                type: mongoose_1.Schema.Types.ObjectId,
+                ref: 'Statistics'
             },
             status: {
                 type: Number
