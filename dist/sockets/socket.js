@@ -14,8 +14,14 @@ io.on('connection', (socket) => {
         socket.join(user.id);
         console.log("El nuevo usuario es " + user.username);
     });
+    socket.on('nuevoUsuario', (user) => {
+        socket.emit('nuevoUsuario', user);
+    });
     socket.on('nuevaNotificacion', (notification) => {
-        io.in(notification.destino).emit('nuevaNotificacion', notification);
+        socket.in(notification.destino).emit('nuevaNotificacion', notification);
+    });
+    socket.on('responseFriend', (notification) => {
+        socket.in(notification.destino).emit('responseFriend', notification);
     });
     socket.on('disconnect', function () {
         auth_controller_1.default.setOnlineStatus(socket._id, false);

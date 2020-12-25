@@ -5,6 +5,6 @@ import notificationsController from '../controllers/notifications.controller'
 //Router nos permite gestionar rutas de la API
 const router = Router();
 
-router.get('/me', passport.authenticate("jwt", {session: false}), notificationsController.getMyNotifications);
+router.post('/me', passport.authenticate("jwt", {session: false}), notificationsController.getMyNotifications);
 
 export default router;

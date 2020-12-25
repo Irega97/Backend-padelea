@@ -14,11 +14,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_1 = __importDefault(require("../models/user"));
 function getMyNotifications(req, res) {
+    const getlength = req.body.getlength;
     user_1.default.findById(req.user, { notifications: 1 }).then((data) => {
         let status = 200;
         if (data == null)
             status = 404;
-        return res.status(status).json(data);
+        if (getlength)
+            return res.status(status).json({ "length": data === null || data === void 0 ? void 0 : data.notifications.length });
+        else
+            return res.status(status).json(data);
     }).catch((err) => {
         return res.status(500).json(err);
     });
