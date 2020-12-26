@@ -113,8 +113,6 @@ function changeFriendStatus(req, res) {
                         data.friends.splice(i, 1);
                     }
                 }
-                else
-                    console.log("hello");
             });
             notifications_controller_1.default.deleteNotification("Amigos", myID, req.params.username).then(null, error => {
                 return res.status(500).json(error);

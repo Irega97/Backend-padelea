@@ -47,7 +47,6 @@ async function getMyTorneos(req: Request, res: Response){
 }
 
 async function createTorneo(req: Request, res: Response){
-    console.log("body torneo: ", req.body);
     let name = req.body.name;
 
     let checkName = await Torneo.findOne({"name": name});
@@ -79,7 +78,6 @@ async function createTorneo(req: Request, res: Response){
     if(participa==false){
         torneo.players = [];
     }
-    console.log("torneo: ", torneo);
     torneo.save().then((data) => {
         if(participa == true){
             User.updateOne({"_id": req.user}, {$addToSet: {torneos : {torneo: data.id, statistics: null, status: 1}}}).then(user => {
@@ -98,13 +96,10 @@ async function createTorneo(req: Request, res: Response){
 
 async function joinTorneo(req: Request, res: Response){
     try{
-        console.log("hola");
         let t = await Torneo.findOne({'name': req.params.name});
         let tID = t?.id;
         let inscriptionsPeriod;
         User.findById(req.user).then(async data => {
-            console.log("user: ", data);
-            console.log("torneo: ", t);
             if(t!=null){
                 if(t.finInscripcion.valueOf()-Date.now() > 0){
                     inscriptionsPeriod = true;

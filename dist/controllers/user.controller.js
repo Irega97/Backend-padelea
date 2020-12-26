@@ -36,7 +36,6 @@ function getUser(req, res) {
                 return res.status(404).json({ message: "User not found" });
             let friendStatus = -1;
             me === null || me === void 0 ? void 0 : me.friends.forEach((item) => {
-                console.log(item);
                 if (item.user == data.id) {
                     friendStatus = item.status;
                 }

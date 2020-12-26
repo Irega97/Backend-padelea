@@ -68,7 +68,6 @@ function getMyTorneos(req, res) {
 }
 function createTorneo(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log("body torneo: ", req.body);
         let name = req.body.name;
         let checkName = yield torneo_1.default.findOne({ "name": name });
         if (checkName)
@@ -99,7 +98,6 @@ function createTorneo(req, res) {
         if (participa == false) {
             torneo.players = [];
         }
-        console.log("torneo: ", torneo);
         torneo.save().then((data) => {
             if (participa == true) {
                 user_1.default.updateOne({ "_id": req.user }, { $addToSet: { torneos: { torneo: data.id, statistics: null, status: 1 } } }).then(user => {
@@ -120,13 +118,10 @@ function createTorneo(req, res) {
 function joinTorneo(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            console.log("hola");
             let t = yield torneo_1.default.findOne({ 'name': req.params.name });
             let tID = t === null || t === void 0 ? void 0 : t.id;
             let inscriptionsPeriod;
             user_1.default.findById(req.user).then((data) => __awaiter(this, void 0, void 0, function* () {
-                console.log("user: ", data);
-                console.log("torneo: ", t);
                 if (t != null) {
                     if (t.finInscripcion.valueOf() - Date.now() > 0) {
                         inscriptionsPeriod = true;

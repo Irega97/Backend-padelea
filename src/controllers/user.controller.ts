@@ -22,7 +22,6 @@ async function getUser(req:Request, res:Response) { //Usuari, Correo, Foto, Onli
         if(data==null) return res.status(404).json({message: "User not found"});
         let friendStatus = -1;
         me?.friends.forEach((item) => {
-            console.log(item);
             if(item.user == data.id){
                 friendStatus = item.status
             }

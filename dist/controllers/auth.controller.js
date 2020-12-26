@@ -26,7 +26,6 @@ function login(req, res) {
                 if (user.provider != req.body.provider)
                     return res.status(409).json({ message: "Este email está registrado pero no con esta red social" });
                 let t = { token: createToken(user) };
-                console.log("New token: ", t.token);
                 return res.status(200).json(t);
             }
         }
@@ -42,7 +41,6 @@ function login(req, res) {
                 else {
                     try {
                         let t = { token: createToken(user) };
-                        console.log("New token: ", t.token);
                         return res.status(200).json(t);
                     }
                     catch (err) {

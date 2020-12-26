@@ -11,7 +11,6 @@ async function login(req: Request, res: Response) {
         else {
             if (user.provider != req.body.provider) return res.status(409).json({message: "Este email está registrado pero no con esta red social"});
             let t = {token: createToken(user)}
-            console.log("New token: ", t.token);
             return res.status(200).json(t);
         }
     } else {
@@ -26,7 +25,6 @@ async function login(req: Request, res: Response) {
             else {
                 try{
                     let t = {token: createToken(user)}
-                    console.log("New token: ", t.token);
                     return res.status(200).json(t);
                 } catch (err) {
                     return res.status(500).json(err);

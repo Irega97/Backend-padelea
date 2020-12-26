@@ -27,7 +27,7 @@ exports.default = new passport_jwt_1.Strategy(opts, (payload, next) => __awaiter
             let id = user.id;
             return next(null, id);
         }
-        console.log('Hay un error en passport');
+        console.log('Error en passport');
         return next(null, false, { message: "User not found" });
     }
     catch (error) {

@@ -102,7 +102,7 @@ async function changeFriendStatus(req: Request, res: Response){
                     let i = data.friends.indexOf(friend);
                     data.friends.splice(i, 1);
                 }
-            } else console.log("hello")
+            } 
         });
         notController.deleteNotification("Amigos", myID, req.params.username).then(null, error =>{
             return res.status(500).json(error);
