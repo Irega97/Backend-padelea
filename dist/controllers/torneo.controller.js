@@ -57,11 +57,11 @@ function getTorneos(req, res) {
         });
     });
 }
-function getMyTorneos(req, res) {
+function getTorneosUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        user_1.default.findById(req.user, { select: { torneos: 1 } }).populate({ path: 'torneos', populate: { path: 'torneo', select: 'name' } }).then((data) => {
+        user_1.default.findOne({ "username": req.params.username }, { torneos: 1 }).populate({ path: 'torneos', populate: { path: 'torneo', select: 'name' } }).then((data) => {
             if (data == null)
-                return res.status(404).json({ message: "Torneos no encontrados" });
+                return res.status(404).json({ message: "User Not Found" });
             return res.status(200).json(data);
         });
     });
@@ -163,4 +163,4 @@ function joinTorneo(req, res) {
         }
     });
 }
-exports.default = { getTorneo, getTorneos, getMyTorneos, createTorneo, joinTorneo };
+exports.default = { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo };

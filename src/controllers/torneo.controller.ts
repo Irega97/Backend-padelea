@@ -38,10 +38,10 @@ async function getTorneos(req: Request, res: Response){
     });
 }
 
-async function getMyTorneos(req: Request, res: Response){
-    User.findById(req.user, {select: {torneos: 1}}).populate({path: 'torneos', populate:
+async function getTorneosUser(req: Request, res: Response){
+    User.findOne({"username": req.params.username}, {torneos : 1}).populate({path: 'torneos', populate:
                     {path:'torneo', select: 'name'}}).then((data) => {
-        if(data==null) return res.status(404).json({message: "Torneos no encontrados"});
+        if(data==null) return res.status(404).json({message: "User Not Found"});
         return res.status(200).json(data);
     });
 }
@@ -132,4 +132,4 @@ async function joinTorneo(req: Request, res: Response){
     }
 }
 
-export default { getTorneo, getTorneos, getMyTorneos, createTorneo, joinTorneo }
+export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo }

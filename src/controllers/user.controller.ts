@@ -16,9 +16,9 @@ function getUsers(req:Request, res:Response): void {
     })
 }
 
-async function getUser(req:Request, res:Response) { //Usuari, Correo, Foto, Online (AMIGOS)
+async function getUser(req:Request, res:Response) { 
     const me = await User.findById(req.user, {friends: 1});
-    User.findOne({"username":req.params.username}, {username : 1, image : 1, email : 1, online: 1, name: 1}).then((data)=>{
+    User.findOne({"username":req.params.username}, {username : 1, image : 1, email : 1, online: 1, name: 1, friends: 1, torneos: 1}).then((data)=>{
         if(data==null) return res.status(404).json({message: "User not found"});
         let friendStatus = -1;
         me?.friends.forEach((item) => {
@@ -26,13 +26,16 @@ async function getUser(req:Request, res:Response) { //Usuari, Correo, Foto, Onli
                 friendStatus = item.status
             }
         });
+
         let dataToSend = {
             _id: req.user,
             username: data.username,
             image: data.image,
             email: data.email,
             name: data.name,
-            friendStatus: friendStatus
+            friendStatus: friendStatus,
+            numAmigos: data.friends.length,
+            numTorneos: data.torneos.length
         }
         return res.status(200).json(dataToSend);
     }).catch((err) => {
@@ -49,6 +52,20 @@ function getMyUser(req:Request, res:Response): void {
         return res.status(500).json(err);
     })
 }
+
+function getMyNum(req:Request, res:Response): void {
+    User.findById(req.user, {friends: 1, torneos: 1}). then(data => {
+        let status: number = 200;
+        const dataSend = {
+            numAmigos: data?.friends.length,
+            numTorneos: data?.torneos.length
+        }
+        return res.status(status).json(dataSend);
+    }).catch((err) => {
+        return res.status(500).json(err);
+    })
+}
+
 
 async function updateUser (req: Request, res: Response){
     const id = req.user;
@@ -91,4 +108,4 @@ function deleteUser (req:Request,res:Response){
     })
 }
 
-export default { getUsers, getUser, updateUser, deleteUser, getMyUser };
+export default { getUsers, getUser, updateUser, deleteUser, getMyUser, getMyNum };

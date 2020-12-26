@@ -29,27 +29,6 @@ function getFriends(req, res) {
         return res.status(500).json(err);
     });
 }
-function getMyFriends(req, res) {
-    user_1.default.findById(req.user, { friends: 1 }).populate({ path: 'friends', populate: { path: 'user', select: '_id username image' } }).then((data) => {
-        if (data == null)
-            return res.status(404).json();
-        data.friends.forEach(friend => {
-            if (friend.status != 2) {
-                let i = data.friends.indexOf(friend);
-                data.friends.splice(i, 1);
-            }
-        });
-        return res.status(200).json(data);
-    }).catch((err) => {
-        return res.status(500).json(err);
-    });
-}
-//DUDAS FRIENDS
-/*
--> Porque no nos lee el include y nos los añade más de una vez si hacemos la peticion again?
--> Porque el changeStatus nos da 200 OK pero no actualiza los datos?
-*/
-//PULSAR EL BOTON SI NO SOIS AMIGOS
 function addFriend(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const myID = req.user;
@@ -169,4 +148,4 @@ function delFriend(req, res) {
         return res.status(200).json();
     });
 }
-exports.default = { getFriends, getMyFriends, addFriend, changeFriendStatus, delFriend };
+exports.default = { getFriends, addFriend, changeFriendStatus, delFriend };
