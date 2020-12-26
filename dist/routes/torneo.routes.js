@@ -10,7 +10,7 @@ const torneo_controller_1 = __importDefault(require("../controllers/torneo.contr
 const router = express_1.Router();
 router.get('/all', passport_1.default.authenticate("jwt", { session: false }), torneo_controller_1.default.getTorneos);
 router.get('/all/me', passport_1.default.authenticate("jwt", { session: false }), torneo_controller_1.default.getMyTorneos);
-router.get('/:id', passport_1.default.authenticate("jwt", { session: false }), torneo_controller_1.default.getTorneo);
+router.get('/:name', passport_1.default.authenticate("jwt", { session: false }), torneo_controller_1.default.getTorneo);
 router.post('/new', passport_1.default.authenticate("jwt", { session: false }), torneo_controller_1.default.createTorneo);
-router.post('/join/:id', passport_1.default.authenticate("jwt", { session: false }), torneo_controller_1.default.joinTorneo);
+router.post('/join/:name', passport_1.default.authenticate("jwt", { session: false }), torneo_controller_1.default.joinTorneo);
 exports.default = router;

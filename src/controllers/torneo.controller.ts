@@ -3,12 +3,12 @@ import Torneo from "../models/torneo";
 import User from "../models/user";
 
 async function getTorneo(req: Request, res: Response){
-    const torneoID = req.params.id;
+    const torneo = req.params.name;
     const userID = req.user;
     let joined = false;
     let isAdmin = false;
     let inscription = false;
-    Torneo.findById(torneoID).populate({path: 'players admin', select: 'name username image'}).then((data) => {
+    Torneo.findOne({'name': torneo}).populate({path: 'players admin', select: 'name username image'}).then((data) => {
         if (data==null) return res.status(404).json({message: 'Torneo not found'});
         data.admin.forEach((admin)=>{
             if(admin._id == userID) isAdmin = true;
@@ -99,7 +99,7 @@ async function createTorneo(req: Request, res: Response){
 async function joinTorneo(req: Request, res: Response){
     try{
         console.log("hola");
-        let t = await Torneo.findById(req.params.id);
+        let t = await Torneo.findOne({'name': req.params.name});
         let inscriptionsPeriod;
         User.findById(req.user).then(async data => {
             console.log("user: ", data);

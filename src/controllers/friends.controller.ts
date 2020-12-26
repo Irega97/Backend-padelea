@@ -4,7 +4,7 @@ import notController from "./notifications.controller";
 
 
 function getFriends(req:Request, res:Response): void {
-    User.findById(req.params.id, {friends : 1}).populate({path: 'friends', populate: 
+    User.findOne({username: req.params.username}, {friends : 1}).populate({path: 'friends', populate: 
     {path: 'user', select: 'username image'}}).then((data)=>{ 
         
         if(data==null) return res.status(404).json();
@@ -46,7 +46,14 @@ function getMyFriends(req:Request, res:Response): void {
 
 async function addFriend(req: Request, res: Response) {
     const myID = req.user;
-    const receptorID = req.params.idfriend;
+    let myUser: any;
+    await User.findById(myID).then((data) => {
+        myUser = data?.username;
+    })
+    let receptorID: any;
+    await User.findOne({username: req.params.username}).then((data) => {
+        receptorID = data?._id
+    })
     let friend1 = {
         user: receptorID,
         status: 0
@@ -60,7 +67,7 @@ async function addFriend(req: Request, res: Response) {
             try {
                 User.findOneAndUpdate({"_id":myID},{$addToSet: {friends: friend1}}).then(() => {
                     User.findOneAndUpdate({"_id":receptorID},{$addToSet: {friends: friend2}}).then(() => {
-                        notController.addNotification("Amigos", "Alguien quiere ser tu amigo", receptorID, myID).then(data =>{
+                        notController.addNotification("Amigos", "Alguien quiere ser tu amigo", req.params.username, myUser).then(data =>{
                             if (data.nModified == 1){
                                 return res.status(200).json({message: "Amigo añadido correctamente"});
                             }
@@ -85,20 +92,25 @@ async function addFriend(req: Request, res: Response) {
 async function changeFriendStatus(req: Request, res: Response){
     const accept: boolean = req.body.accept;
     const myID: any = req.user;
-    const friendID = req.params.idfriend;
+    
+    let friendID: any;
+    await User.findOne({username: req.params.username}).then((data) => {
+        friendID = data?._id;
+    })
 
+    //ESTA MIERDA NO VA
     await User.findById(myID, {friends : 1}).then((data) => {
         data?.friends.forEach((friend) => {
-            if(friend.user == friendID){ 
-                if(accept === true){
+            if(friend.user == friendID){ //PETA AQUI EL MUY HIJO DE PUTA
+                if(accept == true){
                     friend.status = 2;
                 } else{
                     let i = data.friends.indexOf(friend);
                     data.friends.splice(i, 1);
                 }
-            }
+            } else console.log("hello")
         });
-        notController.deleteNotification("Amigos", myID, friendID).then(null, error =>{
+        notController.deleteNotification("Amigos", myID, req.params.username).then(null, error =>{
             return res.status(500).json(error);
         });
         User.updateOne({"_id": myID}, {$set: {friends: data?.friends}}).then(null, error =>{
@@ -127,7 +139,10 @@ async function changeFriendStatus(req: Request, res: Response){
 
 async function delFriend(req: Request, res: Response){
     const myID: any = req.user;
-    const friendID = req.params.idfriend;
+    let friendID: any;
+    await User.findOne({username: req.params.username}).then((data) => {
+        friendID = data?._id;
+    })
 
     await User.findById(myID, {friends: 1}).then((data) => {
         data?.friends.forEach((friend) => {

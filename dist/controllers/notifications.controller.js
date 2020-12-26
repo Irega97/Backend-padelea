@@ -35,7 +35,7 @@ function addNotification(type, description, destino, origen) {
             status: 0,
             origen: origen
         };
-        return user_1.default.updateOne({ "_id": destino }, { $addToSet: { notifications: newNotification } });
+        return user_1.default.updateOne({ "username": destino }, { $addToSet: { notifications: newNotification } });
     });
 }
 function deleteNotification(type, destino, origen) {

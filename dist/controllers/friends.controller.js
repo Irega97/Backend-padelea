@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const user_1 = __importDefault(require("../models/user"));
 const notifications_controller_1 = __importDefault(require("./notifications.controller"));
 function getFriends(req, res) {
-    user_1.default.findById(req.params.id, { friends: 1 }).populate({ path: 'friends', populate: { path: 'user', select: 'username image' } }).then((data) => {
+    user_1.default.findOne({ username: req.params.username }, { friends: 1 }).populate({ path: 'friends', populate: { path: 'user', select: 'username image' } }).then((data) => {
         if (data == null)
             return res.status(404).json();
         data.friends.forEach(friend => {
@@ -53,7 +53,14 @@ function getMyFriends(req, res) {
 function addFriend(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const myID = req.user;
-        const receptorID = req.params.idfriend;
+        let myUser;
+        yield user_1.default.findById(myID).then((data) => {
+            myUser = data === null || data === void 0 ? void 0 : data.username;
+        });
+        let receptorID;
+        yield user_1.default.findOne({ username: req.params.username }).then((data) => {
+            receptorID = data === null || data === void 0 ? void 0 : data._id;
+        });
         let friend1 = {
             user: receptorID,
             status: 0
@@ -67,7 +74,7 @@ function addFriend(req, res) {
                 try {
                     user_1.default.findOneAndUpdate({ "_id": myID }, { $addToSet: { friends: friend1 } }).then(() => {
                         user_1.default.findOneAndUpdate({ "_id": receptorID }, { $addToSet: { friends: friend2 } }).then(() => {
-                            notifications_controller_1.default.addNotification("Amigos", "Alguien quiere ser tu amigo", receptorID, myID).then(data => {
+                            notifications_controller_1.default.addNotification("Amigos", "Alguien quiere ser tu amigo", req.params.username, myUser).then(data => {
                                 if (data.nModified == 1) {
                                     return res.status(200).json({ message: "Amigo añadido correctamente" });
                                 }
@@ -95,11 +102,15 @@ function changeFriendStatus(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const accept = req.body.accept;
         const myID = req.user;
-        const friendID = req.params.idfriend;
+        let friendID;
+        yield user_1.default.findOne({ username: req.params.username }).then((data) => {
+            friendID = data === null || data === void 0 ? void 0 : data._id;
+        });
+        //ESTA MIERDA NO VA
         yield user_1.default.findById(myID, { friends: 1 }).then((data) => {
             data === null || data === void 0 ? void 0 : data.friends.forEach((friend) => {
-                if (friend.user == friendID) {
-                    if (accept === true) {
+                if (friend.user == friendID) { //PETA AQUI EL MUY HIJO DE PUTA
+                    if (accept == true) {
                         friend.status = 2;
                     }
                     else {
@@ -107,8 +118,10 @@ function changeFriendStatus(req, res) {
                         data.friends.splice(i, 1);
                     }
                 }
+                else
+                    console.log("hello");
             });
-            notifications_controller_1.default.deleteNotification("Amigos", myID, friendID).then(null, error => {
+            notifications_controller_1.default.deleteNotification("Amigos", myID, req.params.username).then(null, error => {
                 return res.status(500).json(error);
             });
             user_1.default.updateOne({ "_id": myID }, { $set: { friends: data === null || data === void 0 ? void 0 : data.friends } }).then(null, error => {
@@ -137,7 +150,10 @@ function changeFriendStatus(req, res) {
 function delFriend(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const myID = req.user;
-        const friendID = req.params.idfriend;
+        let friendID;
+        yield user_1.default.findOne({ username: req.params.username }).then((data) => {
+            friendID = data === null || data === void 0 ? void 0 : data._id;
+        });
         yield user_1.default.findById(myID, { friends: 1 }).then((data) => {
             data === null || data === void 0 ? void 0 : data.friends.forEach((friend) => {
                 if (friend.user == friendID && friend.status == 2) {

@@ -30,16 +30,14 @@ function getUsers(req, res) {
 }
 function getUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        let me = yield user_1.default.findById(req.user, { friends: 1 });
-        user_1.default.findOne({ "_id": req.params.id }, { username: 1, image: 1, email: 1, online: 1, name: 1 }).then((data) => {
+        const me = yield user_1.default.findById(req.user, { friends: 1 });
+        user_1.default.findOne({ "username": req.params.username }, { username: 1, image: 1, email: 1, online: 1, name: 1 }).then((data) => {
             if (data == null)
                 return res.status(404).json({ message: "User not found" });
-            if (data.id == req.user)
-                return res.status(200).json(data);
             let friendStatus = -1;
             me === null || me === void 0 ? void 0 : me.friends.forEach((item) => {
                 console.log(item);
-                if (item.user == req.params.id) {
+                if (item.user == data.id) {
                     friendStatus = item.status;
                 }
             });
@@ -102,7 +100,7 @@ function updateUser(req, res) {
     });
 }
 function deleteUser(req, res) {
-    user_1.default.deleteOne({ "_id": req.params.id }).then((data) => {
+    user_1.default.deleteOne({ "username": req.params.username }).then((data) => {
         res.status(200).json(data);
     }).catch((err) => {
         res.status(500).json(err);

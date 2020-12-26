@@ -13,17 +13,17 @@ function getMyNotifications(req:Request, res:Response): void {
     })
 }
 
-async function addNotification(type: String, description: String, destino: String, origen: any): Promise<any> {
+async function addNotification(type: string, description: string, destino: string, origen: any): Promise<any> {
     let newNotification = {
         type: type,
         description: description,
         status: 0,
         origen: origen
     }
-    return User.updateOne({"_id": destino}, {$addToSet: {notifications: newNotification}})
+    return User.updateOne({"username": destino}, {$addToSet: {notifications: newNotification}})
 }
 
-async function deleteNotification(type: String, destino: String, origen: any): Promise<any> {
+async function deleteNotification(type: string, destino: string, origen: any): Promise<any> {
     await User.findById(destino, {notifications: 1}).then(data => {
         data?.notifications.forEach((notification) => {
             if(notification.type == type && notification.origen == origen){

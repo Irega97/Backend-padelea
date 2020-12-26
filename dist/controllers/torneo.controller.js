@@ -16,12 +16,12 @@ const torneo_1 = __importDefault(require("../models/torneo"));
 const user_1 = __importDefault(require("../models/user"));
 function getTorneo(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const torneoID = req.params.id;
+        const torneo = req.params.name;
         const userID = req.user;
         let joined = false;
         let isAdmin = false;
         let inscription = false;
-        torneo_1.default.findById(torneoID).populate({ path: 'players admin', select: 'name username image' }).then((data) => {
+        torneo_1.default.findOne({ 'name': torneo }).populate({ path: 'players admin', select: 'name username image' }).then((data) => {
             if (data == null)
                 return res.status(404).json({ message: 'Torneo not found' });
             data.admin.forEach((admin) => {
@@ -121,7 +121,7 @@ function joinTorneo(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             console.log("hola");
-            let t = yield torneo_1.default.findById(req.params.id);
+            let t = yield torneo_1.default.findOne({ 'name': req.params.name });
             let inscriptionsPeriod;
             user_1.default.findById(req.user).then((data) => __awaiter(this, void 0, void 0, function* () {
                 console.log("user: ", data);

@@ -8,7 +8,7 @@ io.on('connection', (socket: any) => {
     authController.setOnlineStatus(user.id, true);
     socket.username = user.username;
     socket._id = user.id;
-    socket.join(user.id);
+    socket.join(user.username);
     console.log("El nuevo usuario es " + user.username);
   });
 
