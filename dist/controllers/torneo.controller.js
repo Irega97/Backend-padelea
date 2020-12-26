@@ -122,6 +122,7 @@ function joinTorneo(req, res) {
         try {
             console.log("hola");
             let t = yield torneo_1.default.findOne({ 'name': req.params.name });
+            let tID = t === null || t === void 0 ? void 0 : t.id;
             let inscriptionsPeriod;
             user_1.default.findById(req.user).then((data) => __awaiter(this, void 0, void 0, function* () {
                 console.log("user: ", data);
@@ -138,7 +139,7 @@ function joinTorneo(req, res) {
                                 return res.status(400).json({ message: "Ya estás inscrito" });
                             t = torneo;
                         });
-                        yield user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: t._id, statistics: null, status: 1 }] } }).then(user => {
+                        yield user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: tID, statistics: null, status: 1 }] } }).then(user => {
                             if (user.nModified != 1)
                                 return res.status(400).json({ message: "Ya estás inscrito" });
                         });
@@ -150,7 +151,7 @@ function joinTorneo(req, res) {
                                 return res.status(400).json({ message: "Ya estás inscrito" });
                             t = torneo;
                         });
-                        yield user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: t._id, statistics: null, status: 0 }] } }).then(user => {
+                        yield user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: tID, statistics: null, status: 0 }] } }).then(user => {
                             if (user.nModified != 1)
                                 return res.status(400).json({ message: "Ya estás inscrito" });
                         });

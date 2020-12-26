@@ -100,6 +100,7 @@ async function joinTorneo(req: Request, res: Response){
     try{
         console.log("hola");
         let t = await Torneo.findOne({'name': req.params.name});
+        let tID = t?.id;
         let inscriptionsPeriod;
         User.findById(req.user).then(async data => {
             console.log("user: ", data);
@@ -113,7 +114,7 @@ async function joinTorneo(req: Request, res: Response){
                         if(torneo.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
                         t = torneo;
                     });
-                    await User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: t._id, statistics: null, status: 1}]}}).then(user => {
+                    await User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: null, status: 1}]}}).then(user => {
                         if(user.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
                     });
                     return res.status(200).json(t);
@@ -122,7 +123,7 @@ async function joinTorneo(req: Request, res: Response){
                         if(torneo.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
                         t = torneo;
                     });
-                    await User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: t._id, statistics: null, status: 0}]}}).then(user => {
+                    await User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: null, status: 0}]}}).then(user => {
                         if(user.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
                     });
                     return res.status(200).json(t);

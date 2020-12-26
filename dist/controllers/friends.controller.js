@@ -102,14 +102,9 @@ function changeFriendStatus(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const accept = req.body.accept;
         const myID = req.user;
-        let friendID;
-        yield user_1.default.findOne({ username: req.params.username }).then((data) => {
-            friendID = data === null || data === void 0 ? void 0 : data._id;
-        });
-        //ESTA MIERDA NO VA
-        yield user_1.default.findById(myID, { friends: 1 }).then((data) => {
+        yield user_1.default.findById(myID, { friends: 1 }).populate({ path: 'friends', populate: { path: 'user', select: 'username' } }).then((data) => {
             data === null || data === void 0 ? void 0 : data.friends.forEach((friend) => {
-                if (friend.user == friendID) { //PETA AQUI EL MUY HIJO DE PUTA
+                if (friend.user.username == req.params.username) { //PETA AQUI EL MUY HIJO DE PUTA
                     if (accept == true) {
                         friend.status = 2;
                     }
@@ -128,7 +123,8 @@ function changeFriendStatus(req, res) {
                 return res.status(500).json(error);
             });
         });
-        yield user_1.default.findById(friendID, { friends: 1 }).then((data) => {
+        yield user_1.default.findOne({ username: req.params.username }, { friends: 1 }).then((data) => {
+            let friendID = data === null || data === void 0 ? void 0 : data.id;
             data === null || data === void 0 ? void 0 : data.friends.forEach((friend) => {
                 if (friend.user == myID) {
                     if (accept === true) {
@@ -150,13 +146,11 @@ function changeFriendStatus(req, res) {
 function delFriend(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const myID = req.user;
+        const username = req.params.username;
         let friendID;
-        yield user_1.default.findOne({ username: req.params.username }).then((data) => {
-            friendID = data === null || data === void 0 ? void 0 : data._id;
-        });
-        yield user_1.default.findById(myID, { friends: 1 }).then((data) => {
+        yield user_1.default.findById(myID, { friends: 1 }).populate({ path: 'friends', populate: { path: 'user', select: 'username' } }).then((data) => {
             data === null || data === void 0 ? void 0 : data.friends.forEach((friend) => {
-                if (friend.user == friendID && friend.status == 2) {
+                if (friend.user.username == username && friend.status == 2) {
                     data.friends.splice(data.friends.indexOf(friendID), 1);
                 }
             });
@@ -164,13 +158,13 @@ function delFriend(req, res) {
                 return res.status(500).json(error);
             });
         });
-        yield user_1.default.findById(friendID, { friends: 1 }).then((data) => {
+        yield user_1.default.findOne({ username: username }, { friends: 1 }).then((data) => {
             data === null || data === void 0 ? void 0 : data.friends.forEach((friend) => {
                 if (friend.user == myID && friend.status == 2) {
                     data.friends.splice(data.friends.indexOf(friendID), 1);
                 }
             });
-            user_1.default.updateOne({ "_id": friendID }, { $set: { friends: data === null || data === void 0 ? void 0 : data.friends } }).then(null, error => {
+            user_1.default.updateOne({ "username": username }, { $set: { friends: data === null || data === void 0 ? void 0 : data.friends } }).then(null, error => {
                 return res.status(500).json(error);
             });
         });

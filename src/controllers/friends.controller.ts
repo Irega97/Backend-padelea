@@ -93,15 +93,9 @@ async function changeFriendStatus(req: Request, res: Response){
     const accept: boolean = req.body.accept;
     const myID: any = req.user;
     
-    let friendID: any;
-    await User.findOne({username: req.params.username}).then((data) => {
-        friendID = data?._id;
-    })
-
-    //ESTA MIERDA NO VA
-    await User.findById(myID, {friends : 1}).then((data) => {
+    await User.findById(myID, {friends : 1}).populate({path: 'friends', populate: {path:'user', select: 'username'}}).then((data) => {
         data?.friends.forEach((friend) => {
-            if(friend.user == friendID){ //PETA AQUI EL MUY HIJO DE PUTA
+            if(friend.user.username == req.params.username){ //PETA AQUI EL MUY HIJO DE PUTA
                 if(accept == true){
                     friend.status = 2;
                 } else{
@@ -118,7 +112,8 @@ async function changeFriendStatus(req: Request, res: Response){
         });    
     });
 
-    await User.findById(friendID, {friends: 1}).then((data) => {
+    await User.findOne({username: req.params.username}, {friends: 1}).then((data) => {
+        let friendID = data?.id;
         data?.friends.forEach((friend) => {
             if(friend.user == myID){ 
                 if(accept === true){
@@ -133,20 +128,18 @@ async function changeFriendStatus(req: Request, res: Response){
             return res.status(500).json(error);
         });
     });
-
+    
     return res.status(200).json({message: "Succesfully updated"});
 }
 
 async function delFriend(req: Request, res: Response){
     const myID: any = req.user;
+    const username: any = req.params.username;
     let friendID: any;
-    await User.findOne({username: req.params.username}).then((data) => {
-        friendID = data?._id;
-    })
 
-    await User.findById(myID, {friends: 1}).then((data) => {
+    await User.findById(myID, {friends: 1}).populate({path: 'friends', populate: {path:'user', select: 'username'}}).then((data) => {
         data?.friends.forEach((friend) => {
-            if(friend.user == friendID && friend.status == 2){
+            if(friend.user.username == username && friend.status == 2){
                 data.friends.splice(data.friends.indexOf(friendID), 1);
             }
         });
@@ -155,13 +148,13 @@ async function delFriend(req: Request, res: Response){
         });
     });
 
-    await User.findById(friendID, {friends: 1}).then((data) => {
+    await User.findOne({username: username}, {friends: 1}).then((data) => {
         data?.friends.forEach((friend) => {
             if(friend.user == myID && friend.status == 2){
                 data.friends.splice(data.friends.indexOf(friendID), 1);
             }
         });
-        User.updateOne({"_id": friendID}, {$set: {friends: data?.friends}}).then(null, error => {
+        User.updateOne({"username": username}, {$set: {friends: data?.friends}}).then(null, error => {
             return res.status(500).json(error);
         });
     });
