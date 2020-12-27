@@ -17,6 +17,9 @@ const notification = new notificationSchema({
     },
     origen: {
         type: String
+    },
+    image: {
+        type: String
     }
 });
 
@@ -27,6 +30,7 @@ export interface INotification extends Document {
     description: String;
     status: Number;
     origen: String;
+    image: String;
     notificationToJson(): JSON;
 }
 
@@ -35,7 +39,8 @@ notification.methods.notificationToJSON = function(){
         type: this.type,
         description: this.description,
         status: this.status,
-        origen: this.origen
+        origen: this.origen,
+        image: this.image
     };
 }
 

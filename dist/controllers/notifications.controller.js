@@ -27,13 +27,14 @@ function getMyNotifications(req, res) {
         return res.status(500).json(err);
     });
 }
-function addNotification(type, description, destino, origen) {
+function addNotification(type, description, destino, origen, image) {
     return __awaiter(this, void 0, void 0, function* () {
         let newNotification = {
             type: type,
             description: description,
             status: 0,
-            origen: origen
+            origen: origen,
+            image: image
         };
         return user_1.default.updateOne({ "username": destino }, { $addToSet: { notifications: newNotification } });
     });

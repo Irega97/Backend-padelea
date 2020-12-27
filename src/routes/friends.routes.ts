@@ -7,7 +7,6 @@ const router = Router();
 
 // FRIENDS ROUTES
 router.get('/:username', passport.authenticate("jwt", {session: false}), friendsController.getFriends)
-router.get('/me/all', passport.authenticate("jwt", {session: false}), friendsController.getMyFriends)
 router.post('/:username', passport.authenticate("jwt", {session: false}), friendsController.addFriend);
 router.post('/:username/status', passport.authenticate("jwt", {session: false}), friendsController.changeFriendStatus);
 router.delete('/:username', passport.authenticate("jwt", {session: false}), friendsController.delFriend);

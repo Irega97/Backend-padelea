@@ -8,6 +8,7 @@ const router = Router();
 //Si no esta logeado, no le dejara ver los usuarios
 router.get('/all', passport.authenticate("jwt", {session: false}), userController.getUsers);
 router.get('/me', passport.authenticate("jwt", {session:false}), userController.getMyUser);
+router.get('/me/num', passport.authenticate("jwt", {session:false}), userController.getMyNum);
 router.get('/:username', passport.authenticate("jwt", {session: false}), userController.getUser);
 router.post('/me', passport.authenticate("jwt", {session: false}), userController.updateUser);
 //router.post('/:id', userController.updateUser);

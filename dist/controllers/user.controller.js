@@ -31,23 +31,24 @@ function getUsers(req, res) {
 function getUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const me = yield user_1.default.findById(req.user, { friends: 1 });
-        user_1.default.findOne({ "username": req.params.username }, { username: 1, image: 1, email: 1, online: 1, name: 1 }).then((data) => {
+        user_1.default.findOne({ "username": req.params.username }, { username: 1, image: 1, email: 1, online: 1, name: 1, friends: 1, torneos: 1 }).then((data) => {
             if (data == null)
                 return res.status(404).json({ message: "User not found" });
             let friendStatus = -1;
             me === null || me === void 0 ? void 0 : me.friends.forEach((item) => {
-                console.log(item);
                 if (item.user == data.id) {
                     friendStatus = item.status;
                 }
             });
             let dataToSend = {
-                _id: req.user,
+                _id: data._id,
                 username: data.username,
                 image: data.image,
                 email: data.email,
                 name: data.name,
-                friendStatus: friendStatus
+                friendStatus: friendStatus,
+                numAmigos: data.friends.length,
+                numTorneos: data.torneos.length
             };
             return res.status(200).json(dataToSend);
         }).catch((err) => {
@@ -61,6 +62,18 @@ function getMyUser(req, res) {
         if (data == null)
             status = 404;
         return res.status(status).json(data);
+    }).catch((err) => {
+        return res.status(500).json(err);
+    });
+}
+function getMyNum(req, res) {
+    user_1.default.findById(req.user, { friends: 1, torneos: 1 }).then(data => {
+        let status = 200;
+        const dataSend = {
+            numAmigos: data === null || data === void 0 ? void 0 : data.friends.length,
+            numTorneos: data === null || data === void 0 ? void 0 : data.torneos.length
+        };
+        return res.status(status).json(dataSend);
     }).catch((err) => {
         return res.status(500).json(err);
     });
@@ -106,4 +119,4 @@ function deleteUser(req, res) {
         res.status(500).json(err);
     });
 }
-exports.default = { getUsers, getUser, updateUser, deleteUser, getMyUser };
+exports.default = { getUsers, getUser, updateUser, deleteUser, getMyUser, getMyNum };

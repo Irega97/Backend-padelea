@@ -10,7 +10,6 @@ const passport_1 = __importDefault(require("passport"));
 const router = express_1.Router();
 // FRIENDS ROUTES
 router.get('/:username', passport_1.default.authenticate("jwt", { session: false }), friends_controller_1.default.getFriends);
-router.get('/me/all', passport_1.default.authenticate("jwt", { session: false }), friends_controller_1.default.getMyFriends);
 router.post('/:username', passport_1.default.authenticate("jwt", { session: false }), friends_controller_1.default.addFriend);
 router.post('/:username/status', passport_1.default.authenticate("jwt", { session: false }), friends_controller_1.default.changeFriendStatus);
 router.delete('/:username', passport_1.default.authenticate("jwt", { session: false }), friends_controller_1.default.delFriend);

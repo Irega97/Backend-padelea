@@ -20,30 +20,6 @@ function getFriends(req:Request, res:Response): void {
     })
 }
 
-function getMyFriends(req:Request, res:Response): void {
-    User.findById(req.user, {friends : 1}).populate({path: 'friends', populate:
-    {path: 'user', select: '_id username image'}}).then((data)=>{
-        if(data==null) return res.status(404).json();
-        data.friends.forEach(friend => {
-            if(friend.status != 2){
-                let i = data.friends.indexOf(friend);
-                data.friends.splice(i,1);
-            }
-        })
-        return res.status(200).json(data);
-    }).catch((err) => {
-        return res.status(500).json(err);
-    })
-}
-
-//DUDAS FRIENDS
-/*
--> Porque no nos lee el include y nos los añade más de una vez si hacemos la peticion again?
--> Porque el changeStatus nos da 200 OK pero no actualiza los datos?
-*/
-
-//PULSAR EL BOTON SI NO SOIS AMIGOS
-
 async function addFriend(req: Request, res: Response) {
     const myID = req.user;
     let myUser: any;
@@ -63,11 +39,12 @@ async function addFriend(req: Request, res: Response) {
         status: 1
     };
     User.findById(myID).then(data => {
+        const image = data?.image;
         if(!data?.friends.includes(friend2.user)){
             try {
                 User.findOneAndUpdate({"_id":myID},{$addToSet: {friends: friend1}}).then(() => {
                     User.findOneAndUpdate({"_id":receptorID},{$addToSet: {friends: friend2}}).then(() => {
-                        notController.addNotification("Amigos", "Alguien quiere ser tu amigo", req.params.username, myUser).then(data =>{
+                        notController.addNotification("Amigos", req.params.username + " quiere ser tu amigo", req.params.username, myUser, image).then(data =>{
                             if (data.nModified == 1){
                                 return res.status(200).json({message: "Amigo añadido correctamente"});
                             }
@@ -102,7 +79,7 @@ async function changeFriendStatus(req: Request, res: Response){
                     let i = data.friends.indexOf(friend);
                     data.friends.splice(i, 1);
                 }
-            } else console.log("hello")
+            } 
         });
         notController.deleteNotification("Amigos", myID, req.params.username).then(null, error =>{
             return res.status(500).json(error);
@@ -162,4 +139,4 @@ async function delFriend(req: Request, res: Response){
     return res.status(200).json();
 }
 
-export default { getFriends, getMyFriends, addFriend, changeFriendStatus, delFriend }
+export default { getFriends, addFriend, changeFriendStatus, delFriend }

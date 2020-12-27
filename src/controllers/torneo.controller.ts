@@ -39,12 +39,18 @@ async function getTorneos(req: Request, res: Response){
 }
 
 async function getTorneosUser(req: Request, res: Response){
+<<<<<<< HEAD
     User.findOne({"username": req.params.username, select: {torneos: 1}}).then((data) => {
         if (data==null) return res.status(404).json({message: 'Torneos not found'});
         data.torneos.forEach((torneo) => {
             if(torneo.status == 0)
                 data.torneos.splice(data.torneos.indexOf(torneo), 1);
         })
+=======
+    User.findOne({"username": req.params.username}, {torneos : 1}).populate({path: 'torneos', populate:
+                    {path:'torneo', select: 'name'}}).then((data) => {
+        if(data==null) return res.status(404).json({message: "User Not Found"});
+>>>>>>> 5150a15b3cfae1eee836db16b7818f1aaa30ba48
         return res.status(200).json(data);
     }, (error) => {
         return res.status(500).json(error);
@@ -52,7 +58,6 @@ async function getTorneosUser(req: Request, res: Response){
 }
 
 async function createTorneo(req: Request, res: Response){
-    console.log("body torneo: ", req.body);
     let name = req.body.name;
 
     let checkName = await Torneo.findOne({"name": name});
@@ -85,7 +90,6 @@ async function createTorneo(req: Request, res: Response){
     if(participa==false){
         torneo.players = [];
     }
-    console.log("torneo: ", torneo);
     torneo.save().then((data) => {
         if(participa == true){
             User.updateOne({"_id": req.user}, {$addToSet: {torneos : {torneo: data.id, statistics: null, status: 1}}}).then(user => {
@@ -108,8 +112,6 @@ async function joinTorneo(req: Request, res: Response){
         let tID = t?.id;
         let inscriptionsPeriod;
         User.findById(req.user).then(async data => {
-            console.log("user: ", data);
-            console.log("torneo: ", t);
             if(t!=null){
                 if(t.finInscripcion.valueOf()-Date.now() > 0){
                     inscriptionsPeriod = true;

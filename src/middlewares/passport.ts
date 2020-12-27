@@ -15,7 +15,7 @@ export default new Strategy(opts, async (payload, next) => {
             let id = user.id;
             return next(null, id);
         }
-        console.log('Hay un error en passport');
+        console.log('Error en passport');
         return next(null, false, {message: "User not found"});
     } catch (error) {
         console.log(error);

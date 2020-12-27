@@ -29,27 +29,6 @@ function getFriends(req, res) {
         return res.status(500).json(err);
     });
 }
-function getMyFriends(req, res) {
-    user_1.default.findById(req.user, { friends: 1 }).populate({ path: 'friends', populate: { path: 'user', select: '_id username image' } }).then((data) => {
-        if (data == null)
-            return res.status(404).json();
-        data.friends.forEach(friend => {
-            if (friend.status != 2) {
-                let i = data.friends.indexOf(friend);
-                data.friends.splice(i, 1);
-            }
-        });
-        return res.status(200).json(data);
-    }).catch((err) => {
-        return res.status(500).json(err);
-    });
-}
-//DUDAS FRIENDS
-/*
--> Porque no nos lee el include y nos los añade más de una vez si hacemos la peticion again?
--> Porque el changeStatus nos da 200 OK pero no actualiza los datos?
-*/
-//PULSAR EL BOTON SI NO SOIS AMIGOS
 function addFriend(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const myID = req.user;
@@ -70,11 +49,12 @@ function addFriend(req, res) {
             status: 1
         };
         user_1.default.findById(myID).then(data => {
+            const image = data === null || data === void 0 ? void 0 : data.image;
             if (!(data === null || data === void 0 ? void 0 : data.friends.includes(friend2.user))) {
                 try {
                     user_1.default.findOneAndUpdate({ "_id": myID }, { $addToSet: { friends: friend1 } }).then(() => {
                         user_1.default.findOneAndUpdate({ "_id": receptorID }, { $addToSet: { friends: friend2 } }).then(() => {
-                            notifications_controller_1.default.addNotification("Amigos", "Alguien quiere ser tu amigo", req.params.username, myUser).then(data => {
+                            notifications_controller_1.default.addNotification("Amigos", req.params.username + " quiere ser tu amigo", req.params.username, myUser, image).then(data => {
                                 if (data.nModified == 1) {
                                     return res.status(200).json({ message: "Amigo añadido correctamente" });
                                 }
@@ -113,8 +93,6 @@ function changeFriendStatus(req, res) {
                         data.friends.splice(i, 1);
                     }
                 }
-                else
-                    console.log("hello");
             });
             notifications_controller_1.default.deleteNotification("Amigos", myID, req.params.username).then(null, error => {
                 return res.status(500).json(error);
@@ -171,4 +149,4 @@ function delFriend(req, res) {
         return res.status(200).json();
     });
 }
-exports.default = { getFriends, getMyFriends, addFriend, changeFriendStatus, delFriend };
+exports.default = { getFriends, addFriend, changeFriendStatus, delFriend };
