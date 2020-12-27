@@ -59,7 +59,8 @@ function getTorneos(req, res) {
 }
 function getTorneosUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        user_1.default.findOne({ "username": req.params.username, select: { torneos: 1 } }).then((data) => {
+        user_1.default.findOne({ "username": req.params.username }, 'torneos').populate({ path: 'torneos', populate: { path: 'torneo', select: 'name image' } }).then((data) => {
+            console.log(data);
             if (data == null)
                 return res.status(404).json({ message: 'Torneos not found' });
             data.torneos.forEach((torneo) => {
@@ -81,6 +82,7 @@ function createTorneo(req, res) {
         let user = req.user;
         let type = req.body.type;
         let description = req.body.description;
+        let image = 'https://res.cloudinary.com/dyjz5e9a6/image/upload/v1609083619/default%20images/la-red-en-el-padel_wyfchm.jpg';
         let fechaInicio = req.body.fechaInicio;
         let finInscripcion = req.body.finInscripcion;
         let ubicacion = req.body.ubicacion;
@@ -92,6 +94,7 @@ function createTorneo(req, res) {
             name: name,
             type: type,
             description: description,
+            image: image,
             fechaInicio: fechaInicio,
             finInscripcion: finInscripcion,
             ubicacion: ubicacion,

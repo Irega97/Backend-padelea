@@ -39,6 +39,12 @@ function getUser(req, res) {
                 if (item.user == data.id) {
                     friendStatus = item.status;
                 }
+                if (item.status != 2)
+                    me.friends.splice(me.friends.indexOf(item), 1);
+            });
+            me === null || me === void 0 ? void 0 : me.torneos.forEach((torneo) => {
+                if (torneo.status == 0)
+                    me.torneos.splice(me.torneos.indexOf(torneo), 1);
             });
             let dataToSend = {
                 _id: data._id,
@@ -69,6 +75,15 @@ function getMyUser(req, res) {
 function getMyNum(req, res) {
     user_1.default.findById(req.user, { friends: 1, torneos: 1 }).then(data => {
         let status = 200;
+        data === null || data === void 0 ? void 0 : data.friends.forEach((friend) => {
+            if (friend.status != 2)
+                data.friends.splice(data.friends.indexOf(friend), 1);
+        });
+        data === null || data === void 0 ? void 0 : data.torneos.forEach((torneo) => {
+            if (torneo.status == 0) {
+                data.torneos.splice(data.torneos.indexOf(torneo), 1);
+            }
+        });
         const dataSend = {
             numAmigos: data === null || data === void 0 ? void 0 : data.friends.length,
             numTorneos: data === null || data === void 0 ? void 0 : data.torneos.length

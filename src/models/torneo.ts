@@ -13,6 +13,9 @@ const torneo = new torneoSchema({
     description: {
         type: String
     },
+    image: {
+        type: String
+    },
     fechaInicio: {
         type: Date
     },
@@ -90,6 +93,7 @@ export interface ITorneo extends Document {
     name: string;
     type: string;
     description: string;
+    image: string;
     fechaInicio: Date;
     finInscripcion: Date;
     ubicacion: string;
@@ -111,6 +115,7 @@ torneo.methods.torneoToJSON = function(){
         name: this.name,
         type: this.type,
         description: this.description,
+        image: this.image,
         fechaInicio: this.fechaInicio,
         finInscripcion: this.finInscripcion,
         ubicacion: this.ubicacion,
