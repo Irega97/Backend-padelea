@@ -13,12 +13,13 @@ function getMyNotifications(req:Request, res:Response): void {
     })
 }
 
-async function addNotification(type: string, description: string, destino: string, origen: any): Promise<any> {
+async function addNotification(type: string, description: string, destino: string, origen: any, image: any): Promise<any> {
     let newNotification = {
         type: type,
         description: description,
         status: 0,
-        origen: origen
+        origen: origen,
+        image: image
     }
     return User.updateOne({"username": destino}, {$addToSet: {notifications: newNotification}})
 }

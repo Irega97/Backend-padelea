@@ -21,6 +21,9 @@ const notification = new notificationSchema({
     },
     origen: {
         type: String
+    },
+    image: {
+        type: String
     }
 });
 notification.methods.notificationToJSON = function () {
@@ -28,7 +31,8 @@ notification.methods.notificationToJSON = function () {
         type: this.type,
         description: this.description,
         status: this.status,
-        origen: this.origen
+        origen: this.origen,
+        image: this.image
     };
 };
 //Exportamos modelo para poder usarlo

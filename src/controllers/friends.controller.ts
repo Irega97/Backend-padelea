@@ -39,11 +39,12 @@ async function addFriend(req: Request, res: Response) {
         status: 1
     };
     User.findById(myID).then(data => {
+        const image = data?.image;
         if(!data?.friends.includes(friend2.user)){
             try {
                 User.findOneAndUpdate({"_id":myID},{$addToSet: {friends: friend1}}).then(() => {
                     User.findOneAndUpdate({"_id":receptorID},{$addToSet: {friends: friend2}}).then(() => {
-                        notController.addNotification("Amigos", "Alguien quiere ser tu amigo", req.params.username, myUser).then(data =>{
+                        notController.addNotification("Amigos", req.params.username + " quiere ser tu amigo", req.params.username, myUser, image).then(data =>{
                             if (data.nModified == 1){
                                 return res.status(200).json({message: "Amigo añadido correctamente"});
                             }

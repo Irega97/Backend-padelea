@@ -10,14 +10,23 @@ io.on('connection', (socket: any) => {
     socket._id = user.id;
     socket.join(user.id);
     console.log(user.username + " se ha conectado");
+    console.log("Salas", user.id);
   });
 
   socket.on('nuevoUsuario', (user:any) => {
     socket.emit('nuevoUsuario', user);
   })
 
-  socket.on('nuevaNotificacion', (notification:any) => {
-    socket.in(notification.destino).emit('nuevaNotificacion', notification);
+  socket.on('nuevaNotificacion', (data:any) => {
+    const notification = {
+    type: data.type,
+    description: data.description,
+    status: 0,
+    origen: data.origen,
+    image: data.image
+    }
+    
+    socket.in(data.destino).emit('nuevaNotificacion', notification);
   });
 
   socket.on('responseFriend', (notification:any) => {
