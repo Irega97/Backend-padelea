@@ -59,7 +59,6 @@ function getTorneos(req, res) {
 }
 function getTorneosUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-<<<<<<< HEAD
         user_1.default.findOne({ "username": req.params.username, select: { torneos: 1 } }).then((data) => {
             if (data == null)
                 return res.status(404).json({ message: 'Torneos not found' });
@@ -67,11 +66,6 @@ function getTorneosUser(req, res) {
                 if (torneo.status == 0)
                     data.torneos.splice(data.torneos.indexOf(torneo), 1);
             });
-=======
-        user_1.default.findOne({ "username": req.params.username }, { torneos: 1 }).populate({ path: 'torneos', populate: { path: 'torneo', select: 'name' } }).then((data) => {
-            if (data == null)
-                return res.status(404).json({ message: "User Not Found" });
->>>>>>> 5150a15b3cfae1eee836db16b7818f1aaa30ba48
             return res.status(200).json(data);
         }, (error) => {
             return res.status(500).json(error);
