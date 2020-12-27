@@ -27,12 +27,12 @@ function getMyNotifications(req, res) {
         return res.status(500).json(err);
     });
 }
-function addNotification(type, description, destino, origen, image) {
+function addNotification(type, description, status, destino, origen, image) {
     return __awaiter(this, void 0, void 0, function* () {
         let newNotification = {
             type: type,
             description: description,
-            status: 0,
+            status: status,
             origen: origen,
             image: image
         };
@@ -51,4 +51,10 @@ function deleteNotification(type, destino, origen) {
         });
     });
 }
-exports.default = { getMyNotifications, addNotification, deleteNotification };
+function delNotification(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        /* await User.findById(req.user, {notifications: 1}).then(data => {
+         })*/
+    });
+}
+exports.default = { getMyNotifications, addNotification, deleteNotification, delNotification };

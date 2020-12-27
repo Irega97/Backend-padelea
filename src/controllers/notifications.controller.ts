@@ -13,11 +13,11 @@ function getMyNotifications(req:Request, res:Response): void {
     })
 }
 
-async function addNotification(type: string, description: string, destino: string, origen: any, image: any): Promise<any> {
+async function addNotification(type: string, description: string, status: number, destino: string, origen: any, image: any): Promise<any> {
     let newNotification = {
         type: type,
         description: description,
-        status: 0,
+        status: status,
         origen: origen,
         image: image
     }
@@ -35,4 +35,9 @@ async function deleteNotification(type: string, destino: string, origen: any): P
     })
 }
 
-export default { getMyNotifications, addNotification, deleteNotification }
+async function delNotification(req: Request, res: Response){
+   /* await User.findById(req.user, {notifications: 1}).then(data => {
+    })*/
+}
+
+export default { getMyNotifications, addNotification, deleteNotification, delNotification }

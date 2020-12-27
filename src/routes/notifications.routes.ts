@@ -6,5 +6,6 @@ import notificationsController from '../controllers/notifications.controller'
 const router = Router();
 
 router.post('/me', passport.authenticate("jwt", {session: false}), notificationsController.getMyNotifications);
+router.post('/del', passport.authenticate("jwt", {session: false}), notificationsController.delNotification);
 
 export default router;

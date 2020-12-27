@@ -9,4 +9,5 @@ const notifications_controller_1 = __importDefault(require("../controllers/notif
 //Router nos permite gestionar rutas de la API
 const router = express_1.Router();
 router.post('/me', passport_1.default.authenticate("jwt", { session: false }), notifications_controller_1.default.getMyNotifications);
+router.post('/del', passport_1.default.authenticate("jwt", { session: false }), notifications_controller_1.default.delNotification);
 exports.default = router;

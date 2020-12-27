@@ -54,7 +54,7 @@ function addFriend(req, res) {
                 try {
                     user_1.default.findOneAndUpdate({ "_id": myID }, { $addToSet: { friends: friend1 } }).then(() => {
                         user_1.default.findOneAndUpdate({ "_id": receptorID }, { $addToSet: { friends: friend2 } }).then(() => {
-                            notifications_controller_1.default.addNotification("Amigos", req.params.username + " quiere ser tu amigo", req.params.username, myUser, image).then(data => {
+                            notifications_controller_1.default.addNotification("Amigos", req.params.username + " quiere ser tu amigo", 1, req.params.username, myUser, image).then(data => {
                                 if (data.nModified == 1) {
                                     return res.status(200).json({ message: "Amigo añadido correctamente" });
                                 }
@@ -82,11 +82,16 @@ function changeFriendStatus(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const accept = req.body.accept;
         const myID = req.user;
-        yield user_1.default.findById(myID, { friends: 1 }).populate({ path: 'friends', populate: { path: 'user', select: 'username' } }).then((data) => {
+        yield user_1.default.findById(myID, { username: 1, friends: 1, image: 1 }).populate({ path: 'friends', populate: { path: 'user', select: 'username' } }).then((data) => {
+            let myUser = data === null || data === void 0 ? void 0 : data.username;
+            let myImage = data === null || data === void 0 ? void 0 : data.image;
             data === null || data === void 0 ? void 0 : data.friends.forEach((friend) => {
-                if (friend.user.username == req.params.username) { //PETA AQUI EL MUY HIJO DE PUTA
+                if (friend.user.username == req.params.username) {
                     if (accept == true) {
                         friend.status = 2;
+                        notifications_controller_1.default.addNotification("Amigos", myUser + " te ha aceptado como amigo", 1, req.params.username, myUser, myImage).then(null, error => {
+                            return res.status(500).json(error);
+                        });
                     }
                     else {
                         let i = data.friends.indexOf(friend);

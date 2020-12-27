@@ -13,7 +13,6 @@ io.on('connection', (socket) => {
         socket._id = user.id;
         socket.join(user.id);
         console.log(user.username + " se ha conectado");
-        console.log("Salas", user.id);
     });
     socket.on('nuevoUsuario', (user) => {
         socket.emit('nuevoUsuario', user);
@@ -22,15 +21,11 @@ io.on('connection', (socket) => {
         const notification = {
             type: data.type,
             description: data.description,
-            status: 0,
+            status: data.status,
             origen: data.origen,
             image: data.image
         };
-        console.log("Notificacion destino", data.destino);
         socket.in(data.destino).emit('nuevaNotificacion', notification);
-    });
-    socket.on('responseFriend', (notification) => {
-        socket.in(notification.destino).emit('responseFriend', notification);
     });
     socket.on('disconnect', function () {
         auth_controller_1.default.setOnlineStatus(socket._id, false);

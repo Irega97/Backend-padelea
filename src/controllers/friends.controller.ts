@@ -44,7 +44,7 @@ async function addFriend(req: Request, res: Response) {
             try {
                 User.findOneAndUpdate({"_id":myID},{$addToSet: {friends: friend1}}).then(() => {
                     User.findOneAndUpdate({"_id":receptorID},{$addToSet: {friends: friend2}}).then(() => {
-                        notController.addNotification("Amigos", req.params.username + " quiere ser tu amigo", req.params.username, myUser, image).then(data =>{
+                        notController.addNotification("Amigos", req.params.username + " quiere ser tu amigo", 1, req.params.username, myUser, image).then(data =>{
                             if (data.nModified == 1){
                                 return res.status(200).json({message: "Amigo añadido correctamente"});
                             }
@@ -70,11 +70,16 @@ async function changeFriendStatus(req: Request, res: Response){
     const accept: boolean = req.body.accept;
     const myID: any = req.user;
     
-    await User.findById(myID, {friends : 1}).populate({path: 'friends', populate: {path:'user', select: 'username'}}).then((data) => {
+    await User.findById(myID, {username: 1, friends : 1, image: 1}).populate({path: 'friends', populate: {path:'user', select: 'username'}}).then((data) => {
+        let myUser = data?.username;
+        let myImage = data?.image;
         data?.friends.forEach((friend) => {
-            if(friend.user.username == req.params.username){ //PETA AQUI EL MUY HIJO DE PUTA
+            if(friend.user.username == req.params.username){
                 if(accept == true){
                     friend.status = 2;
+                    notController.addNotification("Amigos", myUser + " te ha aceptado como amigo", 1, req.params.username, myUser, myImage).then(null, error =>{
+                        return res.status(500).json(error);
+                    });
                 } else{
                     let i = data.friends.indexOf(friend);
                     data.friends.splice(i, 1);

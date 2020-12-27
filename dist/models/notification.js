@@ -18,6 +18,8 @@ const notification = new notificationSchema({
     },
     status: {
         type: Number
+        //0: Se borrará cuando se haga cierta acción
+        //1: Se borrará cuando se entre en la notificación
     },
     origen: {
         type: String
