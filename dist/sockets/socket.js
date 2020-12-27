@@ -26,7 +26,6 @@ io.on('connection', (socket) => {
             origen: data.origen,
             image: data.image
         };
-        console.log("Notificacion destino", data.destino);
         socket.in(data.destino).emit('nuevaNotificacion', notification);
     });
     socket.on('responseFriend', (notification) => {
