@@ -55,6 +55,9 @@ const torneo = new torneoSchema({
     maxPlayers: {
         type: Number
     },
+    finalizado: {
+        type: Boolean
+    },
     players: [{
             type: mongoose_1.Schema.Types.ObjectId,
             ref: 'User'
@@ -112,6 +115,7 @@ torneo.methods.torneoToJSON = function () {
         numRondas: this.numRondas,
         admin: this.admin,
         maxPlayers: this.maxPlayers,
+        finalizado: this.finalizado,
         players: this.players,
         cola: this.cola,
         rondas: this.rondas,

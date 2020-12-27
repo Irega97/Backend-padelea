@@ -39,10 +39,15 @@ async function getTorneos(req: Request, res: Response){
 }
 
 async function getTorneosUser(req: Request, res: Response){
-    User.findOne({"username": req.params.username}, {torneos : 1}).populate({path: 'torneos', populate:
-                    {path:'torneo', select: 'name'}}).then((data) => {
-        if(data==null) return res.status(404).json({message: "User Not Found"});
+    User.findOne({"username": req.params.username, select: {torneos: 1}}).then((data) => {
+        if (data==null) return res.status(404).json({message: 'Torneos not found'});
+        data.torneos.forEach((torneo) => {
+            if(torneo.status == 0)
+                data.torneos.splice(data.torneos.indexOf(torneo), 1);
+        })
         return res.status(200).json(data);
+    }, (error) => {
+        return res.status(500).json(error);
     });
 }
 
@@ -73,6 +78,7 @@ async function createTorneo(req: Request, res: Response){
         numRondas: numRondas,
         admin: [user],
         maxPlayers: maxPlayers,
+        finalizado: false,
         players: [user]
     });
     if(participa==false){
@@ -104,24 +110,30 @@ async function joinTorneo(req: Request, res: Response){
                 if(t.finInscripcion.valueOf()-Date.now() > 0){
                     inscriptionsPeriod = true;
                 } else inscriptionsPeriod = false;
-                if(t?.players.length < t?.maxPlayers && inscriptionsPeriod && t.type == "public"){
+                if(t?.players.length < t?.maxPlayers && inscriptionsPeriod && t.type != "private"){
                     await Torneo.updateOne({"_id": t?._id},{$addToSet: {players: data?.id}}).then(torneo => {
                         if(torneo.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
-                        t = torneo;
                     });
                     await User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: null, status: 1}]}}).then(user => {
                         if(user.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
                     });
-                    return res.status(200).json(t);
+                    return res.status(200).json("Te has unido a " + t?.name);
                 } else {
-                    await Torneo.updateOne({"_id": t?._id},{$addToSet: {cola: data?.id}}).then(torneo => {
-                        if(torneo.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
-                        t = torneo;
+                    let isPlayer = false
+                    t.players.forEach((player) => {
+                        if(player == req.user)
+                            isPlayer = true;
                     });
-                    await User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: null, status: 0}]}}).then(user => {
-                        if(user.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
-                    });
-                    return res.status(200).json(t);
+                    if(isPlayer) return res.status(400).json({message: "Ya estás inscrito"})
+                    else {
+                        await Torneo.updateOne({"_id": t?._id},{$addToSet: {cola: data?.id}}).then(torneo => {
+                            if(torneo.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
+                        });
+                        await User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: null, status: 0}]}}).then(user => {
+                            if(user.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
+                        });                        
+                        return res.status(200).json("Has solicitado unirte a " + t?.name);
+                    }
                 }
             }
             else return res.status(404).json({message: "Torneo not found"});
@@ -132,4 +144,73 @@ async function joinTorneo(req: Request, res: Response){
     }
 }
 
-export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo }
+async function leaveTorneo(req: Request, res: Response){
+    //TE DEJA IRTE SI ESTAS EN COLA O SI AUN NO HA EMPEZADO
+    try {
+        let t: any;
+        let u: any;
+        let status: number = -1;
+        
+        await Torneo.findOne({"name": req.params.name}).then((data) => {
+            if(data == null) return res.status(404).json({message: "Torneo not found"});
+            else {
+                t = data;
+            }
+        });
+        
+        await User.findById(req.user).then((data) => {
+            if(data == null) return res.status(404).json({message: "User not found"});
+            else{
+                data?.torneos.forEach((torneo) => {
+                    if(torneo.torneo.toString() == t?._id)
+                        status = torneo.status;
+                        console.log(status);
+                });
+                u = data;
+            }
+        });
+
+        if(status == 0){ //COLA
+            t?.cola.forEach((user: any) => {
+                if(user == req.user)
+                    t?.cola.splice(t?.cola.indexOf(user), 1);
+            });
+            Torneo.updateOne({name: t?.name}, {$set: {cola: t?.cola}}).then((data) => {
+                if(data.nModified != 1) return res.status(400).json({message: "No has podido abandonar " + t.name})
+                u.torneos.forEach((torneo: any) => {
+                    if(torneo.torneo == t?.id){
+                        u.torneos.splice(u.torneos.indexOf(torneo), 1);
+                    }
+                });
+                User.updateOne({"_id": req.user}, {$set: {torneos: u.torneos}}).then((data)=> {
+                    if(data.nModified != 1) return res.status(400).json({message: "No has podido abandonar "+t.name});
+                    else return res.status(200).json({message: "Has abandonado " + t?.name});
+                }); 
+            });
+        } else if (status == 1 && t.fechaInicio - Date.now() > 0){ //PLAYER
+            t?.players.forEach((user: any) => {
+                if(user == req.user)
+                    t?.players.splice(t?.players.indexOf(user), 1);
+            });
+            Torneo.updateOne({name: t?.name}, {$set: {players: t?.players}}).then((data) => {
+                if(data.nModified != 1) return res.status(400).json({message: "No has podido abandonar " + t.name})
+                u.torneos.forEach((torneo: any) => {
+                    if(torneo.torneo == t?.id){
+                        u.torneos.splice(u.torneos.indexOf(torneo), 1);
+                    }
+                });
+                User.updateOne({"_id": req.user}, {$set: {torneos: u.torneos}}).then((data)=> {
+                    if(data.nModified != 1) return res.status(400).json({message: "No has podido abandonar "+t.name});
+                    else return res.status(200).json({message: "Has abandonado " + t?.name});
+                }); 
+            });
+        } else {
+            return res.status(400).json({message: "No estás en el torneo"});
+        }
+    } catch (error){
+        console.log(error);
+        return res.status(500).json({message: "Internal Server Error"});
+    }
+}
+
+export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo }

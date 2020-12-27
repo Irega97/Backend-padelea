@@ -35,6 +35,9 @@ const torneo = new torneoSchema({
     maxPlayers: {
         type: Number
     },
+    finalizado: {
+        type: Boolean
+    },
     players: [{
         type: Schema.Types.ObjectId,
         ref: 'User'
@@ -94,6 +97,7 @@ export interface ITorneo extends Document {
     numRondas: number;
     admin: Array<any>;
     maxPlayers: number;
+    finalizado: boolean;
     players: Array<any>;
     cola: Array<any>;
     rondas: Array<any>;
@@ -114,6 +118,7 @@ torneo.methods.torneoToJSON = function(){
         numRondas: this.numRondas,
         admin : this.admin,
         maxPlayers: this.maxPlayers,
+        finalizado: this.finalizado,
         players : this.players,
         cola: this.cola,
         rondas: this.rondas,
