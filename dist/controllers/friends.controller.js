@@ -54,8 +54,17 @@ function addFriend(req, res) {
                 try {
                     user_1.default.findOneAndUpdate({ "_id": myID }, { $addToSet: { friends: friend1 } }).then(() => {
                         user_1.default.findOneAndUpdate({ "_id": receptorID }, { $addToSet: { friends: friend2 } }).then(() => {
-                            notifications_controller_1.default.addNotification("Amigos", req.params.username + " quiere ser tu amigo", 1, req.params.username, myUser, image).then(data => {
+                            let newNotification = {
+                                type: "Amigos",
+                                description: myUser + " quiere ser tu amigo",
+                                status: 0,
+                                origen: myUser,
+                                image: image
+                            };
+                            notifications_controller_1.default.addNotification(newNotification, receptorID).then(data => {
                                 if (data.nModified == 1) {
+                                    const io = require('../sockets/socket').getSocket();
+                                    io.to(receptorID).emit('nuevaNotificacion', newNotification);
                                     return res.status(200).json({ message: "Amigo añadido correctamente" });
                                 }
                                 else if (data.nModified == 0) {
@@ -89,7 +98,14 @@ function changeFriendStatus(req, res) {
                 if (friend.user.username == req.params.username) {
                     if (accept == true) {
                         friend.status = 2;
-                        notifications_controller_1.default.addNotification("Amigos", myUser + " te ha aceptado como amigo", 1, req.params.username, myUser, myImage).then(null, error => {
+                        let newNotification = {
+                            type: "Amigos",
+                            description: myUser + " te ha aceptado como amigo",
+                            status: 1,
+                            origen: myUser,
+                            image: myImage
+                        };
+                        notifications_controller_1.default.addNotification(newNotification, friend.user._id).then(null, error => {
                             return res.status(500).json(error);
                         });
                     }

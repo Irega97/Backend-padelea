@@ -14,18 +14,6 @@ io.on('connection', (socket: any) => {
 
   socket.on('nuevoUsuario', (user:any) => {
     socket.emit('nuevoUsuario', user);
-  })
-
-  socket.on('nuevaNotificacion', (data:any) => {
-    const notification = {
-    type: data.type,
-    description: data.description,
-    status: data.status,
-    origen: data.origen,
-    image: data.image
-    }
-
-    socket.in(data.destino).emit('nuevaNotificacion', notification);
   });
 
   socket.on('disconnect', function(){
@@ -48,3 +36,10 @@ io.on('connection', (socket: any) => {
     socket.to(chatId).emit('message', {msg: message.text, user: socket.username, createdAt: new Date()});    
   });*/
 });
+
+function getSocket(){
+  console.log("Funciona");
+  return io;
+}
+
+module.exports.getSocket = getSocket;

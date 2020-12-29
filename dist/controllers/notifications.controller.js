@@ -27,16 +27,9 @@ function getMyNotifications(req, res) {
         return res.status(500).json(err);
     });
 }
-function addNotification(type, description, status, destino, origen, image) {
+function addNotification(newNotification, destino) {
     return __awaiter(this, void 0, void 0, function* () {
-        let newNotification = {
-            type: type,
-            description: description,
-            status: status,
-            origen: origen,
-            image: image
-        };
-        return user_1.default.updateOne({ "username": destino }, { $addToSet: { notifications: newNotification } });
+        return user_1.default.updateOne({ "_id": destino }, { $addToSet: { notifications: newNotification } });
     });
 }
 function deleteNotification(type, destino, origen) {

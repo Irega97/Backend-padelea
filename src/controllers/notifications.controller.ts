@@ -13,15 +13,9 @@ function getMyNotifications(req:Request, res:Response): void {
     })
 }
 
-async function addNotification(type: string, description: string, status: number, destino: string, origen: any, image: any): Promise<any> {
-    let newNotification = {
-        type: type,
-        description: description,
-        status: status,
-        origen: origen,
-        image: image
-    }
-    return User.updateOne({"username": destino}, {$addToSet: {notifications: newNotification}})
+async function addNotification(newNotification: any, destino: string): Promise<any> {
+
+    return User.updateOne({"_id": destino}, {$addToSet: {notifications: newNotification}})
 }
 
 async function deleteNotification(type: string, destino: string, origen: any): Promise<any> {

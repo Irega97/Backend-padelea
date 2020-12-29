@@ -44,8 +44,18 @@ async function addFriend(req: Request, res: Response) {
             try {
                 User.findOneAndUpdate({"_id":myID},{$addToSet: {friends: friend1}}).then(() => {
                     User.findOneAndUpdate({"_id":receptorID},{$addToSet: {friends: friend2}}).then(() => {
-                        notController.addNotification("Amigos", req.params.username + " quiere ser tu amigo", 1, req.params.username, myUser, image).then(data =>{
+                        let newNotification = {
+                            type: "Amigos",
+                            description: myUser + " quiere ser tu amigo",
+                            status: 0,
+                            origen: myUser,
+                            image: image
+                        }
+
+                        notController.addNotification(newNotification, receptorID).then(data =>{
                             if (data.nModified == 1){
+                                const io = require('../sockets/socket').getSocket()
+                                io.to(receptorID).emit('nuevaNotificacion', newNotification);
                                 return res.status(200).json({message: "Amigo añadido correctamente"});
                             }
                             else if (data.nModified == 0){
@@ -77,7 +87,15 @@ async function changeFriendStatus(req: Request, res: Response){
             if(friend.user.username == req.params.username){
                 if(accept == true){
                     friend.status = 2;
-                    notController.addNotification("Amigos", myUser + " te ha aceptado como amigo", 1, req.params.username, myUser, myImage).then(null, error =>{
+                    let newNotification = {
+                        type: "Amigos",
+                        description: myUser + " te ha aceptado como amigo",
+                        status: 1,
+                        origen: myUser,
+                        image: myImage
+                    }
+
+                    notController.addNotification(newNotification, friend.user._id).then(null, error =>{
                         return res.status(500).json(error);
                     });
                 } else{

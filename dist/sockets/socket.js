@@ -17,16 +17,6 @@ io.on('connection', (socket) => {
     socket.on('nuevoUsuario', (user) => {
         socket.emit('nuevoUsuario', user);
     });
-    socket.on('nuevaNotificacion', (data) => {
-        const notification = {
-            type: data.type,
-            description: data.description,
-            status: data.status,
-            origen: data.origen,
-            image: data.image
-        };
-        socket.in(data.destino).emit('nuevaNotificacion', notification);
-    });
     socket.on('disconnect', function () {
         auth_controller_1.default.setOnlineStatus(socket._id, false);
         console.log(socket.username + " se ha desconectado");
@@ -45,3 +35,8 @@ io.on('connection', (socket) => {
       socket.to(chatId).emit('message', {msg: message.text, user: socket.username, createdAt: new Date()});
     });*/
 });
+function getSocket() {
+    console.log("Funciona");
+    return io;
+}
+module.exports.getSocket = getSocket;
