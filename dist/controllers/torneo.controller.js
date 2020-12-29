@@ -139,15 +139,19 @@ function joinTorneo(req, res) {
                     else
                         inscriptionsPeriod = false;
                     if ((t === null || t === void 0 ? void 0 : t.players.length) < (t === null || t === void 0 ? void 0 : t.maxPlayers) && inscriptionsPeriod && t.type != "private") {
-                        yield torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { players: data === null || data === void 0 ? void 0 : data.id } }).then(torneo => {
+                        torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { players: data === null || data === void 0 ? void 0 : data.id } }).then(torneo => {
+                            console.log("torneo: ", torneo);
                             if (torneo.nModified != 1)
                                 return res.status(400).json({ message: "Ya estás inscrito" });
+                            else {
+                                user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: tID, statistics: null, status: 1 }] } }).then(user => {
+                                    console.log("user:", user);
+                                    if (user.nModified != 1)
+                                        return res.status(400).json({ message: "Ya estás inscrito" });
+                                    return res.status(200).json({ message: "Te has unido a " + (t === null || t === void 0 ? void 0 : t.name) });
+                                });
+                            }
                         });
-                        yield user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: tID, statistics: null, status: 1 }] } }).then(user => {
-                            if (user.nModified != 1)
-                                return res.status(400).json({ message: "Ya estás inscrito" });
-                        });
-                        return res.status(200).json("Te has unido a " + (t === null || t === void 0 ? void 0 : t.name));
                     }
                     else {
                         let isPlayer = false;
@@ -158,15 +162,19 @@ function joinTorneo(req, res) {
                         if (isPlayer)
                             return res.status(400).json({ message: "Ya estás inscrito" });
                         else {
-                            yield torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { cola: data === null || data === void 0 ? void 0 : data.id } }).then(torneo => {
+                            torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { cola: data === null || data === void 0 ? void 0 : data.id } }).then(torneo => {
+                                console.log("torneo: ", torneo);
                                 if (torneo.nModified != 1)
-                                    return res.status(400).json({ message: "Ya estás inscrito" });
+                                    return res.status(400).json({ message: "Ya has solicitado unirte" });
+                                else {
+                                    user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: tID, statistics: null, status: 0 }] } }).then(user => {
+                                        console.log("user: ", user);
+                                        if (user.nModified != 1)
+                                            return res.status(400).json({ message: "Ya has solicitado unirte" });
+                                    });
+                                }
+                                return res.status(200).json({ message: "Has solicitado unirte a " + (t === null || t === void 0 ? void 0 : t.name) });
                             });
-                            yield user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: tID, statistics: null, status: 0 }] } }).then(user => {
-                                if (user.nModified != 1)
-                                    return res.status(400).json({ message: "Ya estás inscrito" });
-                            });
-                            return res.status(200).json("Has solicitado unirte a " + (t === null || t === void 0 ? void 0 : t.name));
                         }
                     }
                 }

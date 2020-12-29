@@ -17,23 +17,60 @@ async function getColaPlayers(req: Request, res: Response){
 
 async function acceptPlayers(req: Request, res: Response){
     try {
-        let user = req.body.player;
+        let user = req.body.user;
         let accept = req.body.accept;
-        Torneo.findOne({'name': req.params.name}, {players: 1, cola: 1}).populate({path: 'cola', select: 'name image'}).then((data) => {
+        let userID: string;
+        let torneoID: string;
+        await Torneo.findOne({'name': req.params.name}, {maxPlayers: 1, players: 1, cola: 1}).populate({path: 'cola', select: 'username image'}).then((data) => {
+            torneoID = data?.id;
             if(accept == true){
                 data?.cola.forEach((p) => {
-                    if(p.name == user) user;
+                    if(p.username == user){
+                        userID = p._id;
+                        data.cola.splice(data.cola.indexOf(p), 1);
+                        data?.players.push(userID);
+                    }
+                });
+                Torneo.findOneAndUpdate({'name': req.params.name}, {$set: {players: data?.players, cola: data?.cola}}).then((d) => {
+                    if(d == null) return res.status(400).json({message: "Bad request"});
+                    else {
+                        User.findById(userID, {select: {torneos: 1}}).populate('torneos').then((user) => {
+                            if(user == null) return res.status(404).json({message: "User not found"});
+                            user?.torneos.forEach((t) => {
+                                if(t.torneo == torneoID)
+                                    t.status = 1;
+                            });
+                            User.update({"_id": userID}, {$set: {torneos: user?.torneos}}).then((d) => {
+                                if(d.nModified != 1) return res.status(400).json({message: "Bad request"});
+                            });
+                        });
+                        return res.status(200).json({message: "Usuario aceptado"});
+                    }
                 });
             } else {
                 data?.cola.forEach((p) => {
-                    if(p.name == user)
+                    if(p.username == user){
+                        userID = p._id;
                         data.cola.splice(data.cola.indexOf(p), 1);
+                    }
+                });
+                Torneo.findOneAndUpdate({'name': req.params.name}, {$set: {cola: data?.cola}}).then((d) => {
+                    if(d == null) return res.status(400).json({message: "Bad request"});
+                    else {
+                        User.findById(userID, {select: {torneos: 1}}).populate('torneos').then((user) => {
+                            if(user == null) return res.status(404).json({message: "User not found"});
+                            user?.torneos.forEach((t) => {
+                                if(t.torneo == torneoID)
+                                    user.torneos.splice(user.torneos.indexOf(t), 1);
+                            });
+                            User.update({"_id": userID}, {$set: {torneos: user?.torneos}}).then((d) => {
+                                if(d.nModified != 1) return res.status(400).json({message: "Bad request"});
+                            });
+                        });
+                        return res.status(200).json({message: "Usuario rechazado"});
+                    }
                 });
             }
-            Torneo.findOneAndUpdate({'name': req.params.name}, {$set: {players: data?.players, cola: data?.cola}}).then((d) => {
-                if(d == null) return res.status(400).json({message: "Bad request"});
-                return res.status(200).json(d);
-            })
         });
     } catch (error) {
         console.log(error);

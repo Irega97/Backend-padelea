@@ -114,13 +114,17 @@ async function joinTorneo(req: Request, res: Response){
                     inscriptionsPeriod = true;
                 } else inscriptionsPeriod = false;
                 if(t?.players.length < t?.maxPlayers && inscriptionsPeriod && t.type != "private"){
-                    await Torneo.updateOne({"_id": t?._id},{$addToSet: {players: data?.id}}).then(torneo => {
+                    Torneo.updateOne({"_id": t?._id},{$addToSet: {players: data?.id}}).then(torneo => {
+                        console.log("torneo: ", torneo);
                         if(torneo.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
+                        else {
+                            User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: null, status: 1}]}}).then(user => {
+                                console.log("user:" ,user);
+                                if(user.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
+                                return res.status(200).json({message: "Te has unido a " + t?.name});
+                            });
+                        }
                     });
-                    await User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: null, status: 1}]}}).then(user => {
-                        if(user.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
-                    });
-                    return res.status(200).json("Te has unido a " + t?.name);
                 } else {
                     let isPlayer = false
                     t.players.forEach((player) => {
@@ -129,13 +133,17 @@ async function joinTorneo(req: Request, res: Response){
                     });
                     if(isPlayer) return res.status(400).json({message: "Ya estás inscrito"})
                     else {
-                        await Torneo.updateOne({"_id": t?._id},{$addToSet: {cola: data?.id}}).then(torneo => {
-                            if(torneo.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
-                        });
-                        await User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: null, status: 0}]}}).then(user => {
-                            if(user.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
+                        Torneo.updateOne({"_id": t?._id},{$addToSet: {cola: data?.id}}).then(torneo => {
+                            console.log("torneo: ", torneo);
+                            if(torneo.nModified != 1) return res.status(400).json({message: "Ya has solicitado unirte"});
+                            else {
+                                User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: null, status: 0}]}}).then(user => {
+                                    console.log("user: ", user);
+                                    if(user.nModified != 1) return res.status(400).json({message: "Ya has solicitado unirte"});
+                                });
+                            }
+                            return res.status(200).json({message: "Has solicitado unirte a " + t?.name});
                         });                        
-                        return res.status(200).json("Has solicitado unirte a " + t?.name);
                     }
                 }
             }
