@@ -13,11 +13,6 @@ function getMyNotifications(req:Request, res:Response): void {
     })
 }
 
-async function addNotification(newNotification: any, destino: string): Promise<any> {
-
-    return User.updateOne({"_id": destino}, {$addToSet: {notifications: newNotification}})
-}
-
 async function deleteNotification(type: string, destino: string, origen: any): Promise<any> {
     await User.findById(destino, {notifications: 1}).then(data => {
         data?.notifications.forEach((notification) => {
@@ -30,8 +25,22 @@ async function deleteNotification(type: string, destino: string, origen: any): P
 }
 
 async function delNotification(req: Request, res: Response){
-   /* await User.findById(req.user, {notifications: 1}).then(data => {
-    })*/
+    let notificationbody = req.body.notification;
+
+   await User.findById(req.user, {notifications: 1}).then(data => {
+    data?.notifications.forEach((notification) => {
+        if(notification.type == notificationbody.type && notification.origen == notificationbody.origen){
+            data.notifications.splice(data.notifications.indexOf(notification.origen), 1);
+            User.updateOne({"_id": req.user}, {$set: {notifications: data?.notifications}}).then(data => {
+                return res.status(200).json(data);
+            }, error => {
+                return res.status(500).json(error);
+            });
+        }
+    });
+    }).catch((err) => {
+        return res.status(500).json(err);
+    });
 }
 
-export default { getMyNotifications, addNotification, deleteNotification, delNotification }
+export default { getMyNotifications, deleteNotification, delNotification }

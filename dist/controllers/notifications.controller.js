@@ -27,11 +27,6 @@ function getMyNotifications(req, res) {
         return res.status(500).json(err);
     });
 }
-function addNotification(newNotification, destino) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return user_1.default.updateOne({ "_id": destino }, { $addToSet: { notifications: newNotification } });
-    });
-}
 function deleteNotification(type, destino, origen) {
     return __awaiter(this, void 0, void 0, function* () {
         yield user_1.default.findById(destino, { notifications: 1 }).then(data => {
@@ -46,8 +41,21 @@ function deleteNotification(type, destino, origen) {
 }
 function delNotification(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        /* await User.findById(req.user, {notifications: 1}).then(data => {
-         })*/
+        let notificationbody = req.body.notification;
+        yield user_1.default.findById(req.user, { notifications: 1 }).then(data => {
+            data === null || data === void 0 ? void 0 : data.notifications.forEach((notification) => {
+                if (notification.type == notificationbody.type && notification.origen == notificationbody.origen) {
+                    data.notifications.splice(data.notifications.indexOf(notification.origen), 1);
+                    user_1.default.updateOne({ "_id": req.user }, { $set: { notifications: data === null || data === void 0 ? void 0 : data.notifications } }).then(data => {
+                        return res.status(200).json(data);
+                    }, error => {
+                        return res.status(500).json(error);
+                    });
+                }
+            });
+        }).catch((err) => {
+            return res.status(500).json(err);
+        });
     });
 }
-exports.default = { getMyNotifications, addNotification, deleteNotification, delNotification };
+exports.default = { getMyNotifications, deleteNotification, delNotification };

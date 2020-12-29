@@ -51,8 +51,7 @@ async function addFriend(req: Request, res: Response) {
                             origen: myUser,
                             image: image
                         }
-
-                        notController.addNotification(newNotification, receptorID).then(data =>{
+                        User.updateOne({"_id": receptorID}, {$addToSet: {notifications: newNotification}}).then(data =>{
                             if (data.nModified == 1){
                                 const io = require('../sockets/socket').getSocket()
                                 io.to(receptorID).emit('nuevaNotificacion', newNotification);
@@ -79,25 +78,16 @@ async function addFriend(req: Request, res: Response) {
 async function changeFriendStatus(req: Request, res: Response){
     const accept: boolean = req.body.accept;
     const myID: any = req.user;
+    let myUser: any;
+    let myImage: any;
     
     await User.findById(myID, {username: 1, friends : 1, image: 1}).populate({path: 'friends', populate: {path:'user', select: 'username'}}).then((data) => {
-        let myUser = data?.username;
-        let myImage = data?.image;
+        myUser = data?.username;
+        myImage = data?.image;
         data?.friends.forEach((friend) => {
             if(friend.user.username == req.params.username){
                 if(accept == true){
                     friend.status = 2;
-                    let newNotification = {
-                        type: "Amigos",
-                        description: myUser + " te ha aceptado como amigo",
-                        status: 1,
-                        origen: myUser,
-                        image: myImage
-                    }
-
-                    notController.addNotification(newNotification, friend.user._id).then(null, error =>{
-                        return res.status(500).json(error);
-                    });
                 } else{
                     let i = data.friends.indexOf(friend);
                     data.friends.splice(i, 1);
@@ -118,6 +108,26 @@ async function changeFriendStatus(req: Request, res: Response){
             if(friend.user == myID){ 
                 if(accept === true){
                     friend.status = 2;
+                    let newNotification = {
+                        type: "Amigos",
+                        description: myUser + " te ha aceptado como amigo",
+                        status: 1,
+                        origen: myUser,
+                        image: myImage
+                    }
+                    User.updateOne({"_id": friendID}, {$addToSet: {notifications: newNotification}}).then(data =>{
+                        if (data.nModified == 1){
+                            const io = require('../sockets/socket').getSocket()
+                            io.to(friendID).emit('nuevaNotificacion', newNotification);
+                            return res.status(200).json({message: "Amigo añadido correctamente"});
+                        }
+                        else if (data.nModified == 0){
+                            return res.status(200).json({message: "Error al guardar la notificacion"});
+                        }
+                        else{
+                            return res.status(500).json(data);
+                        }
+                    });
                 } else{
                     let i = data.friends.indexOf(friend);
                     data.friends.splice(i, 1);
