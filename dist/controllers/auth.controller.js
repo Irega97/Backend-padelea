@@ -74,6 +74,12 @@ function register(req, res) {
                 "private": user.private
             });
             u.save().then((data) => {
+                let usuarioToSend = {
+                    username: u.username,
+                    image: u.image
+                };
+                const io = require('../sockets/socket').getSocket();
+                io.emit('nuevoUsuario', usuarioToSend);
                 return res.status(201).json({ token: createToken(data) });
             }).catch((err) => {
                 return res.status(500).json(err);

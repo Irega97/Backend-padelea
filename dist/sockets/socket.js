@@ -14,9 +14,6 @@ io.on('connection', (socket) => {
         socket.join(user.id);
         console.log(user.username + " se ha conectado");
     });
-    socket.on('nuevoUsuario', (user) => {
-        socket.emit('nuevoUsuario', user);
-    });
     socket.on('disconnect', function () {
         auth_controller_1.default.setOnlineStatus(socket._id, false);
         console.log(socket.username + " se ha desconectado");
@@ -36,7 +33,6 @@ io.on('connection', (socket) => {
     });*/
 });
 function getSocket() {
-    console.log("Funciona");
     return io;
 }
 module.exports.getSocket = getSocket;

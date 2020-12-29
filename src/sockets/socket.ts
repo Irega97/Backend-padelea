@@ -12,10 +12,6 @@ io.on('connection', (socket: any) => {
     console.log(user.username + " se ha conectado");
   });
 
-  socket.on('nuevoUsuario', (user:any) => {
-    socket.emit('nuevoUsuario', user);
-  });
-
   socket.on('disconnect', function(){
     authController.setOnlineStatus(socket._id, false);
     console.log(socket.username + " se ha desconectado");
@@ -38,7 +34,6 @@ io.on('connection', (socket: any) => {
 });
 
 function getSocket(){
-  console.log("Funciona");
   return io;
 }
 
