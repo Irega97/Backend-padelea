@@ -5,8 +5,7 @@ import Torneo from "../models/torneo";
 async function getColaPlayers(req: Request, res: Response){
     try {
         Torneo.findOne({'name': req.params.name}, {cola: 1}).populate({path: 'cola', select: 'username name image'}).then((data) => {
-            console.log("cola torneo: ", data);
-            /* if(data==null) return res.status(404).json({message: "Cola not found"}); */
+            if(data==null) return res.status(404).json({message: "Cola not found"});
             return res.status(200).json(data);
         })
     } catch(err){
@@ -22,6 +21,9 @@ async function acceptPlayers(req: Request, res: Response){
         let userID: string;
         let torneoID: string;
         let message: string;
+
+        const io = require('../sockets/socket').getSocket()
+
         await Torneo.findOne({'name': req.params.name}, {maxPlayers: 1, players: 1, cola: 1}).populate({path: 'cola', select: 'username'}).then((data) => {
             torneoID = data?.id;
             data?.cola.forEach((p) => {
@@ -43,8 +45,37 @@ async function acceptPlayers(req: Request, res: Response){
                         });
                         User.update({"_id": userID}, {$set: {torneos: user?.torneos}}).then((d) => {
                             if(d.nModified != 1) return res.status(400).json({message: "Bad request"});
-                            if(accept == true) message = "Usuario aceptado";
-                            else message = "Usuario rechazado";
+                            if(accept == true) {
+                                message = "Usuario aceptado";
+
+                                let playerToSend = {
+                                    torneo: req.params.name,
+                                    username: d.username,
+                                    name: d.name,
+                                    image: d.image
+                                }
+                                io.emit('nuevoJugador', playerToSend);
+
+                                let newNotification = {
+                                    type: "Torneo",
+                                    description: "Has sido aceptado en " + req.params.name,
+                                    status: 1,
+                                    origen: req.params.name,
+                                    /* image: myImage */
+                                }
+                                User.updateOne({"_id": userID}, {$addToSet: {notifications: newNotification}}).then(data =>{
+                                    if (data.nModified == 1){
+                                        io.to(userID).emit('nuevaNotificacion', newNotification);
+                                    }
+                                    else if (data.nModified == 0){
+                                        return res.status(200).json({message: "Error al guardar la notificacion"});
+                                    }
+                                });
+                            }
+                            else {
+                                message = "Usuario rechazado";
+                                io.emit('nuevoJugador', null);
+                            }
                             return res.status(200).json({message: message});
                         });
                     });

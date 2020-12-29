@@ -131,6 +131,7 @@ function joinTorneo(req, res) {
             let t = yield torneo_1.default.findOne({ 'name': req.params.name });
             let tID = t === null || t === void 0 ? void 0 : t.id;
             let inscriptionsPeriod;
+            const io = require('../sockets/socket').getSocket();
             user_1.default.findById(req.user).then((data) => __awaiter(this, void 0, void 0, function* () {
                 if (t != null) {
                     if (t.finInscripcion.valueOf() - Date.now() > 0) {
@@ -148,6 +149,13 @@ function joinTorneo(req, res) {
                                     console.log("user:", user);
                                     if (user.nModified != 1)
                                         return res.status(400).json({ message: "Ya estás inscrito" });
+                                    let playerToSend = {
+                                        torneo: req.params.name,
+                                        username: user.username,
+                                        name: user.name,
+                                        image: user.image
+                                    };
+                                    io.emit('nuevoJugador', playerToSend);
                                     return res.status(200).json({ message: "Te has unido a " + (t === null || t === void 0 ? void 0 : t.name) });
                                 });
                             }

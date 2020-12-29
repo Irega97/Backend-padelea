@@ -108,6 +108,9 @@ async function joinTorneo(req: Request, res: Response){
         let t = await Torneo.findOne({'name': req.params.name});
         let tID = t?.id;
         let inscriptionsPeriod;
+
+        const io = require('../sockets/socket').getSocket()
+
         User.findById(req.user).then(async data => {
             if(t!=null){
                 if(t.finInscripcion.valueOf()-Date.now() > 0){
@@ -121,6 +124,13 @@ async function joinTorneo(req: Request, res: Response){
                             User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: null, status: 1}]}}).then(user => {
                                 console.log("user:" ,user);
                                 if(user.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
+                                let playerToSend = {
+                                    torneo: req.params.name,
+                                    username: user.username,
+                                    name: user.name,
+                                    image: user.image
+                                }
+                                io.emit('nuevoJugador', playerToSend);
                                 return res.status(200).json({message: "Te has unido a " + t?.name});
                             });
                         }
