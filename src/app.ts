@@ -12,6 +12,7 @@ import friendsRoutes from './routes/friends.routes';
 import torneoRoutes from './routes/torneo.routes';
 import notificationsRoutes from './routes/notifications.routes';
 import chatRoutes from './routes/chat.routes';
+import adminRoutes from './routes/admin.routes';
 
 //Importamos middlewares
 import passport from 'passport';
@@ -39,7 +40,8 @@ app.use('/auth', authRoutes);
 app.use('/friends', friendsRoutes);
 app.use('/torneo', torneoRoutes);
 app.use('/notifications', notificationsRoutes);
-app.use('/chat', chatRoutes)
+app.use('/chat', chatRoutes);
+app.use('/torneo/admin', adminRoutes);
 
 //Exportamos fichero como 'app'
 export default app;

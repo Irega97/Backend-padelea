@@ -18,6 +18,8 @@ function getUsers(req:Request, res:Response): void {
 
 async function getUser(req:Request, res:Response) { 
     const me = await User.findById(req.user, {friends: 1});
+    let numTorneos=0;
+    let numAmigos=0;
     User.findOne({"username":req.params.username}, {username : 1, image : 1, email : 1, online: 1, name: 1, friends: 1, torneos: 1}).then((data)=>{
         if(data==null) return res.status(404).json({message: "User not found"});
         let friendStatus = -1;
@@ -25,12 +27,16 @@ async function getUser(req:Request, res:Response) {
             if(item.user == data.id){
                 friendStatus = item.status
             }
-            if(item.status != 2)
-                me.friends.splice(me.friends.indexOf(item), 1);
         });
-        me?.torneos.forEach((torneo) => {
-            if(torneo.status == 0)
-                me.torneos.splice(me.torneos.indexOf(torneo), 1);
+
+        data?.friends.forEach((friend) => {
+            if(friend.status == 2)
+                numAmigos++;
+        })
+
+        data?.torneos.forEach((item) => {
+            if(item.status != 0)
+                numTorneos++;
         })
 
         let dataToSend = {
@@ -40,9 +46,10 @@ async function getUser(req:Request, res:Response) {
             email: data.email,
             name: data.name,
             friendStatus: friendStatus,
-            numAmigos: data.friends.length,
-            numTorneos: data.torneos.length
+            numAmigos: numAmigos,
+            numTorneos: numTorneos
         }
+        console.log("data ", dataToSend);
         return res.status(200).json(dataToSend);
     }).catch((err) => {
         return res.status(500).json(err);
