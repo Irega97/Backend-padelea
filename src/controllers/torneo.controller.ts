@@ -96,6 +96,8 @@ async function createTorneo(req: Request, res: Response){
                 return res.status(500).json({message: "Internal Server Error"});
             });
         }
+        const io = require('../sockets/socket').getSocket()
+        io.emit('nuevoTorneo', torneo.name);
         return res.status(201).json(data);
     }, (error) =>{
         console.log(error);
@@ -122,7 +124,6 @@ async function joinTorneo(req: Request, res: Response){
                         if(torneo.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
                         else {
                             User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: null, status: 1}]}}).then(user => {
-                                console.log("user:" ,user);
                                 if(user.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
                                 let playerToSend = {
                                     torneo: req.params.name,
@@ -144,11 +145,9 @@ async function joinTorneo(req: Request, res: Response){
                     if(isPlayer) return res.status(400).json({message: "Ya estás inscrito"})
                     else {
                         Torneo.updateOne({"_id": t?._id},{$addToSet: {cola: data?.id}}).then(torneo => {
-                            console.log("torneo: ", torneo);
                             if(torneo.nModified != 1) return res.status(400).json({message: "Ya has solicitado unirte"});
                             else {
                                 User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: null, status: 0}]}}).then(user => {
-                                    console.log("user: ", user);
                                     if(user.nModified != 1) return res.status(400).json({message: "Ya has solicitado unirte"});
                                 });
                             }
@@ -187,7 +186,6 @@ async function leaveTorneo(req: Request, res: Response){
                 data?.torneos.forEach((torneo) => {
                     if(torneo.torneo.toString() == t?._id)
                         status = torneo.status;
-                        console.log(status);
                 });
                 u = data;
             }

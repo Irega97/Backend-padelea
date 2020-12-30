@@ -53,7 +53,6 @@ async function  addOtroParti(req:Request, res:Response): void {
     if(req.body.participantes =! null){
         Chat.updateOne({"_id": req.params.id}, {"users": req.params.participantes}).populate
     }
-    
 }*/
 
 function delChat(req:Request, res:Response): void {
