@@ -126,9 +126,9 @@ async function joinTorneo(req: Request, res: Response){
                                 if(user.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
                                 let playerToSend = {
                                     torneo: req.params.name,
-                                    username: user.username,
-                                    name: user.name,
-                                    image: user.image
+                                    username: data?.username,
+                                    name: data?.name,
+                                    image: data?.image
                                 }
                                 io.emit('nuevoJugador', playerToSend);
                                 return res.status(200).json({message: "Te has unido a " + t?.name});
@@ -171,6 +171,8 @@ async function leaveTorneo(req: Request, res: Response){
         let t: any;
         let u: any;
         let status: number = -1;
+
+        const io = require('../sockets/socket').getSocket()
         
         await Torneo.findOne({"name": req.params.name}).then((data) => {
             if(data == null) return res.status(404).json({message: "Torneo not found"});
@@ -222,7 +224,14 @@ async function leaveTorneo(req: Request, res: Response){
                 });
                 User.updateOne({"_id": req.user}, {$set: {torneos: u.torneos}}).then((data)=> {
                     if(data.nModified != 1) return res.status(400).json({message: "No has podido abandonar "+t.name});
-                    else return res.status(200).json({message: "Has abandonado " + t?.name});
+                    else {
+                        let jugador = {
+                            username: u.username,
+                            torneo: t.name
+                        }
+                        io.emit('player-left', jugador);
+                        return res.status(200).json({message: "Has abandonado " + t?.name});
+                    }
                 }); 
             });
         } else {

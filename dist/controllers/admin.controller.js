@@ -69,9 +69,9 @@ function acceptPlayers(req, res) {
                                     message = "Usuario aceptado";
                                     let playerToSend = {
                                         torneo: req.params.name,
-                                        username: d.username,
-                                        name: d.name,
-                                        image: d.image
+                                        username: user.username,
+                                        name: user.name,
+                                        image: user.image
                                     };
                                     io.emit('nuevoJugador', playerToSend);
                                     let newNotification = {
