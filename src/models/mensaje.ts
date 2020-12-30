@@ -8,11 +8,9 @@ const mensaje = new mensajeSchema({
     body: {
         type: String,
     },
-
     date :{
         type: Date,
     }
-
 });
 
 export interface IMensaje extends Document {

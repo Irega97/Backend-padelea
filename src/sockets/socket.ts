@@ -13,9 +13,12 @@ io.on('connection', (socket: any) => {
   });
 
   socket.on('disconnect', function(){
-    authController.setOnlineStatus(socket._id, false);
-    console.log(socket.username + " se ha desconectado");
-    //io.emit('usuarioDesconectado', {user: socket.username, event: 'left'});  
+    if (socket._id != undefined){
+      authController.setOnlineStatus(socket._id, false);
+      console.log(socket.username + " se ha desconectado");
+      socket._id = undefined;
+      //io.emit('usuarioDesconectado', {user: socket.username, event: 'left'});  
+    }
   });
 
   socket.on('nuevaSala', (chatid : any) =>{
