@@ -35,12 +35,12 @@ const chat = new chatSchema({
             type: mongoose_1.Schema.Types.ObjectId,
             ref: 'User'
         }],
-    mensajes: [{
-            mensaje: {
-                type: Object,
-                ref: 'Mensaje'
-            }
-        }],
+    mensajes: [
+        {
+            type: Object,
+            ref: 'Mensaje'
+        }
+    ],
 });
 chat.methods.chatToJSON = function () {
     return {

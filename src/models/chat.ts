@@ -17,12 +17,12 @@ const chat = new chatSchema({
         type: Schema.Types.ObjectId,
         ref: 'User'
     }],
-    mensajes: [{
-        mensaje: {
+    mensajes: [
+        {
             type: Object,
             ref: 'Mensaje'
         }
-    }],
+    ],
 });
 
 export interface IChat extends Document {

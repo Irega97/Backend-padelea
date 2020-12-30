@@ -5,6 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const { io } = require('../index');
 const auth_controller_1 = __importDefault(require("../controllers/auth.controller"));
+const chat_controller_1 = __importDefault(require("../controllers/chat.controller"));
+let sockets = [];
 // Mensajes de Sockets
 io.on('connection', (socket) => {
     socket.on('nuevoConectado', (user) => {
@@ -13,6 +15,12 @@ io.on('connection', (socket) => {
         socket._id = user.id;
         socket.join(user.id);
         console.log(user.username + " se ha conectado");
+        chat_controller_1.default.getIdMyChats(user.id).then((data) => {
+            data.chats.forEach((chat) => {
+                socket.join(chat._id);
+            });
+            sockets.push(socket);
+        });
     });
     socket.on('disconnect', function () {
         if (socket._id != undefined) {
@@ -38,4 +46,8 @@ io.on('connection', (socket) => {
 function getSocket() {
     return io;
 }
+function getVectorSockets() {
+    return sockets;
+}
 module.exports.getSocket = getSocket;
+module.exports.getVectorSockets = getVectorSockets;

@@ -1,6 +1,8 @@
 const { io } = require('../index');
 import authController from '../controllers/auth.controller'
+import chatController from '../controllers/chat.controller'
 
+let sockets: any [] = [];
 // Mensajes de Sockets
 io.on('connection', (socket: any) => {
 
@@ -10,6 +12,12 @@ io.on('connection', (socket: any) => {
     socket._id = user.id;
     socket.join(user.id);
     console.log(user.username + " se ha conectado");
+    chatController.getIdMyChats(user.id).then((data:any) =>{
+      data.chats.forEach((chat:any) =>{
+        socket.join(chat._id);
+      })
+      sockets.push(socket)
+    });
   });
 
   socket.on('disconnect', function(){
@@ -40,4 +48,9 @@ function getSocket(){
   return io;
 }
 
+function getVectorSockets(){
+  return sockets;
+}
+
 module.exports.getSocket = getSocket;
+module.exports.getVectorSockets = getVectorSockets;

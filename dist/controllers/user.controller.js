@@ -60,7 +60,6 @@ function getUser(req, res) {
                 numAmigos: numAmigos,
                 numTorneos: numTorneos
             };
-            console.log("data ", dataToSend);
             return res.status(200).json(dataToSend);
         }).catch((err) => {
             return res.status(500).json(err);

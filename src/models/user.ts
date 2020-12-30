@@ -75,10 +75,8 @@ const user = new userSchema({
         }
     ],
     chats: [{
-        chat: {
-            type: Schema.Types.ObjectId,
-            ref: 'Chat'
-        }
+        type: Schema.Types.ObjectId,
+        ref: 'Chat'
     }]
 
 });

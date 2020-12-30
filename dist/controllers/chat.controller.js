@@ -4,16 +4,48 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_1 = __importDefault(require("../models/user"));
+const chat_1 = __importDefault(require("../models/chat"));
 function getChat(req, res) {
-    user_1.default.findById(req.user, { chats: 1 }).populate({ path: 'chats', populate: { path: 'user', select: 'username image' } }).then((data) => {
+    let tipo = req.body.tipo;
+    let name = req.body.name;
+    let existe = false;
+    let dataToSend;
+    user_1.default.findById(req.user, { chats: 1 }).populate({ path: 'chats', populate: { path: 'users', select: 'username image online' } }).then((data) => {
         if (data == null)
             return res.status(404).json();
-        data.chats.forEach(chat => {
-            if (req.params.id == chat._id) {
-                return res.status(200).json(chat);
+        data.chats.forEach((chat) => {
+            if (tipo == "user" && (chat.users[0].username == name || chat.users[1].username == name)) {
+                dataToSend = {
+                    existe: true,
+                    chat: chat
+                };
+                existe = true;
+            }
+            else if (tipo == "grupo" && chat.name == name) {
+                dataToSend = {
+                    existe: true,
+                    chat: chat
+                };
+                existe = true;
             }
         });
-        return res.status(409).json({ message: "No perteneces a este chat" });
+        if (existe) {
+            return res.status(200).json(dataToSend);
+        }
+        else {
+            if (tipo == "user") {
+                user_1.default.findOne({ "username": name }, { username: 1, image: 1, online: 1 }).then((data) => {
+                    dataToSend = {
+                        existe: false,
+                        user: data
+                    };
+                    return res.status(200).json(dataToSend);
+                });
+            }
+            else {
+                return res.status(409).json({ message: "No perteneces a este chat" });
+            }
+        }
     }).catch((err) => {
         return res.status(500).json(err);
     });
@@ -27,16 +59,43 @@ function getMyChats(req, res) {
         return res.status(500).json(err);
     });
 }
+function getIdMyChats(id) {
+    return user_1.default.findById(id, { chats: 1 }).populate('chats');
+}
 function addChat(req, res) {
-    user_1.default.findById(req.user, { chats: 1 }).populate({ path: 'chats', populate: { path: 'user', select: 'username image' } }).then((data) => {
-        /*if (data==null){
-            let chat = new Chat ({users : req.body.participantes});
-            chat.save().then((data)=>{
-                return res.status(200).json(data);
-            })
-        }*/
+    let chat = new chat_1.default({
+        users: req.body.users,
+        name: req.body.name,
+        image: req.body.image,
+        mensajes: req.body.mensaje
+    });
+    chat.save().then((data) => {
+        chat.users.forEach((user) => {
+            user_1.default.findOneAndUpdate({ "_id": user }, { $addToSet: { chats: data } }).then(() => {
+                const sockets = require('../sockets/socket').getVectorSockets();
+                console.log("Data", data._id);
+                sockets.forEach((socket) => {
+                    if (socket._id == user) {
+                        socket.join(data._id);
+                        const io = require('../sockets/socket').getSocket();
+                        io.to(user).emit('nuevoMensaje', data.mensajes);
+                    }
+                });
+            });
+        });
+        return res.status(200).json(data);
     });
 }
+/*User.findById(req.user, {chats : 1}).populate({path: 'chats', populate:
+{path: 'user', select: 'username image'}}).then((data) =>{
+
+    /*if (data==null){
+        let chat = new Chat ({users : req.body.participantes});
+        chat.save().then((data)=>{
+            return res.status(200).json(data);
+        })
+    }
+})*/
 /*
 async function  addOtroParti(req:Request, res:Response): void {
     
@@ -69,4 +128,4 @@ function delChat(req, res) {
         return res.status(500).json(err);
     });
 }
-exports.default = { getChat, getMyChats, addChat, /*addOtroParti,*/ delChat };
+exports.default = { getChat, getMyChats, addChat, /*addOtroParti,*/ delChat, getIdMyChats };
