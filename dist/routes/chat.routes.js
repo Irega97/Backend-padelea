@@ -9,7 +9,7 @@ const passport_1 = __importDefault(require("passport"));
 //Router nos permite gestionar rutas de la API
 const router = express_1.Router();
 // FRIENDS ROUTES
-router.get('/:id', passport_1.default.authenticate("jwt", { session: false }), chat_controller_1.default.getChat);
+router.post('/get', passport_1.default.authenticate("jwt", { session: false }), chat_controller_1.default.getChat);
 router.get('/me/all', passport_1.default.authenticate("jwt", { session: false }), chat_controller_1.default.getMyChats);
 router.post('/new', passport_1.default.authenticate("jwt", { session: false }), chat_controller_1.default.addChat);
 //router.post('/add/:id', passport.authenticate("jwt", {session: false}), chatController.addOtroParti);

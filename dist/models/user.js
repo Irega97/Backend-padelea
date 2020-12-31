@@ -94,10 +94,8 @@ const user = new userSchema({
         }
     ],
     chats: [{
-            chat: {
-                type: mongoose_1.Schema.Types.ObjectId,
-                ref: 'Chat'
-            }
+            type: mongoose_1.Schema.Types.ObjectId,
+            ref: 'Chat'
         }]
 });
 user.methods.userToJSON = function () {

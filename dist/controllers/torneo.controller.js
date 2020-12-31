@@ -118,6 +118,8 @@ function createTorneo(req, res) {
                     return res.status(500).json({ message: "Internal Server Error" });
                 });
             }
+            const io = require('../sockets/socket').getSocket();
+            io.emit('nuevoTorneo', torneo.name);
             return res.status(201).json(data);
         }, (error) => {
             console.log(error);
@@ -146,7 +148,6 @@ function joinTorneo(req, res) {
                                 return res.status(400).json({ message: "Ya estás inscrito" });
                             else {
                                 user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: tID, statistics: null, status: 1 }] } }).then(user => {
-                                    console.log("user:", user);
                                     if (user.nModified != 1)
                                         return res.status(400).json({ message: "Ya estás inscrito" });
                                     let playerToSend = {
@@ -171,12 +172,10 @@ function joinTorneo(req, res) {
                             return res.status(400).json({ message: "Ya estás inscrito" });
                         else {
                             torneo_1.default.updateOne({ "_id": t === null || t === void 0 ? void 0 : t._id }, { $addToSet: { cola: data === null || data === void 0 ? void 0 : data.id } }).then(torneo => {
-                                console.log("torneo: ", torneo);
                                 if (torneo.nModified != 1)
                                     return res.status(400).json({ message: "Ya has solicitado unirte" });
                                 else {
                                     user_1.default.updateOne({ "_id": data === null || data === void 0 ? void 0 : data._id }, { $addToSet: { torneos: [{ torneo: tID, statistics: null, status: 0 }] } }).then(user => {
-                                        console.log("user: ", user);
                                         if (user.nModified != 1)
                                             return res.status(400).json({ message: "Ya has solicitado unirte" });
                                     });
@@ -218,7 +217,6 @@ function leaveTorneo(req, res) {
                     data === null || data === void 0 ? void 0 : data.torneos.forEach((torneo) => {
                         if (torneo.torneo.toString() == (t === null || t === void 0 ? void 0 : t._id))
                             status = torneo.status;
-                        console.log(status);
                     });
                     u = data;
                 }
