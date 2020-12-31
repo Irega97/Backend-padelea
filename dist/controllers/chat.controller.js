@@ -51,7 +51,7 @@ function getChat(req, res) {
     });
 }
 function getMyChats(req, res) {
-    user_1.default.findById(req.user, { chats: 1 }).populate({ path: 'chats', populate: { path: 'user', select: 'username image' } }).then((data) => {
+    user_1.default.findById(req.user, { chats: 1 }).populate({ path: 'chats', populate: { path: 'users', select: 'username image' } }).then((data) => {
         if (data == null)
             return res.status(404).json();
         return res.status(200).json(data);
