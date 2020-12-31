@@ -9,6 +9,7 @@ const router = Router();
 router.post('/get', passport.authenticate("jwt", {session: false}), chatController.getChat)
 router.get('/me/all', passport.authenticate("jwt", {session: false}), chatController.getMyChats)
 router.post('/new', passport.authenticate("jwt", {session: false}), chatController.addChat);
+router.post('/message/:id', passport.authenticate("jwt", {session: false}), chatController.sendMessage);
 //router.post('/add/:id', passport.authenticate("jwt", {session: false}), chatController.addOtroParti);
 router.delete('/:id', passport.authenticate("jwt", {session: false}), chatController.delChat);
 

@@ -12,6 +12,7 @@ const router = express_1.Router();
 router.post('/get', passport_1.default.authenticate("jwt", { session: false }), chat_controller_1.default.getChat);
 router.get('/me/all', passport_1.default.authenticate("jwt", { session: false }), chat_controller_1.default.getMyChats);
 router.post('/new', passport_1.default.authenticate("jwt", { session: false }), chat_controller_1.default.addChat);
+router.post('/message/:id', passport_1.default.authenticate("jwt", { session: false }), chat_controller_1.default.sendMessage);
 //router.post('/add/:id', passport.authenticate("jwt", {session: false}), chatController.addOtroParti);
 router.delete('/:id', passport_1.default.authenticate("jwt", { session: false }), chat_controller_1.default.delChat);
 exports.default = router;

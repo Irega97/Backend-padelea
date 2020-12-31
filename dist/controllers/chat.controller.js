@@ -66,6 +66,7 @@ function addChat(req, res) {
     let chat = new chat_1.default({
         users: req.body.users,
         name: req.body.name,
+        admin: req.body.admin,
         image: req.body.image,
         mensajes: req.body.mensaje
     });
@@ -73,7 +74,6 @@ function addChat(req, res) {
         chat.users.forEach((user) => {
             user_1.default.findOneAndUpdate({ "_id": user }, { $addToSet: { chats: data } }).then(() => {
                 const sockets = require('../sockets/socket').getVectorSockets();
-                console.log("Data", data._id);
                 sockets.forEach((socket) => {
                     if (socket._id == user) {
                         socket.join(data._id);
@@ -112,6 +112,24 @@ async function  addOtroParti(req:Request, res:Response): void {
         Chat.updateOne({"_id": req.params.id}, {"users": req.params.participantes}).populate
     }
 }*/
+function sendMessage(req, res) {
+    let enc = false;
+    chat_1.default.findById(req.params.id).populate({ path: 'users', select: 'username' }).then(data => {
+        data === null || data === void 0 ? void 0 : data.users.forEach((user) => {
+            if (req.body.sender == user.username)
+                enc = true;
+        });
+        if (enc) {
+            chat_1.default.findOneAndUpdate({ "_id": req.params.id }, { $addToSet: { mensajes: req.body } }).then(data => {
+                const io = require('../sockets/socket').getSocket();
+                io.to(req.params.id).emit('nuevoMensaje', req.body);
+            });
+        }
+        else {
+            return res.status(409).json({ message: "No perteneces a este chat" });
+        }
+    });
+}
 function delChat(req, res) {
     user_1.default.findById(req.user, { chats: 1 }).populate({ path: 'chats', populate: { path: 'user', select: 'username' } }).then((data) => {
         if (data == null)
@@ -128,4 +146,4 @@ function delChat(req, res) {
         return res.status(500).json(err);
     });
 }
-exports.default = { getChat, getMyChats, addChat, /*addOtroParti,*/ delChat, getIdMyChats };
+exports.default = { getChat, getMyChats, addChat, sendMessage, /*addOtroParti,*/ delChat, getIdMyChats };
