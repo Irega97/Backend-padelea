@@ -82,7 +82,7 @@ function addChat(req:Request, res:Response): void {
                     if (socket._id == user){
                         socket.join(data._id);
                         const io = require('../sockets/socket').getSocket();
-                        io.to(user).emit('nuevoMensaje', data.mensajes);
+                        io.to(user).emit('nuevoMensaje', data.mensajes[0]);
                     }
                 })
             });

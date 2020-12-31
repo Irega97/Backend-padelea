@@ -15,18 +15,29 @@ io.on('connection', (socket) => {
         socket._id = user.id;
         socket.join(user.id);
         console.log(user.username + " se ha conectado");
+        let info = {
+            "user": user.username,
+            "estado": true
+        };
         chat_controller_1.default.getIdMyChats(user.id).then((data) => {
             data.chats.forEach((chat) => {
                 socket.join(chat._id);
             });
+            io.emit("actConectado", info);
             sockets.push(socket);
         });
     });
     socket.on('disconnect', function () {
         if (socket._id != undefined) {
+            let info = {
+                "user": socket.username,
+                "estado": false
+            };
             auth_controller_1.default.setOnlineStatus(socket._id, false);
+            io.emit('actConectado', info);
             console.log(socket.username + " se ha desconectado");
             socket._id = undefined;
+            socket.username = undefined;
             //io.emit('usuarioDesconectado', {user: socket.username, event: 'left'});  
         }
     });
