@@ -10,6 +10,10 @@ const chat = new chatSchema({
     name: {
         type: String
     },
+    admin: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    }],
     image: {
         type: String
     },
@@ -29,6 +33,7 @@ export interface IChat extends Document {
     /*_id: string;*/
     name: string
     image: string
+    admin: Array<IUser>
     users: Array<IUser>
     mensajes: Array<IMensaje>
     chatToJson(): JSON;
@@ -38,6 +43,7 @@ chat.methods.chatToJSON = function(){
     return {
         name: this.name,
         image: this.image,
+        admin: this.admin,
         users: this.users,
         mensajes: this.mensajes
     };

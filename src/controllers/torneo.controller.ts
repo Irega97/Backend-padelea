@@ -40,7 +40,6 @@ async function getTorneos(req: Request, res: Response){
 
 async function getTorneosUser(req: Request, res: Response){
     User.findOne({"username": req.params.username}, 'torneos').populate({path: 'torneos', populate: {path: 'torneo', select: 'name image'}}).then((data) => {
-        console.log(data);
         if (data==null) return res.status(404).json({message: 'Torneos not found'});
         data.torneos.forEach((torneo) => {
             if(torneo.status == 0)

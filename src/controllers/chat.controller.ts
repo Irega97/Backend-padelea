@@ -53,7 +53,7 @@ function getChat(req:Request, res:Response): void {
 
 function getMyChats(req:Request, res:Response): void {
     User.findById(req.user, {chats : 1}).populate({path: 'chats', populate:
-    {path: 'user', select: 'username image'}}).then((data)=>{
+    {path: 'users', select: 'username image'}}).then((data)=>{
         if(data==null) return res.status(404).json();
         return res.status(200).json(data);
     }).catch((err) => {
@@ -69,6 +69,7 @@ function addChat(req:Request, res:Response): void {
     let chat = new Chat({
         users: req.body.users,
         name: req.body.name,
+        admin: req.body.admin,
         image: req.body.image,
         mensajes: req.body.mensaje
     });
@@ -77,12 +78,11 @@ function addChat(req:Request, res:Response): void {
         chat.users.forEach((user) => {
             User.findOneAndUpdate({"_id":user},{$addToSet: {chats: data}}).then(() => {
                 const sockets = require('../sockets/socket').getVectorSockets();
-                console.log("Data", data._id);
                 sockets.forEach((socket: any) =>{
                     if (socket._id == user){
                         socket.join(data._id);
                         const io = require('../sockets/socket').getSocket();
-                        io.to(user).emit('nuevoMensaje', data.mensajes);
+                        io.to(user).emit('nuevoMensaje', data.mensajes[0]);
                     }
                 })
             });
@@ -117,6 +117,26 @@ async function  addOtroParti(req:Request, res:Response): void {
     }
 }*/
 
+function sendMessage(req:Request, res:Response): void {
+    let enc: Boolean = false;
+    Chat.findById(req.params.id).populate({path: 'users', select: 'username'}).then(data => {
+        data?.users.forEach((user) => {
+            if (req.body.sender == user.username)
+                enc = true;
+        })
+
+        if (enc){
+            Chat.findOneAndUpdate({"_id":req.params.id}, {$addToSet: {mensajes: req.body}}).then(data => {
+                const io = require('../sockets/socket').getSocket()
+                io.to(req.params.id).emit('nuevoMensaje', req.body);
+            })
+        }
+        else{
+            return res.status(409).json({message: "No perteneces a este chat"});
+        }
+    })
+}
+
 function delChat(req:Request, res:Response): void {
     User.findById(req.user, {chats : 1}).populate({path: 'chats', populate: 
     {path: 'user', select: 'username'}}).then((data)=>{ 
@@ -134,4 +154,4 @@ function delChat(req:Request, res:Response): void {
     })
 }
 
-export default{getChat, getMyChats, addChat, /*addOtroParti,*/ delChat, getIdMyChats }
+export default{getChat, getMyChats, addChat, sendMessage, /*addOtroParti,*/ delChat, getIdMyChats }

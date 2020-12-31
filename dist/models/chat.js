@@ -28,6 +28,10 @@ const chat = new chatSchema({
     name: {
         type: String
     },
+    admin: [{
+            type: mongoose_1.Schema.Types.ObjectId,
+            ref: 'User'
+        }],
     image: {
         type: String
     },
@@ -46,6 +50,7 @@ chat.methods.chatToJSON = function () {
     return {
         name: this.name,
         image: this.image,
+        admin: this.admin,
         users: this.users,
         mensajes: this.mensajes
     };

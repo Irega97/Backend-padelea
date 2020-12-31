@@ -60,7 +60,6 @@ function getTorneos(req, res) {
 function getTorneosUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         user_1.default.findOne({ "username": req.params.username }, 'torneos').populate({ path: 'torneos', populate: { path: 'torneo', select: 'name image' } }).then((data) => {
-            console.log(data);
             if (data == null)
                 return res.status(404).json({ message: 'Torneos not found' });
             data.torneos.forEach((torneo) => {
