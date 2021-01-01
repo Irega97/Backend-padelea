@@ -94,8 +94,13 @@ const user = new userSchema({
         }
     ],
     chats: [{
-            type: mongoose_1.Schema.Types.ObjectId,
-            ref: 'Chat'
+            chat: {
+                type: mongoose_1.Schema.Types.ObjectId,
+                ref: 'Chat'
+            },
+            ultimoleido: {
+                type: Number
+            }
         }]
 });
 user.methods.userToJSON = function () {

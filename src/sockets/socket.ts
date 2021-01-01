@@ -18,7 +18,7 @@ io.on('connection', (socket: any) => {
     }
     chatController.getIdMyChats(user.id).then((data:any) =>{
       data.chats.forEach((chat:any) =>{
-        socket.join(chat._id);
+        socket.join(chat.chat._id);
       })
       io.emit("actConectado", info);
       sockets.push(socket)

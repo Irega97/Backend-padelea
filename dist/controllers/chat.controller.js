@@ -10,23 +10,40 @@ function getChat(req, res) {
     let name = req.body.name;
     let existe = false;
     let dataToSend;
-    user_1.default.findById(req.user, { chats: 1 }).populate({ path: 'chats', populate: { path: 'users', select: 'username image online' } }).then((data) => {
+    user_1.default.findById(req.user, { chats: 1 }).populate({ path: 'chats', populate: { path: 'chat', populate: { path: 'users', select: 'username image online' } } }).then((data) => {
         if (data == null)
             return res.status(404).json();
         data.chats.forEach((chat) => {
-            if (tipo == "user" && (chat.users[0].username == name || chat.users[1].username == name)) {
+            if (tipo == "user" && (chat.chat.users[0].username == name || chat.chat.users[1].username == name)) {
+                const chatToSend = chat;
                 dataToSend = {
                     existe: true,
-                    chat: chat
+                    chat: chatToSend
                 };
                 existe = true;
             }
             else if (tipo == "grupo" && chat.name == name) {
+                const chatToSend = chat;
                 dataToSend = {
                     existe: true,
-                    chat: chat
+                    chat: chatToSend
                 };
                 existe = true;
+            }
+            if (chat.ultimoleido < chat.chat.mensajes.length) {
+                let i = chat.ultimoleido;
+                while (i < chat.chat.mensajes.length) {
+                    chat.chat.mensajes[i].leidos.push(req.user);
+                    i++;
+                }
+                chat.ultimoleido = i;
+                chat_1.default.updateOne({ "_id": chat.chat._id }, { $set: { mensajes: chat.chat.mensajes } }).then(() => {
+                    user_1.default.updateOne({ "_id": req.user }, { $set: { chats: data === null || data === void 0 ? void 0 : data.chats } }).then(null, error => {
+                        return res.status(500).json(error);
+                    });
+                }, error => {
+                    return res.status(500).json(error);
+                });
             }
         });
         if (existe) {
@@ -51,7 +68,7 @@ function getChat(req, res) {
     });
 }
 function getMyChats(req, res) {
-    user_1.default.findById(req.user, { chats: 1 }).populate({ path: 'chats', populate: { path: 'users', select: 'username image' } }).then((data) => {
+    user_1.default.findById(req.user, { chats: 1 }).populate({ path: 'chats', populate: { path: 'chat', populate: { path: 'users', select: 'username image' } } }).then((data) => {
         if (data == null)
             return res.status(404).json();
         return res.status(200).json(data);
@@ -70,15 +87,28 @@ function addChat(req, res) {
         image: req.body.image,
         mensajes: req.body.mensaje
     });
+    let chatuser = {
+        chat: chat,
+        ultimoleido: 0
+    };
     chat.save().then((data) => {
+        chatuser.chat = data;
         chat.users.forEach((user) => {
-            user_1.default.findOneAndUpdate({ "_id": user }, { $addToSet: { chats: data } }).then(() => {
+            if (user == req.user && req.body.mensaje != undefined)
+                chatuser.ultimoleido = 1;
+            else
+                chatuser.ultimoleido = 0;
+            user_1.default.findOneAndUpdate({ "_id": user }, { $addToSet: { chats: chatuser } }).then(() => {
                 const sockets = require('../sockets/socket').getVectorSockets();
                 sockets.forEach((socket) => {
                     if (socket._id == user) {
                         socket.join(data._id);
                         const io = require('../sockets/socket').getSocket();
-                        io.to(user).emit('nuevoMensaje', data.mensajes[0]);
+                        let mensaje = {
+                            chat: data._id,
+                            mensaje: data.mensajes[0]
+                        };
+                        io.to(user).emit('nuevoMensaje', mensaje);
                     }
                 });
             });
@@ -86,18 +116,7 @@ function addChat(req, res) {
         return res.status(200).json(data);
     });
 }
-/*User.findById(req.user, {chats : 1}).populate({path: 'chats', populate:
-{path: 'user', select: 'username image'}}).then((data) =>{
-
-    /*if (data==null){
-        let chat = new Chat ({users : req.body.participantes});
-        chat.save().then((data)=>{
-            return res.status(200).json(data);
-        })
-    }
-})*/
-/*
-async function  addOtroParti(req:Request, res:Response): void {
+/*async function  addOtroParti(req:Request, res:Response): void {
     
     let c : any;
 
@@ -121,8 +140,22 @@ function sendMessage(req, res) {
         });
         if (enc) {
             chat_1.default.findOneAndUpdate({ "_id": req.params.id }, { $addToSet: { mensajes: req.body } }).then(data => {
+                let mensaje = {
+                    chat: req.params.id,
+                    mensaje: req.body
+                };
                 const io = require('../sockets/socket').getSocket();
-                io.to(req.params.id).emit('nuevoMensaje', req.body);
+                io.to(req.params.id).emit('nuevoMensaje', mensaje);
+                user_1.default.findById(req.user, { chats: 1 }).then(data => {
+                    data === null || data === void 0 ? void 0 : data.chats.forEach(chat => {
+                        if (chat.chat == req.params.id) {
+                            chat.ultimoleido++;
+                        }
+                    });
+                    user_1.default.updateOne({ "_id": req.user }, { $set: { chats: data === null || data === void 0 ? void 0 : data.chats } }).then(null, error => {
+                        return res.status(500).json(error);
+                    });
+                });
             });
         }
         else {
