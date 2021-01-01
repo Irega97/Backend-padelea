@@ -33,7 +33,7 @@ function getUser(req, res) {
         const me = yield user_1.default.findById(req.user, { friends: 1 });
         let numTorneos = 0;
         let numAmigos = 0;
-        user_1.default.findOne({ "username": req.params.username }, { username: 1, image: 1, email: 1, online: 1, name: 1, friends: 1, torneos: 1 }).then((data) => {
+        user_1.default.findOne({ "username": req.params.username }, { username: 1, image: 1, email: 1, online: 1, name: 1, friends: 1, torneos: 1, chat: 1 }).then((data) => {
             if (data == null)
                 return res.status(404).json({ message: "User not found" });
             let friendStatus = -1;
