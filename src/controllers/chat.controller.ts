@@ -8,7 +8,7 @@ function getChat(req:Request, res:Response): void {
     let existe: Boolean = false;
     let dataToSend: any;
 
-    User.findById(req.user, {chats : 1}).populate({path: 'chats', populate: {path: 'chat' , populate : 
+    User.findById(req.user, {chats : 1}).populate({path: 'chats', populate: {path: 'chat' , populate: 
     {path: 'users', select: 'username image online'}}}).then((data:any)=>{ 
         if(data==null) return res.status(404).json();
         data.chats.forEach((chat:any) => {
@@ -100,31 +100,30 @@ function addChat(req:Request, res:Response): void {
     }
 
     chat.save().then((data) => {
-        chatuser.chat = data;
-        chat.users.forEach((user) => {
-            if (user == req.user && req.body.mensaje != undefined)
-                chatuser.ultimoleido = 1;
-            else
-                chatuser.ultimoleido = 0;
-
-            User.findOneAndUpdate({"_id":user},{$addToSet: {chats: chatuser}}).then(() => {
-                const sockets = require('../sockets/socket').getVectorSockets();
-                sockets.forEach((socket: any) =>{
-                    if (socket._id == user){
-                        socket.join(data._id);
-                        const io = require('../sockets/socket').getSocket();
-                        let mensaje = {
-                            chat: data._id,
-                            mensaje: data.mensajes[0]
+        Chat.populate(data, {path: 'users', select: 'username image'}, () => {
+            chatuser.chat = data;
+            chat.users.forEach((user) => {
+                if (user._id == req.user)
+                    chatuser.ultimoleido = 1;
+                else
+                    chatuser.ultimoleido = 0;
+    
+                User.findOneAndUpdate({"_id":user._id},{$addToSet: {chats: chatuser}}).then(() => {
+                    const sockets = require('../sockets/socket').getVectorSockets();
+                    sockets.forEach((socket: any) =>{
+                        if (socket._id == user._id){
+                            socket.join(data._id);
+                            const io = require('../sockets/socket').getSocket();
+                            io.to(user._id).emit('nuevoChat', chatuser.chat);
                         }
-                        io.to(user).emit('nuevoMensaje', mensaje);
-                    }
-                })
-            });
-        })
-        return res.status(200).json(data);
+                    })
+                });
+            })
+            return res.status(200).json(data);
+        });
     })
 }
+
 /*async function  addOtroParti(req:Request, res:Response): void {
     
     let c : any;

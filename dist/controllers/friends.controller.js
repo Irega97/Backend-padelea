@@ -131,10 +131,6 @@ function changeFriendStatus(req, res) {
                             if (data.nModified == 1) {
                                 const io = require('../sockets/socket').getSocket();
                                 io.to(friendID).emit('nuevaNotificacion', newNotification);
-                                return res.status(200).json({ message: "Amigo añadido correctamente" });
-                            }
-                            else if (data.nModified == 0) {
-                                return res.status(200).json({ message: "Error al guardar la notificacion" });
                             }
                             else {
                                 return res.status(500).json(data);

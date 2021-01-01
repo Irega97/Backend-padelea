@@ -92,28 +92,26 @@ function addChat(req, res) {
         ultimoleido: 0
     };
     chat.save().then((data) => {
-        chatuser.chat = data;
-        chat.users.forEach((user) => {
-            if (user == req.user && req.body.mensaje != undefined)
-                chatuser.ultimoleido = 1;
-            else
-                chatuser.ultimoleido = 0;
-            user_1.default.findOneAndUpdate({ "_id": user }, { $addToSet: { chats: chatuser } }).then(() => {
-                const sockets = require('../sockets/socket').getVectorSockets();
-                sockets.forEach((socket) => {
-                    if (socket._id == user) {
-                        socket.join(data._id);
-                        const io = require('../sockets/socket').getSocket();
-                        let mensaje = {
-                            chat: data._id,
-                            mensaje: data.mensajes[0]
-                        };
-                        io.to(user).emit('nuevoMensaje', mensaje);
-                    }
+        chat_1.default.populate(data, { path: 'users', select: 'username image' }, () => {
+            chatuser.chat = data;
+            chat.users.forEach((user) => {
+                if (user._id == req.user)
+                    chatuser.ultimoleido = 1;
+                else
+                    chatuser.ultimoleido = 0;
+                user_1.default.findOneAndUpdate({ "_id": user._id }, { $addToSet: { chats: chatuser } }).then(() => {
+                    const sockets = require('../sockets/socket').getVectorSockets();
+                    sockets.forEach((socket) => {
+                        if (socket._id == user._id) {
+                            socket.join(data._id);
+                            const io = require('../sockets/socket').getSocket();
+                            io.to(user._id).emit('nuevoChat', chatuser.chat);
+                        }
+                    });
                 });
             });
+            return res.status(200).json(data);
         });
-        return res.status(200).json(data);
     });
 }
 /*async function  addOtroParti(req:Request, res:Response): void {
