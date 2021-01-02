@@ -166,7 +166,9 @@ function sendMessage(req, res) {
                             chat.ultimoleido++;
                         }
                     });
-                    user_1.default.updateOne({ "_id": req.user }, { $set: { chats: data === null || data === void 0 ? void 0 : data.chats } }).then(null, error => {
+                    user_1.default.updateOne({ "_id": req.user }, { $set: { chats: data === null || data === void 0 ? void 0 : data.chats } }).then(() => {
+                        return res.status(200).json({ message: "Recibido" });
+                    }, error => {
                         return res.status(500).json(error);
                     });
                 });

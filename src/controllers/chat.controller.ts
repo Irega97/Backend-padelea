@@ -179,7 +179,9 @@ function sendMessage(req:Request, res:Response): void {
                             chat.ultimoleido++;
                         }
                     })
-                    User.updateOne({"_id": req.user}, {$set: {chats: data?.chats}}).then(null, error =>{
+                    User.updateOne({"_id": req.user}, {$set: {chats: data?.chats}}).then(() => {
+                        return res.status(200).json({message: "Recibido"});
+                    }, error =>{
                         return res.status(500).json(error);
                     }); 
                 })
