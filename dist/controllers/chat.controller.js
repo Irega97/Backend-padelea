@@ -16,17 +16,21 @@ function getChat(req, res) {
         data.chats.forEach((chat) => {
             if (tipo == "user" && (chat.chat.users[0].username == name || chat.chat.users[1].username == name)) {
                 const chatToSend = chat;
+                const ultimoleido = chat.ultimoleido;
                 dataToSend = {
                     existe: true,
-                    chat: chatToSend
+                    chat: chatToSend,
+                    ultimoleido: ultimoleido
                 };
                 existe = true;
             }
             else if (tipo == "grupo" && chat.name == name) {
                 const chatToSend = chat;
+                const ultimoleido = chat.ultimoleido;
                 dataToSend = {
                     existe: true,
-                    chat: chatToSend
+                    chat: chatToSend,
+                    ultimoleido: ultimoleido
                 };
                 existe = true;
             }
@@ -72,6 +76,18 @@ function getMyChats(req, res) {
         if (data == null)
             return res.status(404).json();
         return res.status(200).json(data);
+    }).catch((err) => {
+        return res.status(500).json(err);
+    });
+}
+function getChatsSinLeer(req, res) {
+    let chatsSinLeer = [];
+    user_1.default.findById(req.user, { chats: 1 }).populate({ path: 'chats', populate: { path: 'chat' } }).then(data => {
+        data === null || data === void 0 ? void 0 : data.chats.forEach(chat => {
+            if (chat.ultimoleido < chat.chat.mensajes.length)
+                chatsSinLeer.push(chat.chat._id);
+        });
+        return res.status(200).json(chatsSinLeer);
     }).catch((err) => {
         return res.status(500).json(err);
     });
@@ -177,4 +193,4 @@ function delChat(req, res) {
         return res.status(500).json(err);
     });
 }
-exports.default = { getChat, getMyChats, addChat, sendMessage, /*addOtroParti,*/ delChat, getIdMyChats };
+exports.default = { getChat, getMyChats, getChatsSinLeer, addChat, sendMessage, /*addOtroParti,*/ delChat, getIdMyChats };

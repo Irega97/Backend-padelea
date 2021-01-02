@@ -14,18 +14,22 @@ function getChat(req:Request, res:Response): void {
         data.chats.forEach((chat:any) => {
             if(tipo == "user" && (chat.chat.users[0].username == name || chat.chat.users[1].username == name)){
                 const chatToSend = chat;
+                const ultimoleido = chat.ultimoleido
                 dataToSend = {
                     existe: true,
-                    chat: chatToSend
+                    chat: chatToSend,
+                    ultimoleido: ultimoleido
                 }
                 existe = true;
             }
             
             else if (tipo == "grupo" && chat.name == name){
                 const chatToSend = chat;
+                const ultimoleido = chat.ultimoleido
                 dataToSend = {
                     existe: true,
-                    chat: chatToSend
+                    chat: chatToSend,
+                    ultimoleido: ultimoleido
                 }
                 existe = true;
             } 
@@ -76,6 +80,19 @@ function getMyChats(req:Request, res:Response): void {
     {path: 'chat', populate: {path: 'users', select: 'username image'}}}).then((data)=>{
         if(data==null) return res.status(404).json();
         return res.status(200).json(data);
+    }).catch((err) => {
+        return res.status(500).json(err);
+    })
+}
+
+function getChatsSinLeer(req: Request, res:Response): void {
+    let chatsSinLeer: string[] = []
+    User.findById(req.user, {chats: 1}).populate({path: 'chats', populate: {path: 'chat'}}).then(data => {
+        data?.chats.forEach(chat => {
+            if (chat.ultimoleido < chat.chat.mensajes.length)
+                chatsSinLeer.push(chat.chat._id);
+        })
+        return res.status(200).json(chatsSinLeer);
     }).catch((err) => {
         return res.status(500).json(err);
     })
@@ -191,4 +208,4 @@ function delChat(req:Request, res:Response): void {
     })
 }
 
-export default{getChat, getMyChats, addChat, sendMessage, /*addOtroParti,*/ delChat, getIdMyChats }
+export default{getChat, getMyChats, getChatsSinLeer, addChat, sendMessage, /*addOtroParti,*/ delChat, getIdMyChats }
