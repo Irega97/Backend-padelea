@@ -7,31 +7,26 @@ function getChat(req:Request, res:Response): void {
     let name = req.body.name;
     let existe: Boolean = false;
     let dataToSend: any;
-    let chatToRead: any;
 
     User.findById(req.user, {chats : 1}).populate({path: 'chats', populate: {path: 'chat' , populate: 
     {path: 'users', select: 'username image online'}}}).then((data:any)=>{ 
         if(data==null) return res.status(404).json();
         data.chats.forEach((chat:any) => {
             if(tipo == "user" && chat.chat.name == undefined && (chat.chat.users[0].username == name || chat.chat.users[1].username == name)){
-                const chatToSend = chat;
-                chatToRead = chat;
                 const ultimoleido = chat.ultimoleido
                 dataToSend = {
                     existe: true,
-                    chat: chatToSend,
+                    chat: chat,
                     ultimoleido: ultimoleido
                 }
                 existe = true;
             }
             
             else if (tipo == "grupo" && chat.chat.name == name){
-                const chatToSend = chat;
-                chatToRead = chat;
                 const ultimoleido = chat.ultimoleido
                 dataToSend = {
                     existe: true,
-                    chat: chatToSend,
+                    chat: chat,
                     ultimoleido: ultimoleido
                 }
                 existe = true;
@@ -39,14 +34,16 @@ function getChat(req:Request, res:Response): void {
         })
 
         if (existe){
-            if (chatToRead.ultimoleido < chatToRead.chat.mensajes.length){
-                let i: number = chatToRead.ultimoleido;
-                while (i < chatToRead.chat.mensajes.length){
-                    chatToRead.chat.mensajes[i].leidos.push(req.user);
+            if (dataToSend.chat.ultimoleido < dataToSend.chat.chat.mensajes.length){
+                let i: number = dataToSend.chat.ultimoleido;
+                while (i < dataToSend.chat.chat.mensajes.length){
+                    dataToSend.chat.chat.mensajes[i].leidos.push(req.user);
                     i++;
                 }
-                chatToRead.ultimoleido = i;
-                Chat.updateOne({"_id": chatToRead.chat._id}, {$set: {mensajes: chatToRead.chat.mensajes}}).then(() => {
+                let a = data.chats.indexOf(dataToSend.chat);
+                dataToSend.chat.ultimoleido = i;
+                data.chats[a] = dataToSend.chat;
+                Chat.updateOne({"_id": dataToSend.chat.chat._id}, {$set: {mensajes: dataToSend.chat.chat.mensajes}}).then(() => {
                     User.updateOne({"_id": req.user}, {$set: {chats: data?.chats}}).then(null, error =>{
                         return res.status(500).json(error);
                     }); 
