@@ -75,8 +75,13 @@ const user = new userSchema({
         }
     ],
     chats: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Chat'
+        chat: {
+            type: Schema.Types.ObjectId,
+            ref: 'Chat'
+        },
+        ultimoleido: {
+            type: Number
+        }
     }]
 
 });
