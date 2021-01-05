@@ -13,45 +13,40 @@ function getChat(req:Request, res:Response): void {
         if(data==null) return res.status(404).json();
         data.chats.forEach((chat:any) => {
             if(tipo == "user" && chat.chat.name == undefined && (chat.chat.users[0].username == name || chat.chat.users[1].username == name)){
-                const ultimoleido = chat.ultimoleido
                 dataToSend = {
                     existe: true,
-                    chat: chat,
-                    ultimoleido: ultimoleido
+                    chat: chat
                 }
                 existe = true;
             }
             
             else if (tipo == "grupo" && chat.chat.name == name){
-                const ultimoleido = chat.ultimoleido
                 dataToSend = {
                     existe: true,
-                    chat: chat,
-                    ultimoleido: ultimoleido
+                    chat: chat
                 }
                 existe = true;
             } 
         })
 
         if (existe){
-            if (dataToSend.chat.ultimoleido < dataToSend.chat.chat.mensajes.length){
-                let i: number = dataToSend.chat.ultimoleido;
-                while (i < dataToSend.chat.chat.mensajes.length){
-                    dataToSend.chat.chat.mensajes[i].leidos.push(req.user);
-                    i++;
+            leerChat(dataToSend.chat.chat._id, req.user).then((data:number) => {
+                if (data != -1){
+                    if (data == 1){
+                        let info = {
+                            "chat": dataToSend.chat.chat._id,
+                            "user": req.user,
+                            "ultimoleido": dataToSend.chat.ultimoleido
+                        }
+                        const io = require('../sockets/socket').getSocket()
+                        io.to(dataToSend.chat.chat._id).emit('mensajeLeido', info);
+                    }
+                    return res.status(200).json(dataToSend);
                 }
-                let a = data.chats.indexOf(dataToSend.chat);
-                dataToSend.chat.ultimoleido = i;
-                data.chats[a] = dataToSend.chat;
-                Chat.updateOne({"_id": dataToSend.chat.chat._id}, {$set: {mensajes: dataToSend.chat.chat.mensajes}}).then(() => {
-                    User.updateOne({"_id": req.user}, {$set: {chats: data?.chats}}).then(null, error =>{
-                        return res.status(500).json(error);
-                    }); 
-                }, error =>{
-                    return res.status(500).json(error);
-                });
-            }
-            return res.status(200).json(dataToSend);
+                    
+                else
+                    return res.status(500).json(data);
+            });
         }
         
         else{
@@ -98,7 +93,34 @@ function getChatsSinLeer(req: Request, res:Response): void {
 }
 
 function getIdMyChats(id: string): any {
-    return User.findById(id, {chats:1}).populate('chats')
+    return User.findById(id, {chats:1}).populate('chats');
+}
+
+function leerChat(idChat: any, idUser: any): Promise<number> {
+    let enc: Boolean = false;
+    return new Promise(function (resolve) {
+        User.findById(idUser, {chat: 1}).populate({path: 'chats', populate: {path: 'chat'}}).then(data => {
+            data?.chats.forEach(chat=> {
+                if (chat.chat._id.toString() == idChat.toString()){
+                    while (chat.ultimoleido < chat.chat.mensajes.length){
+                        chat.chat.mensajes[chat.ultimoleido].leidos.push(idUser);
+                        chat.ultimoleido++;
+                    }
+
+                    enc = true;
+                    Chat.updateOne({"_id": idChat}, {$set: {mensajes: chat.chat.mensajes}}).then(() => {
+                        User.updateOne({"_id": idUser}, {$set: {chats: data.chats}}).then(() => {
+                            resolve(1);
+                        })
+                    })
+                }
+            })
+            if (!enc)
+                resolve(0);
+        }).catch((err) => {
+            resolve(-1);
+        });
+    })
 }
 
 async function addChat(req:Request, res:Response) {
@@ -213,4 +235,4 @@ function delChat(req:Request, res:Response): void {
     })
 }
 
-export default{getChat, getMyChats, getChatsSinLeer, addChat, sendMessage, /*addOtroParti,*/ delChat, getIdMyChats }
+export default{getChat, getMyChats, getChatsSinLeer, addChat, sendMessage, leerChat, /*addOtroParti,*/ delChat, getIdMyChats }
