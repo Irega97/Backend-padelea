@@ -18,6 +18,8 @@ import adminRoutes from './routes/admin.routes';
 import passport from 'passport';
 import passportMiddleware from './middlewares/passport';
 
+import torneoController from './controllers/torneo.controller';
+
 //Inicializamos express
 const app = express();
 
@@ -42,6 +44,8 @@ app.use('/torneo', torneoRoutes);
 app.use('/notifications', notificationsRoutes);
 app.use('/chat', chatRoutes);
 app.use('/torneo/admin', adminRoutes);
+
+torneoController.checkStartTorneos();
 
 //Exportamos fichero como 'app'
 export default app;

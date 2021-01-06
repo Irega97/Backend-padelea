@@ -5,42 +5,48 @@ import User from "../models/user";
 const schedule = require('node-schedule');
 
 //Función que comprueba cada día a las 07:00:00h que torneos han empezado
-schedule.scheduleJob('* * * * * *', () => {
+/* schedule.scheduleJob('* * * * * *', () => {
     checkStartTorneos();
-});
+}); */
 
 async function checkStartTorneos(){
     Torneo.find({}).then((data) => {
         if (data==null) console.log("Torneos not found");
         else {
             data.forEach((torneo) => {
-                let previa = [];
-                let numGroups = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
-                if(Date.parse(torneo.fechaInicio.toString()) <= Date.now() /* && torneo.players.length >= 4 */){
-                    let maxGroups = torneo.maxPlayers/4;
-                    numGroups.splice(0, maxGroups);
-                    for(let i=0; i<torneo.players.length; i=i+4){
-                        let jugadores = torneo.players.slice(i, 4)
-                        if(jugadores.length % 3 == 0){ //Cambiar a 4
-                            //Te los mete en el grupo
-                            let j = 0;
-                            let groupName = numGroups[j];
-                            let grupo = {
-                                groupName: groupName, 
-                                classification: [jugadores[0], jugadores[1], jugadores[2], jugadores[3]]
+                if(torneo.name == 'test'){
+                    let previa = [];
+                    let cola = [];
+                    let j = 0;
+                    let numGroups = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+                    if(Date.parse(torneo.fechaInicio.toString()) <= Date.now() /* && torneo.players.length >= 4 */){
+                        let maxGroups = torneo.maxPlayers/4;
+                        numGroups.splice(0, maxGroups);
+                        console.log("Jugadores: ", torneo.players);
+                        for(let i=0; i<torneo.players.length; i=i+4){
+                            let jugadores = torneo.players.slice(i, i + 4)
+                            console.log("players: ", jugadores);
+                            if(jugadores.length % 4 == 0){ 
+                                //Te los mete en el grupo
+                                let groupName = numGroups[j];
+                                let grupo = {
+                                    groupName: groupName, 
+                                    classification: [jugadores[0], jugadores[1], jugadores[2], jugadores[3]]
+                                }
+                                previa.push(grupo); 
+                                j++;
+                                console.log(previa);
+                            } else {
+                                //te los mete en cola
+                                cola.push(jugadores);
+                                console.log("cola: ", cola);
                             }
-                            previa.push(grupo); 
-                            j++;
-                            console.log(previa);
-                        } else {
-                            //te los mete en cola
-                            console.log("dw");
                         }
+                    } /* else if(torneo.players.length < 4){
+                        console.log("Necesitas mínimo 4 jugadores para empezar el torneo");
+                    } */ else {
+                        console.log("El torneo no ha empezado aun");
                     }
-                } /* else if(torneo.players.length < 4){
-                    console.log("Necesitas mínimo 4 jugadores para empezar el torneo");
-                } */ else {
-                    console.log("El torneo no ha empezado aun");
                 }
             });
         }
@@ -288,4 +294,4 @@ async function leaveTorneo(req: Request, res: Response){
     }
 }
 
-export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo }
+export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos }
