@@ -65,9 +65,6 @@ const torneo = new torneoSchema({
             member: {
                 type: Schema.Types.ObjectId,
                 ref: 'User'
-            },
-            position: {
-                type: Number
             }
         }]
     }],
@@ -79,9 +76,6 @@ const torneo = new torneoSchema({
             member: {
                 type: Schema.Types.ObjectId,
                 ref: 'User'
-            },
-            position: {
-                type: Number
             }
         }]
     }]
