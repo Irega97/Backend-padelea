@@ -14,4 +14,6 @@ router.post('/new', passport.authenticate("jwt", {session: false}), torneoContro
 router.post('/join/:name', passport.authenticate("jwt", {session: false}), torneoController.joinTorneo);
 router.put('/leave/:name', passport.authenticate("jwt", {session: false}), torneoController.leaveTorneo);
 
+router.get('/:name/previa', passport.authenticate("jwt", {session: false}), torneoController.getPrevia);
+
 export default router;

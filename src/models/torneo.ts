@@ -62,10 +62,8 @@ const torneo = new torneoSchema({
             type: String
         },
         classification: [{
-            member: {
-                type: Schema.Types.ObjectId,
-                ref: 'User'
-            }
+            type: Schema.Types.ObjectId,
+            ref: 'User'
         }]
     }],
     grupos: [{
@@ -73,10 +71,8 @@ const torneo = new torneoSchema({
             type: String
         },
         classification: [{
-            member: {
-                type: Schema.Types.ObjectId,
-                ref: 'User'
-            }
+            type: Schema.Types.ObjectId,
+            ref: 'User'
         }]
     }]
 });
