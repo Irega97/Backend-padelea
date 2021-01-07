@@ -8,12 +8,11 @@ const router = Router();
 router.get('/all', passport.authenticate("jwt", {session: false}), torneoController.getTorneos);
 router.get('/all/:username', passport.authenticate("jwt", {session: false}), torneoController.getTorneosUser);
 router.get('/:name', passport.authenticate("jwt", {session: false}), torneoController.getTorneo);
+router.get('/:name/previa', passport.authenticate("jwt", {session: false}), torneoController.getPrevia);
 
 router.post('/new', passport.authenticate("jwt", {session: false}), torneoController.createTorneo);
 
 router.post('/join/:name', passport.authenticate("jwt", {session: false}), torneoController.joinTorneo);
 router.put('/leave/:name', passport.authenticate("jwt", {session: false}), torneoController.leaveTorneo);
-
-router.get('/:name/previa', passport.authenticate("jwt", {session: false}), torneoController.getPrevia);
 
 export default router;
