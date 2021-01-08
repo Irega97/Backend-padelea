@@ -49,7 +49,7 @@ export interface IStatistics extends Document {
     statisticsToJson(): JSON;
 }
 
-statistics.methods.mensajeToJSON = function(){
+statistics.methods.statisticsToJSON = function(){
     return {
         partidosJugados: this.partidosJugados,
         partidosGanados: this.partidosGanados,

@@ -1,5 +1,6 @@
 /* nombre, descripcion, url, responsable */
 import mongoose, { Schema, Document} from 'mongoose';
+import { IPartido } from './partido';
 
 //Modelo de objeto que se guarda en la BBDD de MongoDB
 
@@ -68,6 +69,10 @@ const user = new userSchema({
             // 2 -> Torneo finalizado
         }
     }],
+    partidos: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Partido'
+    }],
     notifications: [
         {
             type: Object,
@@ -100,6 +105,7 @@ export interface IUser extends Document {
     private: boolean;
     friends: Array<any>;
     torneos: Array<any>;
+    partidos: Array<IPartido>;
     notifications: Array<any>;
     provider: string;
     chats: Array<any>;
@@ -120,7 +126,8 @@ user.methods.userToJSON = function(){
         notifications: this.notifications,
         online: this.online,
         private: this.private,
-        chat: this.chats
+        chat: this.chats,
+        partidos: this.partidos
     };
 }
 

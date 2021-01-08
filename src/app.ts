@@ -13,11 +13,13 @@ import torneoRoutes from './routes/torneo.routes';
 import notificationsRoutes from './routes/notifications.routes';
 import chatRoutes from './routes/chat.routes';
 import adminRoutes from './routes/admin.routes';
+import partidoRoutes from './routes/partido.routes';
 
 //Importamos middlewares
 import passport from 'passport';
 import passportMiddleware from './middlewares/passport';
 
+//Borrar cuando tengamos implementado el checkStartTorneos bien
 import torneoController from './controllers/torneo.controller';
 
 //Inicializamos express
@@ -44,6 +46,7 @@ app.use('/torneo', torneoRoutes);
 app.use('/notifications', notificationsRoutes);
 app.use('/chat', chatRoutes);
 app.use('/torneo/admin', adminRoutes);
+app.use('/partido', partidoRoutes);
 
 torneoController.checkStartTorneos();
 

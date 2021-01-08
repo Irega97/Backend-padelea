@@ -2,11 +2,13 @@ import { Request, Response } from "express";
 import config from "../config/config";
 import Torneo from "../models/torneo";
 import User from "../models/user";
+import Partido from "../models/partido";
 const schedule = require('node-schedule');
 
 //Función que comprueba cada día a las 07:00:00h que torneos han empezado
 /* schedule.scheduleJob('0 0 7 * * *', () => {
     checkStartTorneos();
+    checkStartVueltas();
 }); */
 
 async function checkStartTorneos(){
@@ -21,20 +23,26 @@ async function checkStartTorneos(){
                 let cola: Array<any> = [];
                 let j = 0;
                 let numGroups = config.letrasNombreGrupos;
-                if(Date.parse(torneo.fechaInicio.toString()) <= Date.now() && torneo.players.length >= 4){
+                
+                let tocaEmpezar = false;
+                if(Date.parse(torneo.fechaInicio.toString()) <= Date.now()) tocaEmpezar = true;
+                
+                if(tocaEmpezar && torneo.players.length >= 4 && torneo.torneoIniciado != true){
                     let maxGroups = torneo.maxPlayers/4;
-                    numGroups.splice(0, maxGroups);
+                    numGroups.slice(0, maxGroups);
                     for(let i=0; i<torneo.players.length; i=i+4){
                         let jugadores = torneo.players.slice(i, i + 4)
                         if(jugadores.length % 4 == 0){ 
                             //Te los mete en el grupo
+                            console.log(j);
                             let groupName = numGroups[j];
+                            console.log(groupName);
+                            j++;
                             let grupo = {
                                 groupName: groupName, 
                                 classification: [jugadores[0], jugadores[1], jugadores[2], jugadores[3]]
                             }
                             previa.push(grupo); 
-                            j++;
                         } else {
                             //te los mete en cola
                             for(let i = 0; i < jugadores.length; i++)
@@ -58,12 +66,8 @@ async function checkStartTorneos(){
                         users.forEach((user) => {
                             for(let i = 0; i < cola.length; i++){
                                 if(cola[i].equals(user._id)){
-                                    console.log("entro1");
                                     user.torneos.forEach((t) => {
-                                        console.log("IDt: ", torneoID);
-                                        console.log("i: ", t.torneo);
                                         if(t.torneo.equals(torneoID)){
-                                            console.log("entro");
                                             t.status = 0;
                                             User.updateOne({"_id": user._id}, {$set: {torneos: user.torneos}}).then((data) => {
                                                 if(data.nModified != 1) console.log("No actualizado");
@@ -74,13 +78,14 @@ async function checkStartTorneos(){
                             }
                         })
                     }
-                    Torneo.updateOne({name: torneo.name}, {$set: {players: torneo.players, previa: previa}, $addToSet: {cola: cola}}).then(data => {
+                    Torneo.updateOne({name: torneo.name}, {$set: {players: torneo.players, previa: previa, torneoIniciado: true}, $addToSet: {cola: cola}}).then(data => {
                         if(data.nModified != 1) console.log("No se ha modificado");
-                        else{
-                        }
+                        else createPartidosPrevia(previa, torneoID);
                     })
-                } else if(torneo.players.length < 4){
+                } else if(torneo.players.length < 4 && tocaEmpezar){
                     console.log("Necesitas mínimo 4 jugadores para empezar el torneo");
+                } else if(torneo.torneoIniciado == true){
+                    console.log("Torneo ya iniciado");
                 } else {
                     console.log("El torneo no ha empezado aun");
                 }
@@ -90,6 +95,84 @@ async function checkStartTorneos(){
         console.log(error);
         console.log("No se han podido comprobar los torneos");
     });
+}
+
+async function createPartidosPrevia(previa: any, torneoID: string){
+    previa.forEach((group: any) => {
+        if(group.partidos != undefined) console.log("Jaja");
+        let players = group.classification;
+        let partido1 = new Partido({
+            idTorneo: torneoID,
+            resultado: [],
+            ganadores: [],
+            jugadores: [{
+                pareja1: [players[0], players[1]],
+                pareja2: [players[2], players[3]]
+            }]
+        });
+        let partido2 = new Partido({
+            idTorneo: torneoID,
+            resultado: [],
+            ganadores: [],
+            jugadores: [{
+                pareja1: [players[0], players[2]],
+                pareja2: [players[1], players[3]]
+            }]
+        });
+        let partido3 = new Partido({
+            idTorneo: torneoID,
+            resultado: [],
+            ganadores: [],
+            jugadores: [{
+                pareja1: [players[0], players[3]],
+                pareja2: [players[2], players[1]]
+            }]
+        });
+        partido1.save().then((p) => {
+            let pID = p._id;
+            for(let i=0; i<players.length; i++){
+                User.findOne({"_id": players[i]}).then((user) => {
+                    user?.partidos.push(pID);
+                    User.updateOne({"_id": players[i]}, {$set: {partidos: user?.partidos}}).then((d) => {
+                        if(d.nModified != 1) return;
+                        else {
+                            Torneo.update({"_id": torneoID}, {$addToSet: {partidos: p}});
+                        }
+                    })
+                })
+            }
+            console.log("Partido1: ", p);
+        });
+        partido2.save().then((p) => {
+            let pID = p._id;
+            for(let i=0; i<players.length; i++){
+                User.findOne({"_id": players[i]}).then((user) => {
+                    user?.partidos.push(pID);
+                    User.updateOne({"_id": players[i]}, {$set: {partidos: user?.partidos}}).then((d) => {
+                        if(d.nModified != 1) return;
+                        else {
+                            Torneo.update({"_id": torneoID}, {$addToSet: {partidos: p}});                        }
+                    })
+                })
+            }
+            console.log("Partido2: ", p);
+        });
+        partido3.save().then((p) => {
+            let pID = p._id;
+            for(let i=0; i<players.length; i++){
+                User.findOne({"_id": players[i]}).then((user) => {
+                    user?.partidos.push(pID);
+                    User.updateOne({"_id": players[i]}, {$set: {partidos: user?.partidos}}).then((d) => {
+                        if(d.nModified != 1) return;
+                        else {
+                            Torneo.update({"_id": torneoID}, {$addToSet: {partidos: p}});
+                        }
+                    })
+                })
+            }
+            console.log("Partido3: ", p);
+        });
+    })
 }
 
 async function getTorneo(req: Request, res: Response){
@@ -198,7 +281,8 @@ async function joinTorneo(req: Request, res: Response){
     try{
         let t = await Torneo.findOne({'name': req.params.name});
         let tID = t?.id;
-        let inscriptionsPeriod;
+        let inscriptionsPeriod: boolean;
+        let torneoLleno: boolean;
 
         const io = require('../sockets/socket').getSocket()
 
@@ -207,7 +291,11 @@ async function joinTorneo(req: Request, res: Response){
                 if(t.finInscripcion.valueOf()-Date.now() > 0){
                     inscriptionsPeriod = true;
                 } else inscriptionsPeriod = false;
-                if(t?.players.length < t?.maxPlayers && inscriptionsPeriod && t.type != "private"){
+                
+                if(t?.players.length < t?.maxPlayers) torneoLleno = false;
+                else torneoLleno = true;
+                
+                if(!torneoLleno && inscriptionsPeriod && t.type != "private"){
                     Torneo.updateOne({"_id": t?._id},{$addToSet: {players: data?.id}}).then(torneo => {
                         console.log("torneo: ", torneo);
                         if(torneo.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
@@ -240,6 +328,9 @@ async function joinTorneo(req: Request, res: Response){
                                     if(user.nModified != 1) return res.status(400).json({message: "Ya has solicitado unirte"});
                                 });
                             }
+
+                            if(!inscriptionsPeriod) return res.status(200).json({message: "Inscripciones cerradas. Has sido registrado en cola"});
+                            else if(torneoLleno) return res.status(200).json({message: "El torneo está lleno. Has sido añadido a la cola"});
                             return res.status(200).json({message: "Has solicitado unirte a " + t?.name});
                         });                        
                     }
@@ -321,8 +412,10 @@ async function leaveTorneo(req: Request, res: Response){
                     }
                 }); 
             });
+        } else if(t.fechaInicio - Date.now() < 0){
+            return res.status(400).json({message: "No puedes abandonar el torneo porque ya ha empezado"});
         } else {
-            return res.status(400).json({message: "No estás en el torneo"});
+            return res.status(404).json({message: "No estás en el torneo"});
         }
     } catch (error){
         console.log(error);

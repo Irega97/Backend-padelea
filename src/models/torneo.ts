@@ -19,6 +19,9 @@ const torneo = new torneoSchema({
     fechaInicio: {
         type: Date
     },
+    torneoIniciado: {
+        type: Boolean
+    },
     finInscripcion: {
         type: Date
     },
@@ -55,7 +58,11 @@ const torneo = new torneoSchema({
         },
         fechaFin: {
             type: Date
-        }
+        },
+        partidos: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Partido'
+        }]
     }],
     previa: [{
         groupName: {
@@ -64,6 +71,10 @@ const torneo = new torneoSchema({
         classification: [{
             type: Schema.Types.ObjectId,
             ref: 'User'
+        }],
+        partidos:[{
+            type: Schema.Types.ObjectId,
+            ref: 'Partido'
         }]
     }],
     grupos: [{
@@ -85,6 +96,7 @@ export interface ITorneo extends Document {
     description: string;
     image: string;
     fechaInicio: Date;
+    torneoIniciado: boolean;
     finInscripcion: Date;
     ubicacion: string;
     reglamento: string;
@@ -107,6 +119,7 @@ torneo.methods.torneoToJSON = function(){
         description: this.description,
         image: this.image,
         fechaInicio: this.fechaInicio,
+        torneoIniciado: this.torneoIniciado,
         finInscripcion: this.finInscripcion,
         ubicacion: this.ubicacion,
         reglamento: this.reglamento,
