@@ -26,7 +26,6 @@ io.on('connection', (socket: any) => {
   });
 
   socket.on('mensajeLeido', (info:any) => {
-    console.log("Info", info);
     chatController.leerChat(info.chat, info.user).then(data => {
       if (data == 1)
         socket.to(info.chat).emit('mensajeLeido', info);
