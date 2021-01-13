@@ -92,6 +92,46 @@ function getChatsSinLeer(req: Request, res:Response): void {
     })
 }
 
+function addAdmin(req:Request, res:Response): void {
+    let enc: Boolean = false;
+    let adm: Boolean = false;
+    Chat.findById(req.params.id).then(data => {
+        data?.admin.forEach(admin => {
+            if (admin == req.user){
+                data.users.forEach(user => {
+                    if (user == req.body.user._id)
+                        enc = true;
+                })
+            }
+            if (req.body.user._id == admin)
+                adm = true;
+        })
+        if (enc && !adm){
+            let message: any = {
+                body : req.body.admin + " ha hecho administrador a " + req.body.user.username,
+                date: new Date(Date.now()),
+                leidos: []
+            }
+
+            Chat.findOneAndUpdate({"_id":req.params.id}, {$addToSet: {admin: req.body.user._id, mensajes: message}}).then(() => {
+                let info = {
+                    message: message,
+                    admin: req.body.user._id,
+                    chat: req.params.id
+                }
+                const io = require('../sockets/socket').getSocket()
+                io.to(req.params.id).emit('nuevoAdmin', info);
+                return res.status(200).json({message:message.body});
+            })
+        }
+        else
+            return res.status(409).json({message: "No puedes hacer al usuario admin del grupo"});
+    })
+}
+
+function addParticipante(req:Request, res:Response): void {
+}
+
 function getIdMyChats(id: string): any {
     return User.findById(id, {chats:1}).populate('chats');
 }
@@ -166,22 +206,6 @@ async function addChat(req:Request, res:Response) {
     })
 }
 
-/*async function  addOtroParti(req:Request, res:Response): void {
-    
-    let c : any;
-
-    await Chat.findOne({"_id": req.params.id}).then((data) => {
-        if(data == null) return res.status(404).json({message: "Chat not found"});
-        else {
-            c = data;
-        }
-    });
-
-    if(req.body.participantes =! null){
-        Chat.updateOne({"_id": req.params.id}, {"users": req.params.participantes}).populate
-    }
-}*/
-
 function sendMessage(req:Request, res:Response): void {
     let enc: Boolean = false;
     Chat.findById(req.params.id).populate({path: 'users', select: 'username'}).then(data => {
@@ -218,7 +242,7 @@ function sendMessage(req:Request, res:Response): void {
     })
 }
 
-function delChat(req:Request, res:Response): void {
+/*function delChat(req:Request, res:Response): void {
     User.findById(req.user, {chats : 1}).populate({path: 'chats', populate: 
     {path: 'user', select: 'username'}}).then((data)=>{ 
         if(data==null) return res.status(404).json();
@@ -233,6 +257,6 @@ function delChat(req:Request, res:Response): void {
     }).catch((err) => {
         return res.status(500).json(err);
     })
-}
+}*/
 
-export default{getChat, getMyChats, getChatsSinLeer, addChat, sendMessage, leerChat, /*addOtroParti,*/ delChat, getIdMyChats }
+export default{getChat, getMyChats, getChatsSinLeer, addChat, sendMessage, leerChat, addAdmin, addParticipante, /*delChat,*/ getIdMyChats }
