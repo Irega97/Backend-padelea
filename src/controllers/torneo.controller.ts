@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import config from "../config/config";
-import Torneo from "../models/torneo";
+import Torneo, { ITorneo } from "../models/torneo";
 import User from "../models/user";
 import Partido from "../models/partido";
 const schedule = require('node-schedule');
@@ -27,7 +27,7 @@ async function checkStartTorneos(){
                 let tocaEmpezar = false;
                 if(Date.parse(torneo.fechaInicio.toString()) <= Date.now()) tocaEmpezar = true;
                 
-                if(tocaEmpezar && torneo.players.length >= 4 && torneo.torneoIniciado != true){
+                if(tocaEmpezar && torneo.players.length >= 4 /*&& torneo.torneoIniciado != true*/){
                     let maxGroups = torneo.maxPlayers/4;
                     numGroups.slice(0, maxGroups);
                     for(let i=0; i<torneo.players.length; i=i+4){
@@ -40,7 +40,8 @@ async function checkStartTorneos(){
                             j++;
                             let grupo = {
                                 groupName: groupName, 
-                                classification: [jugadores[0], jugadores[1], jugadores[2], jugadores[3]]
+                                classification: [jugadores[0], jugadores[1], jugadores[2], jugadores[3]],
+                                partidos: []
                             }
                             previa.push(grupo); 
                         } else {
@@ -84,11 +85,11 @@ async function checkStartTorneos(){
                     })
                 } else if(torneo.players.length < 4 && tocaEmpezar){
                     console.log("Necesitas mínimo 4 jugadores para empezar el torneo");
-                } else if(torneo.torneoIniciado == true){
+                } /* else if(torneo.torneoIniciado == true){
                     console.log("Torneo ya iniciado");
-                } else {
+                }   else {
                     console.log("El torneo no ha empezado aun");
-                }
+                } */
             });
         }
     }, (error) => {
@@ -98,8 +99,13 @@ async function checkStartTorneos(){
 }
 
 async function createPartidosPrevia(previa: any, torneoID: string){
-    previa.forEach((group: any) => {
-        if(group.partidos != undefined) console.log("Jaja");
+    let torneo: ITorneo;
+    Torneo.findOne({"_id": torneoID}).then((data: any) => {
+        torneo = data;
+    });
+    await previa.forEach(async (group: any) => {
+        if(group.partidos.length != 0) console.log("Jaja");
+        console.log("********** GRUPO " + group.groupName + " ***********");
         let players = group.classification;
         let partido1 = new Partido({
             idTorneo: torneoID,
@@ -128,51 +134,72 @@ async function createPartidosPrevia(previa: any, torneoID: string){
                 pareja2: [players[2], players[1]]
             }]
         });
-        partido1.save().then((p) => {
-            let pID = p._id;
+        await partido1.save().then((p) => {
+            let p1ID = p._id;
             for(let i=0; i<players.length; i++){
                 User.findOne({"_id": players[i]}).then((user) => {
-                    user?.partidos.push(pID);
+                    user?.partidos.push(p1ID);
                     User.updateOne({"_id": players[i]}, {$set: {partidos: user?.partidos}}).then((d) => {
                         if(d.nModified != 1) return;
-                        else {
-                            Torneo.update({"_id": torneoID}, {$addToSet: {partidos: p}});
-                        }
                     })
                 })
             }
+            group.partidos.push(p1ID);
             console.log("Partido1: ", p);
         });
-        partido2.save().then((p) => {
-            let pID = p._id;
+        await partido2.save().then((p) => {
+            let p2ID = p._id;
             for(let i=0; i<players.length; i++){
                 User.findOne({"_id": players[i]}).then((user) => {
-                    user?.partidos.push(pID);
+                    user?.partidos.push(p2ID);
                     User.updateOne({"_id": players[i]}, {$set: {partidos: user?.partidos}}).then((d) => {
                         if(d.nModified != 1) return;
-                        else {
-                            Torneo.update({"_id": torneoID}, {$addToSet: {partidos: p}});                        }
                     })
                 })
             }
+            group.partidos.push(p2ID);
             console.log("Partido2: ", p);
         });
-        partido3.save().then((p) => {
-            let pID = p._id;
+        await partido3.save().then((p) => {
+            let p3ID = p._id;
             for(let i=0; i<players.length; i++){
                 User.findOne({"_id": players[i]}).then((user) => {
-                    user?.partidos.push(pID);
+                    user?.partidos.push(p3ID);
                     User.updateOne({"_id": players[i]}, {$set: {partidos: user?.partidos}}).then((d) => {
                         if(d.nModified != 1) return;
-                        else {
-                            Torneo.update({"_id": torneoID}, {$addToSet: {partidos: p}});
-                        }
                     })
                 })
             }
+            group.partidos.push(p3ID);
             console.log("Partido3: ", p);
         });
-    })
+
+        Torneo.updateOne({"_id": torneoID},{$set: {previa: previa}}).then((data) => {
+            if(data.nModified != 1 && torneo != null){
+                console.log("Torneo no actualizado");
+                return;
+            } else {
+                let newNotification = {
+                    type: "Torneo",
+                    description: "El torneo " + torneo.name + " ha empezado!",
+                    status: 1,
+                    origen: torneo.name,
+                    image: torneo.image
+                }
+                torneo.players.forEach((player) => {
+                    User.updateOne({"_id": player._id},{$addToSet: {notifications: newNotification}}).then(data =>{
+                        if (data.nModified == 1){
+                            const io = require('../sockets/socket').getSocket()
+                            io.to(player._id).emit('nuevaNotificacion', newNotification);
+                        }
+                        else{
+                            return;
+                        }
+                    });
+                });
+            }
+        });
+    });
 }
 
 async function getTorneo(req: Request, res: Response){
@@ -423,10 +450,22 @@ async function leaveTorneo(req: Request, res: Response){
     }
 }
 
-async function getPrevia(req: Request, res: Response){
-    Torneo.findOne({"name": req.params.name}, {previa: 1}).populate({path: 'previa', populate: {path: 'classification', select: 'name image'}}).then((data) => {
-        return res.status(200).json(data);
+async function getVueltas(req: Request, res: Response){
+    let numVuelta: number = 2;
+    Torneo.findOne({"name": req.params.name}, {previa: 1, rondas: 1}).populate({path: 'previa rondas', populate: {path: 'classification', select: 'name image'}}).then((data) => {
+        if(data != undefined){
+            if(data.rondas.length > 0){
+                numVuelta = data.rondas.length
+            }
+            let dataToSend = {
+                vueltas: data,
+                vueltaActual: numVuelta
+            }
+            return res.status(200).json(dataToSend);
+        } else {
+            return res.status(404).json({message: "Torneo not found"});
+        }
     })
 }
 
-export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, getPrevia }
+export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, getVueltas }
