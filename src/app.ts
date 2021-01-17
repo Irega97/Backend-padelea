@@ -48,7 +48,7 @@ app.use('/chat', chatRoutes);
 app.use('/torneo/admin', adminRoutes);
 app.use('/partido', partidoRoutes);
 
-torneoController.checkStartTorneos();
+//torneoController.checkStartTorneos();
 
 //Exportamos fichero como 'app'
 export default app;

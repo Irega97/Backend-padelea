@@ -36,7 +36,7 @@ const torneo = new torneoSchema({
         type: Number
     },
     duracionRondas: {
-        type: Date
+        type: Number
     },
     admin: [{
         type: Schema.Types.ObjectId,
@@ -130,7 +130,7 @@ export interface ITorneo extends Document {
     ubicacion: string;
     reglamento: string;
     numRondas: number;
-    duracionRondas: Date;
+    duracionRondas: number;
     admin: Array<any>;
     maxPlayers: number;
     finalizado: boolean;

@@ -6,10 +6,10 @@ import Partido from "../models/partido";
 const schedule = require('node-schedule');
 
 //Función que comprueba cada día a las 07:00:00h que torneos han empezado
-/* schedule.scheduleJob('0 0 7 * * *', () => {
+schedule.scheduleJob('0 0 7 * * *', () => {
     checkStartTorneos();
-    checkStartVueltas();
-}); */
+    //checkStartVueltas();
+});
 
 async function checkStartTorneos(){
     let torneoID: string;
@@ -77,8 +77,11 @@ async function checkStartTorneos(){
                             }
                         })
                     }
+                    let duracion = torneo.duracionRondas;
+                    let inicio = new Date(torneo.fechaInicio.toString());
+                    inicio.setDate(inicio.getDate() + duracion);
                     let previaToSave: any = {
-                        fechaFin: "",
+                        fechaFin: inicio,
                         grupos: previa
                     }
                     await Torneo.updateOne({name: torneo.name}, {$set: {players: torneo.players, previa: previaToSave}, $addToSet: {cola: cola}}).then(async data => {
