@@ -14,33 +14,34 @@ const schedule = require('node-schedule');
 async function checkStartTorneos(){
     let torneoID: string;
     let users = await User.find({}, {'torneos': 1}).populate('torneos');
-    Torneo.find({}).then((data) => {
+    Torneo.find({"torneoIniciado":false}).then((data) => {
         if (data==null) console.log("Torneos not found");
         else {
-            data.forEach((torneo) => {
+            data.forEach(async (torneo) => {
                 console.log("*******" + torneo.name + "*******");
-                let previa: Array<any> = [];
+                let previa = [];
                 let cola: Array<any> = [];
                 let j = 0;
-                let numGroups = config.letrasNombreGrupos;
+                let nameGroups = config.letrasNombreGrupos;
                 
                 let tocaEmpezar = false;
                 if(Date.parse(torneo.fechaInicio.toString()) <= Date.now()) tocaEmpezar = true;
                 
-                if(tocaEmpezar && torneo.players.length >= 4 /*&& torneo.torneoIniciado != true*/){
+                if(tocaEmpezar && torneo.players.length >= 4 && torneo.torneoIniciado != true){
                     let maxGroups = torneo.maxPlayers/4;
-                    numGroups.slice(0, maxGroups);
+                    nameGroups.slice(0, maxGroups);
                     for(let i=0; i<torneo.players.length; i=i+4){
                         let jugadores = torneo.players.slice(i, i + 4)
                         if(jugadores.length % 4 == 0){ 
                             //Te los mete en el grupo
-                            console.log(j);
-                            let groupName = numGroups[j];
-                            console.log(groupName);
+                            let groupName = nameGroups[j];
                             j++;
                             let grupo = {
                                 groupName: groupName, 
-                                classification: [jugadores[0], jugadores[1], jugadores[2], jugadores[3]],
+                                classification: [{player: jugadores[0], statistics: null},
+                                                {player: jugadores[1], statistics: null},
+                                                {player: jugadores[2], statistics: null}, 
+                                                {player: jugadores[3], statistics: null}],
                                 partidos: []
                             }
                             previa.push(grupo); 
@@ -51,10 +52,7 @@ async function checkStartTorneos(){
                         }
                     }
                     torneoID = torneo._id;
-                    console.log("Previa: ", previa);
-                    console.log(cola);
                     if(cola.length > 0) {
-                        console.log("Cola: ", cola);
                         //ACTUALIZAR PLAYERS DEL TORNEO
                         torneo.players.forEach((player) => {
                             for(let i = 0; i < cola.length; i++){
@@ -79,17 +77,23 @@ async function checkStartTorneos(){
                             }
                         })
                     }
-                    Torneo.updateOne({name: torneo.name}, {$set: {players: torneo.players, previa: previa, torneoIniciado: true}, $addToSet: {cola: cola}}).then(data => {
+                    let previaToSave: any = {
+                        fechaFin: "",
+                        grupos: previa
+                    }
+                    await Torneo.updateOne({name: torneo.name}, {$set: {players: torneo.players, previa: previaToSave}, $addToSet: {cola: cola}}).then(async data => {
                         if(data.nModified != 1) console.log("No se ha modificado");
-                        else createPartidosPrevia(previa, torneoID);
+                        else{
+                            await createPartidosPrevia(previaToSave, torneo._id);
+                        } 
                     })
                 } else if(torneo.players.length < 4 && tocaEmpezar){
                     console.log("Necesitas mínimo 4 jugadores para empezar el torneo");
-                } /* else if(torneo.torneoIniciado == true){
+                } else if(torneo.torneoIniciado == true){
                     console.log("Torneo ya iniciado");
                 }   else {
                     console.log("El torneo no ha empezado aun");
-                } */
+                }
             });
         }
     }, (error) => {
@@ -103,17 +107,16 @@ async function createPartidosPrevia(previa: any, torneoID: string){
     Torneo.findOne({"_id": torneoID}).then((data: any) => {
         torneo = data;
     });
-    await previa.forEach(async (group: any) => {
+    await previa.grupos.forEach(async (group: any) => {
         if(group.partidos.length != 0) console.log("Jaja");
-        console.log("********** GRUPO " + group.groupName + " ***********");
         let players = group.classification;
         let partido1 = new Partido({
             idTorneo: torneoID,
             resultado: [],
             ganadores: [],
             jugadores: [{
-                pareja1: [players[0], players[1]],
-                pareja2: [players[2], players[3]]
+                pareja1: [players[0].player, players[1].player],
+                pareja2: [players[2].player, players[3].player]
             }]
         });
         let partido2 = new Partido({
@@ -121,8 +124,8 @@ async function createPartidosPrevia(previa: any, torneoID: string){
             resultado: [],
             ganadores: [],
             jugadores: [{
-                pareja1: [players[0], players[2]],
-                pareja2: [players[1], players[3]]
+                pareja1: [players[0].player, players[2].player],
+                pareja2: [players[1].player, players[3].player]
             }]
         });
         let partido3 = new Partido({
@@ -130,51 +133,48 @@ async function createPartidosPrevia(previa: any, torneoID: string){
             resultado: [],
             ganadores: [],
             jugadores: [{
-                pareja1: [players[0], players[3]],
-                pareja2: [players[2], players[1]]
+                pareja1: [players[0].player, players[3].player],
+                pareja2: [players[2].player, players[1].player]
             }]
         });
         await partido1.save().then((p) => {
             let p1ID = p._id;
             for(let i=0; i<players.length; i++){
-                User.findOne({"_id": players[i]}).then((user) => {
+                User.findOne({"_id": players[i].player}).then((user) => {
                     user?.partidos.push(p1ID);
-                    User.updateOne({"_id": players[i]}, {$set: {partidos: user?.partidos}}).then((d) => {
+                    User.updateOne({"_id": players[i].player}, {$set: {partidos: user?.partidos}}).then((d) => {
                         if(d.nModified != 1) return;
                     })
                 })
             }
             group.partidos.push(p1ID);
-            console.log("Partido1: ", p);
         });
         await partido2.save().then((p) => {
             let p2ID = p._id;
             for(let i=0; i<players.length; i++){
-                User.findOne({"_id": players[i]}).then((user) => {
+                User.findOne({"_id": players[i].player}).then((user) => {
                     user?.partidos.push(p2ID);
-                    User.updateOne({"_id": players[i]}, {$set: {partidos: user?.partidos}}).then((d) => {
+                    User.updateOne({"_id": players[i].player}, {$set: {partidos: user?.partidos}}).then((d) => {
                         if(d.nModified != 1) return;
                     })
                 })
             }
             group.partidos.push(p2ID);
-            console.log("Partido2: ", p);
         });
         await partido3.save().then((p) => {
             let p3ID = p._id;
             for(let i=0; i<players.length; i++){
-                User.findOne({"_id": players[i]}).then((user) => {
+                User.findOne({"_id": players[i].player}).then((user) => {
                     user?.partidos.push(p3ID);
-                    User.updateOne({"_id": players[i]}, {$set: {partidos: user?.partidos}}).then((d) => {
+                    User.updateOne({"_id": players[i].player}, {$set: {partidos: user?.partidos}}).then((d) => {
                         if(d.nModified != 1) return;
                     })
                 })
             }
             group.partidos.push(p3ID);
-            console.log("Partido3: ", p);
         });
 
-        Torneo.updateOne({"_id": torneoID},{$set: {previa: previa}}).then((data) => {
+        await Torneo.updateOne({"_id": torneoID},{$set: {previa: previa, torneoIniciado: true}}).then((data) => {
             if(data.nModified != 1 && torneo != null){
                 console.log("Torneo no actualizado");
                 return;
@@ -266,6 +266,7 @@ async function createTorneo(req: Request, res: Response){
     let ubicacion = req.body.ubicacion;
     let reglamento = req.body.reglamento;
     let numRondas = req.body.numRondas;
+    let duracionRondas = req.body.duracionRondas;
     let maxPlayers = req.body.maxPlayers;
     let participa = req.body.participa;
     let torneo = new Torneo({
@@ -274,10 +275,12 @@ async function createTorneo(req: Request, res: Response){
         description: description,
         image: image,
         fechaInicio: fechaInicio,
+        torneoIniciado: false,
         finInscripcion: finInscripcion,
         ubicacion: ubicacion,
         reglamento: reglamento,
         numRondas: numRondas,
+        duracionRondas: duracionRondas, 
         admin: [user],
         maxPlayers: maxPlayers,
         finalizado: false,
