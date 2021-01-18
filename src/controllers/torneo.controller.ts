@@ -302,7 +302,7 @@ async function createTorneo(req: Request, res: Response){
             });
         }
         const io = require('../sockets/socket').getSocket()
-        io.emit('nuevoTorneo', torneo.name);
+        io.emit('nuevoTorneo', torneo);
         return res.status(201).json(data);
     }, (error) =>{
         console.log(error);
