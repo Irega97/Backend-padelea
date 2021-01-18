@@ -457,12 +457,15 @@ async function leaveTorneo(req: Request, res: Response){
 }
 
 async function getVueltas(req: Request, res: Response){
-    let numVuelta: number = 2;
+    let numVuelta: number = 0;
     Torneo.findOne({"name": req.params.name}, {previa: 1, rondas: 1}).populate({path: 'previa rondas', populate: {path: 'classification', select: 'name image'}}).then((data) => {
         if(data != undefined){
-            if(data.rondas.length > 0){
+            if(data.rondas.length > 0)
                 numVuelta = data.rondas.length
-            }
+            
+            else if (data.previa.grupos.length == 0)
+                numVuelta = -1;
+
             let dataToSend = {
                 vueltas: data,
                 vueltaActual: numVuelta

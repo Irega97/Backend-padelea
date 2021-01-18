@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import User from "../models/user";
 import Torneo from "../models/torneo";
+import TorneoController from "./torneo.controller";
 
 async function getColaPlayers(req: Request, res: Response){
     try {
@@ -83,4 +84,19 @@ async function acceptPlayers(req: Request, res: Response){
     }
 }
 
-export default { getColaPlayers, acceptPlayers };
+function empezarPrevia(req: Request, res: Response){
+    let fechainicio = new Date(Date.now());
+    let fechainscripcion = new Date(Date.now());
+    fechainscripcion.setHours(fechainscripcion.getHours() - 2);
+    fechainicio.setHours(fechainicio.getHours() - 1);
+    Torneo.findOneAndUpdate({"name": req.params.name}, {$set: {finInscripcion: fechainscripcion, fechaInicio: fechainicio}}).then(data => {
+        TorneoController.checkStartTorneos();
+        return res.status(200).json({message: "Previa creada con éxito"});
+    })
+}
+
+function finalizarRonda(req: Request, res: Response){
+    return res.status(200).json({message: "Función en desarrollo"});
+}
+
+export default { getColaPlayers, acceptPlayers, empezarPrevia, finalizarRonda };
