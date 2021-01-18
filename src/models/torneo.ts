@@ -57,8 +57,8 @@ const torneo = new torneoSchema({
         ref: 'User'
     }],
     rondas: [{
-        numero: {
-            type: Number
+        name: {
+            type: String
         },
         fechaFin: {
             type: Date

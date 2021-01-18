@@ -458,7 +458,9 @@ async function leaveTorneo(req: Request, res: Response){
 
 async function getVueltas(req: Request, res: Response){
     let numVuelta: number = 0;
-    Torneo.findOne({"name": req.params.name}, {previa: 1, rondas: 1}).populate({path: 'previa rondas', populate: {path: 'classification', select: 'name image'}}).then((data) => {
+    console.log("Nombre", req.params.name);
+    Torneo.findOne({"name": req.params.name}, {previa: 1, rondas: 1}).populate({path: 'previa rondas', populate: {path: 'grupos', 
+    populate: {path: 'classification', populate: {path: 'player', select: 'username image'}}}}).then((data) => {
         if(data != undefined){
             if(data.rondas.length > 0)
                 numVuelta = data.rondas.length
