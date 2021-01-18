@@ -36,15 +36,15 @@ async function acceptPlayers(req: Request, res: Response){
             Torneo.findOneAndUpdate({'name': req.params.name}, {$set: {players: data?.players, cola: data?.cola}}).then((d) => {
                 if(d == null) return res.status(400).json({message: "Bad request"});
                 else {
-                    User.findById(userID, {select: {torneos: 1}}).populate('torneos').then((user) => {
+                    User.findById(userID, {torneos: 1, username: 1, name: 1, image: 1}).populate('torneos').then((user) => {
                         if(user == null) return res.status(404).json({message: "User not found"});
                         user?.torneos.forEach((t) => {
                             if(t.torneo == torneoID)
                                 if(accept == true) t.status = 1;
                                 else user.torneos.splice(user.torneos.indexOf(t), 1);
                         });
-                        User.update({"_id": userID}, {$set: {torneos: user?.torneos}}).then((d) => {
-                            if(d.nModified != 1) return res.status(400).json({message: "Bad request"});
+                        User.update({"_id": userID}, {$set: {torneos: user?.torneos}}).then((data) => {
+                            if(data.nModified != 1) return res.status(400).json({message: "Bad request"});
                             if(accept == true) {
                                 message = "Usuario aceptado";
 
@@ -61,21 +61,16 @@ async function acceptPlayers(req: Request, res: Response){
                                     description: "Has sido aceptado en " + req.params.name,
                                     status: 1,
                                     origen: req.params.name,
-                                    /* image: myImage */
+                                    image: d.image
                                 }
                                 User.updateOne({"_id": userID}, {$addToSet: {notifications: newNotification}}).then(data =>{
-                                    if (data.nModified == 1){
+                                    if (data.nModified == 1)
                                         io.to(userID).emit('nuevaNotificacion', newNotification);
-                                    }
-                                    else if (data.nModified == 0){
-                                        return res.status(200).json({message: "Error al guardar la notificacion"});
-                                    }
                                 });
                             }
-                            else {
+                            else 
                                 message = "Usuario rechazado";
-                                io.emit('nuevoJugador', null);
-                            }
+                                
                             return res.status(200).json({message: message});
                         });
                     });
