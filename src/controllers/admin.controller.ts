@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import User from "../models/user";
 import Torneo from "../models/torneo";
+import TorneoController from "./torneo.controller";
+import notificationsController from "./notifications.controller";
 
 async function getColaPlayers(req: Request, res: Response){
     try {
@@ -36,15 +38,15 @@ async function acceptPlayers(req: Request, res: Response){
             Torneo.findOneAndUpdate({'name': req.params.name}, {$set: {players: data?.players, cola: data?.cola}}).then((d) => {
                 if(d == null) return res.status(400).json({message: "Bad request"});
                 else {
-                    User.findById(userID, {select: {torneos: 1}}).populate('torneos').then((user) => {
+                    User.findById(userID, {torneos: 1, username: 1, name: 1, image: 1}).populate('torneos').then((user) => {
                         if(user == null) return res.status(404).json({message: "User not found"});
                         user?.torneos.forEach((t) => {
                             if(t.torneo == torneoID)
                                 if(accept == true) t.status = 1;
                                 else user.torneos.splice(user.torneos.indexOf(t), 1);
                         });
-                        User.update({"_id": userID}, {$set: {torneos: user?.torneos}}).then((d) => {
-                            if(d.nModified != 1) return res.status(400).json({message: "Bad request"});
+                        User.update({"_id": userID}, {$set: {torneos: user?.torneos}}).then((data) => {
+                            if(data.nModified != 1) return res.status(400).json({message: "Bad request"});
                             if(accept == true) {
                                 message = "Usuario aceptado";
 
@@ -61,21 +63,26 @@ async function acceptPlayers(req: Request, res: Response){
                                     description: "Has sido aceptado en " + req.params.name,
                                     status: 1,
                                     origen: req.params.name,
-                                    /* image: myImage */
+                                    image: d.image
                                 }
                                 User.updateOne({"_id": userID}, {$addToSet: {notifications: newNotification}}).then(data =>{
-                                    if (data.nModified == 1){
+                                    if (data.nModified == 1)
                                         io.to(userID).emit('nuevaNotificacion', newNotification);
-                                    }
-                                    else if (data.nModified == 0){
-                                        return res.status(200).json({message: "Error al guardar la notificacion"});
-                                    }
                                 });
                             }
-                            else {
+                            else 
                                 message = "Usuario rechazado";
-                                io.emit('nuevoJugador', null);
-                            }
+
+                            d.admin.forEach(admin => {
+                                notificationsController.deleteNotification("Cola", admin, user.username, req.params.name).then(data => {
+                                    let info = {
+                                        user: user.username,
+                                        torneo: req.params.name
+                                    }
+                                    io.to(admin).emit('respondidoUsuarioCola', info);
+                                })
+                            })
+                            
                             return res.status(200).json({message: message});
                         });
                     });
@@ -88,4 +95,19 @@ async function acceptPlayers(req: Request, res: Response){
     }
 }
 
-export default { getColaPlayers, acceptPlayers };
+function empezarPrevia(req: Request, res: Response){
+    let fechainicio = new Date(Date.now());
+    let fechainscripcion = new Date(Date.now());
+    fechainscripcion.setHours(fechainscripcion.getHours() - 2);
+    fechainicio.setHours(fechainicio.getHours() - 1);
+    Torneo.findOneAndUpdate({"name": req.params.name}, {$set: {finInscripcion: fechainscripcion, fechaInicio: fechainicio}}).then(data => {
+        TorneoController.checkStartTorneos();
+        return res.status(200).json({message: "Previa creada con éxito"});
+    })
+}
+
+function finalizarRonda(req: Request, res: Response){
+    return res.status(200).json({message: "Función en desarrollo"});
+}
+
+export default { getColaPlayers, acceptPlayers, empezarPrevia, finalizarRonda };
