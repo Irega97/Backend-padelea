@@ -56,6 +56,10 @@ const torneo = new torneoSchema({
         type: Schema.Types.ObjectId,
         ref: 'User'
     }],
+    sobra: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    }],
     rondas: [{
         name: {
             type: String

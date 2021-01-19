@@ -96,7 +96,7 @@ async function checkStartTorneos(){
                         fechaFin: inicio,
                         grupos: previa
                     }
-                    await Torneo.updateOne({name: torneo.name}, {$set: {players: torneo.players, previa: previaToSave}, $addToSet: {cola: cola}}).then(async data => {
+                    await Torneo.updateOne({name: torneo.name}, {$set: {players: torneo.players, previa: previaToSave}, $addToSet: {sobra: cola}}).then(async data => {
                         if(data.nModified != 1) console.log("No se ha modificado");
                         else{
                             await createPartidosPrevia(previaToSave, torneo._id);
