@@ -36,12 +36,24 @@ async function checkStartTorneos(){
                             //Te los mete en el grupo
                             let groupName = nameGroups[j];
                             j++;
+                            let statisticsIniciales = {
+                                partidosJugados: 0,
+                                partidosGanados: 0,
+                                partidosPerdidos: 0,
+                                setsGanados: 0,
+                                setsPerdidos: 0,
+                                juegosGanados: 0,
+                                juegosPerdidos: 0,
+                                juegosDif: 0,
+                                puntos: 0,
+                                puntosExtra: 0
+                            }
                             let grupo = {
                                 groupName: groupName, 
-                                classification: [{player: jugadores[0], statistics: null},
-                                                {player: jugadores[1], statistics: null},
-                                                {player: jugadores[2], statistics: null}, 
-                                                {player: jugadores[3], statistics: null}],
+                                classification: [{player: jugadores[0], statistics: statisticsIniciales},
+                                                {player: jugadores[1], statistics: statisticsIniciales},
+                                                {player: jugadores[2], statistics: statisticsIniciales}, 
+                                                {player: jugadores[3], statistics: statisticsIniciales}],
                                 partidos: []
                             }
                             previa.push(grupo); 
@@ -361,6 +373,26 @@ async function joinTorneo(req: Request, res: Response){
                                     if(user.nModified != 1) return res.status(400).json({message: "Ya has solicitado unirte"});
                                 });
                             }
+                            
+                            if (t?.type == "private" && t?.admin != undefined){
+                                let newNotification = {
+                                    type: "Cola",
+                                    description: data?.username + " ha solicitado unirse al torneo " + t.name,
+                                    status: 0,
+                                    origen: data?.username,
+                                    image: data?.image,
+                                    otros: t.name
+                                }
+
+                                for (let i: number = 0; i < t?.admin.length; i++){
+                                    User.updateOne({"_id": t.admin}, {$addToSet: {notifications: newNotification}}).then(data =>{
+                                        if (data.nModified == 1){
+                                            const io = require('../sockets/socket').getSocket();
+                                            io.to(t?.admin).emit('nuevaNotificacion', newNotification);
+                                        }
+                                    });
+                                }
+                            }
 
                             if(!inscriptionsPeriod) return res.status(200).json({message: "Inscripciones cerradas. Has sido registrado en cola"});
                             else if(torneoLleno) return res.status(200).json({message: "El torneo está lleno. Has sido añadido a la cola"});
@@ -369,6 +401,7 @@ async function joinTorneo(req: Request, res: Response){
                     }
                 }
             }
+
             else return res.status(404).json({message: "Torneo not found"});
         });
     } catch(error){

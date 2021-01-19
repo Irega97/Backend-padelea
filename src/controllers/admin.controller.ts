@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import User from "../models/user";
 import Torneo from "../models/torneo";
 import TorneoController from "./torneo.controller";
+import notificationsController from "./notifications.controller";
 
 async function getColaPlayers(req: Request, res: Response){
     try {
@@ -71,7 +72,17 @@ async function acceptPlayers(req: Request, res: Response){
                             }
                             else 
                                 message = "Usuario rechazado";
-                                
+
+                            d.admin.forEach(admin => {
+                                notificationsController.deleteNotification("Cola", admin, user.username, req.params.name).then(data => {
+                                    let info = {
+                                        user: user.username,
+                                        torneo: req.params.name
+                                    }
+                                    io.to(admin).emit('respondidoUsuarioCola', info);
+                                })
+                            })
+                            
                             return res.status(200).json({message: message});
                         });
                     });
