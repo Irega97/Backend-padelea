@@ -204,6 +204,7 @@ async function createPartidosPrevia(previa: any, torneoID: string){
                 torneo.players.forEach((player) => {
                     User.updateOne({"_id": player._id},{$addToSet: {notifications: newNotification}}).then(data =>{
                         if (data.nModified == 1){
+                            console.log("Torneo iniciado correctamente!")
                             const io = require('../sockets/socket').getSocket()
                             io.to(player._id).emit('nuevaNotificacion', newNotification);
                         }
