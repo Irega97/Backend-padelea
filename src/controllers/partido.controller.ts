@@ -19,14 +19,24 @@ async function getPartidosUser(req: Request, res: Response){
 
 async function addResultados(req: Request, res: Response) {
     const idPartido = req.body.idPartido;
-    let torneo = await Torneo.findOne({"_id": req.body.idTorneo});
+    let partido: any;
+    const setsPareja1 = req.body.sets1;
+    const setsPareja2 = req.body.sets2;
+    const ganadores = req.body.ganadores;
+    let torneo: any;
+    let ronda: any;
+    Torneo.findOne({"_id": req.body.idTorneo}).then((data) => {
+        torneo = data;
+        console.log(data);
+    });
     if (torneo != null)
         torneo.partidosConfirmados = torneo.partidosConfirmados + 1;
     let cambiar: Boolean = true;
     Partido.findOne({"_id":idPartido}).then((data) => {
         if(data == null) return res.status(404).json({message: 'Partido not found'})
         else{
-            if (data.resultado != undefined)
+            partido = data;
+            if (partido.resultado != undefined)
                 cambiar = false;
             
             const set1: string = req.body.set1;
@@ -42,16 +52,29 @@ async function addResultados(req: Request, res: Response) {
             else resultado = {set1:set1, set2: set2, set3:''};
             console.log(resultado);
             
-            Partido.updateOne({"_id": idPartido}, {$set: {resultado: [resultado], ganadores: req.body.ganadores}}).then((data)  =>  {
+            Partido.updateOne({"_id": idPartido}, {$set: {resultado: [resultado], ganadores: ganadores}}).then((data)  =>  {
                 if (cambiar){
                     Torneo.findOneAndUpdate({"_id": req.body.idTorneo}, {$set: {partidosConfirmados: torneo?.partidosConfirmados}})
                 }
+
+                partido.jugadores.forEach((pareja: any) => {
+                    if(pareja == ganadores){
+                        if(partido.jugadores.indexOf(pareja) == 0){
+                            
+                        }
+                    }
+                })
+
                 res.status(200).json(data);
             }).catch((err)  => {
                 res.status(500).json(err);
             });
         }
     });
+}
+
+async function calculateStatistics(sets: Number, statistics: any, ganado: boolean){
+    
 }
 
 async function addPartido(req: Request, res: Response){
