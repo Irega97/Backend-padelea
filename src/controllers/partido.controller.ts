@@ -86,9 +86,14 @@ async function addPartido(req: Request, res: Response){
     })
 }
 
+<<<<<<< HEAD
 function getInfoGrupos(req: Request, res: Response){
+=======
+function getInfoGrupo(req: Request, res: Response){
+>>>>>>> 0f2127069caa0f9c0c33aea4d40611190e3a918e
     Torneo.findOne({"name": req.params.name}, {previa: 1, rondas: 1}).populate({path: 'previa rondas', populate: {path: 'grupos', 
-    populate: {path: 'classification', populate: {path: 'player', select: 'username image'}}}}).then((data) => {
+    populate: [{path: 'classification', populate: {path: 'player', select: 'username image'}}, 
+    {path: 'partidos', populate: {path: 'jugadores', populate: {path: 'pareja1 pareja2', select: 'username image'}}}]}}).then((data) => {
         if (data != undefined){
             let dataToSend;
             let enc: Boolean = false;
@@ -141,4 +146,8 @@ function getInfoGrupos(req: Request, res: Response){
     })
 }
 
+<<<<<<< HEAD
 export default { getPartidosTorneo, getPartidosUser, addPartido, getInfoGrupos, addResultados}
+=======
+export default { getPartidosTorneo, getPartidosUser, addPartido, getInfoGrupo, addResultados}
+>>>>>>> 0f2127069caa0f9c0c33aea4d40611190e3a918e
