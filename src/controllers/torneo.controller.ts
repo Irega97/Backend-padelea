@@ -127,30 +127,30 @@ async function createPartidosPrevia(previa: any, torneoID: string){
         let players = group.classification;
         let partido1 = new Partido({
             idTorneo: torneoID,
-            resultado: [],
+            resultado: {},
             ganadores: [],
-            jugadores: [{
+            jugadores: {
                 pareja1: [players[0].player, players[1].player],
                 pareja2: [players[2].player, players[3].player]
-            }]
+            }
         });
         let partido2 = new Partido({
             idTorneo: torneoID,
-            resultado: [],
+            resultado: {},
             ganadores: [],
-            jugadores: [{
+            jugadores: {
                 pareja1: [players[0].player, players[2].player],
                 pareja2: [players[1].player, players[3].player]
-            }]
+            }
         });
         let partido3 = new Partido({
             idTorneo: torneoID,
-            resultado: [],
+            resultado: {},
             ganadores: [],
-            jugadores: [{
+            jugadores: {
                 pareja1: [players[0].player, players[3].player],
                 pareja2: [players[2].player, players[1].player]
-            }]
+            }
         });
         await partido1.save().then((p) => {
             let p1ID = p._id;
@@ -194,6 +194,7 @@ async function createPartidosPrevia(previa: any, torneoID: string){
                 console.log("Torneo no actualizado");
                 return;
             } else {
+                console.log("Torneo iniciado correctamente!")
                 let newNotification = {
                     type: "Torneo",
                     description: "El torneo " + torneo.name + " ha empezado!",
