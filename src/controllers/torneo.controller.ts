@@ -291,6 +291,7 @@ async function createTorneo(req: Request, res: Response){
         description: description,
         image: image,
         fechaInicio: fechaInicio,
+        partidosConfirmados: 0,
         torneoIniciado: false,
         finInscripcion: finInscripcion,
         ubicacion: ubicacion,
@@ -492,7 +493,6 @@ async function leaveTorneo(req: Request, res: Response){
 
 async function getVueltas(req: Request, res: Response){
     let numVuelta: number = 0;
-    console.log("Nombre", req.params.name);
     Torneo.findOne({"name": req.params.name}, {previa: 1, rondas: 1}).populate({path: 'previa rondas', populate: {path: 'grupos', 
     populate: {path: 'classification', populate: {path: 'player', select: 'username image'}}}}).then((data) => {
         if(data != undefined){

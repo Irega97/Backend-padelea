@@ -23,12 +23,16 @@ async function getPartidosUser(req: Request, res: Response){
 
 async function addResultados(req: Request, res: Response) {
     const idPartido = req.body.idPartido;
-    let idTorneo;
-    Partido.find({"_id":idPartido}).then((data) => {
+    let torneo = await Torneo.findOne({"_id": req.body.idTorneo});
+    if (torneo != null)
+        torneo.partidosConfirmados = torneo.partidosConfirmados + 1;
+    let cambiar: Boolean = true;
+    Partido.findOne({"_id":idPartido}).then((data) => {
         if(data == null) return res.status(404).json({message: 'Partido not found'})
         else{
-            console.log(data);
-            console.log(data[0].idTorneo);
+            if (data.resultado != undefined)
+                cambiar = false;
+            
             const set1: string = req.body.set1;
             const set2: string = req.body.set2;
             //Set3 no tiene que ser obligatorio, pero no se como poner para que sea opcional introducirlo
@@ -42,7 +46,10 @@ async function addResultados(req: Request, res: Response) {
             else resultado = {set1:set1, set2: set2, set3:''};
             console.log(resultado);
             
-            Partido.updateOne({"_id": idPartido}, {$set: {resultado: [resultado]}}).then((data)  =>  {
+            Partido.updateOne({"_id": idPartido}, {$set: {resultado: [resultado], ganadores: req.body.ganadores}}).then((data)  =>  {
+                if (cambiar){
+                    Torneo.findOneAndUpdate({"_id": req.body.idTorneo}, {$set: {partidosConfirmados: torneo?.partidosConfirmados}})
+                }
                 res.status(200).json(data);
             }).catch((err)  => {
                 res.status(500).json(err);

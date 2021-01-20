@@ -60,15 +60,15 @@ const torneo = new torneoSchema({
         type: Schema.Types.ObjectId,
         ref: 'User'
     }],
+    partidosConfirmados: {
+        type: Number
+    },
     rondas: [{
         name: {
             type: String
         },
         fechaFin: {
             type: Date
-        },
-        partidosConfirmados: {
-            type: Number
         },
         grupos: [{
             groupName: {
@@ -97,9 +97,6 @@ const torneo = new torneoSchema({
     previa: {
         fechaFin: {
             type: Date
-        },
-        partidosConfirmados: {
-            type: Number
         },
         grupos: [{
             groupName: {
@@ -146,6 +143,7 @@ export interface ITorneo extends Document {
     finalizado: boolean;
     players: Array<any>;
     cola: Array<any>;
+    partidosConfirmados: number;
     rondas: Array<any>;
     previa: any;
     torneoToJson(): JSON;
@@ -169,6 +167,7 @@ torneo.methods.torneoToJSON = function(){
         finalizado: this.finalizado,
         players : this.players,
         cola: this.cola,
+        partidosConfirmados: this.partidosConfirmados,
         rondas: this.rondas,
         previa: this.previa
     };
