@@ -86,7 +86,7 @@ async function addPartido(req: Request, res: Response){
     })
 }
 
-function getPartidosGrupo(req: Request, res: Response){
+function getInfoGrupo(req: Request, res: Response){
     Torneo.findOne({"name": req.params.name}, {previa: 1, rondas: 1}).populate({path: 'previa rondas', populate: {path: 'grupos', 
     populate: [{path: 'classification', populate: {path: 'player', select: 'username image'}}, 
     {path: 'partidos', populate: {path: 'jugadores', populate: {path: 'pareja1 pareja2', select: 'username image'}}}]}}).then((data) => {
@@ -142,4 +142,4 @@ function getPartidosGrupo(req: Request, res: Response){
     })
 }
 
-export default { getPartidosTorneo, getPartidosUser, addPartido, getPartidosGrupo, addResultados}
+export default { getPartidosTorneo, getPartidosUser, addPartido, getInfoGrupo, addResultados}

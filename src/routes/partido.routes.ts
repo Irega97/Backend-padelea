@@ -6,7 +6,7 @@ import partidoController from '../controllers/partido.controller'
 const router = Router();
 
 router.post('/new', passport.authenticate("jwt", {session: false}), partidoController.addPartido);
-router.get('/:name/:vuelta/:grupo',  passport.authenticate("jwt", {session: false}), partidoController.getPartidosGrupo);
+router.get('/:name/:vuelta/:grupo',  passport.authenticate("jwt", {session: false}), partidoController.getInfoGrupo);
 router.post('/results', passport.authenticate("jwt", {session: false}), partidoController.addResultados);
 
 export default router;
