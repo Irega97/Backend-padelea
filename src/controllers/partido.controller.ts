@@ -1,4 +1,4 @@
-import { request, Request, Response } from "express";
+import { Request, Response } from "express";
 import config from "../config/config";
 import Partido from "../models/partido";
 import User from "../models/user";
@@ -86,7 +86,7 @@ async function addPartido(req: Request, res: Response){
     })
 }
 
-function getPartidosGrupo(req: Request, res: Response){
+function getInfoGrupos(req: Request, res: Response){
     Torneo.findOne({"name": req.params.name}, {previa: 1, rondas: 1}).populate({path: 'previa rondas', populate: {path: 'grupos', 
     populate: {path: 'classification', populate: {path: 'player', select: 'username image'}}}}).then((data) => {
         if (data != undefined){
@@ -141,4 +141,4 @@ function getPartidosGrupo(req: Request, res: Response){
     })
 }
 
-export default { getPartidosTorneo, getPartidosUser, addPartido, getPartidosGrupo, addResultados}
+export default { getPartidosTorneo, getPartidosUser, addPartido, getInfoGrupos, addResultados}
