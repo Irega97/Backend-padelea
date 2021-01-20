@@ -8,7 +8,7 @@ const partido = new partidoSchema({
         type: Schema.Types.ObjectId,
         ref: 'Torneo'
     },
-    jugadores: [{
+    jugadores: {
         pareja1: [{
             type: Schema.Types.ObjectId,
             ref: 'User'
@@ -17,8 +17,8 @@ const partido = new partidoSchema({
             type: Schema.Types.ObjectId,
             ref: 'User'
         }]
-    }],
-    resultado: [{ // x - y  x->pareja1, y->pareja2
+    },
+    resultado: { // x - y  x->pareja1, y->pareja2
         set1: { //{set1: '6-4', set2: '2-6', set3: '3-6'}
             type: String
         },
@@ -28,7 +28,7 @@ const partido = new partidoSchema({
         set3: {
             type: String
         }
-    }],
+    },
     ganadores: [{
         type: Schema.Types.ObjectId,
         ref: 'User'
@@ -37,7 +37,7 @@ const partido = new partidoSchema({
 
 //Interfaz para tratar respuesta como documento
 export interface IPartido extends Document {
-    idTorneo: ITorneo;
+    idTorneo: any;
     jugadores: any;
     resultado: Array<string>;
     ganadores: Array<IUser>;

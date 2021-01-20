@@ -67,6 +67,9 @@ const torneo = new torneoSchema({
         fechaFin: {
             type: Date
         },
+        partidosConfirmados: {
+            type: Number
+        },
         grupos: [{
             groupName: {
                 type: String
@@ -94,6 +97,9 @@ const torneo = new torneoSchema({
     previa: {
         fechaFin: {
             type: Date
+        },
+        partidosConfirmados: {
+            type: Number
         },
         grupos: [{
             groupName: {

@@ -23,9 +23,12 @@ async function getPartidosUser(req: Request, res: Response){
 
 async function addResultados(req: Request, res: Response) {
     const idPartido = req.body.idPartido;
+    let idTorneo;
     Partido.find({"_id":idPartido}).then((data) => {
         if(data == null) return res.status(404).json({message: 'Partido not found'})
         else{
+            console.log(data);
+            console.log(data[0].idTorneo);
             const set1: string = req.body.set1;
             const set2: string = req.body.set2;
             //Set3 no tiene que ser obligatorio, pero no se como poner para que sea opcional introducirlo
