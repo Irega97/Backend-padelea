@@ -20,8 +20,10 @@ async function getPartidosUser(req: Request, res: Response){
 async function addResultados(req: Request, res: Response) {
     const idPartido = req.body.idPartido;
     let partido: any;
-    const setsPareja1 = req.body.sets1;
-    const setsPareja2 = req.body.sets2;
+    const juegos1 = req.body.juegos1;
+    const juegos2 = req.body.juegos2;
+    const sets1 = req.body.sets1;
+    const sets2 = req.body.sets2;
     const ganadores = req.body.ganadores;
     let torneo: any;
     let ronda: any;
@@ -52,11 +54,19 @@ async function addResultados(req: Request, res: Response) {
             else resultado = {set1:set1, set2: set2, set3:''};
             console.log(resultado);
             
-            Partido.updateOne({"_id": idPartido}, {$set: {resultado: [resultado], ganadores: ganadores}}).then((data)  =>  {
+            Partido.findOneAndUpdate({"_id": idPartido}, {$set: {resultado: [resultado], ganadores: ganadores}}).then((data)  =>  {
+                console.log("aqui: ", data);
                 if (cambiar){
                     Torneo.findOneAndUpdate({"_id": req.body.idTorneo}, {$set: {partidosConfirmados: torneo?.partidosConfirmados}})
                 }
-
+                /* partidosJugados: number;
+                partidosGanados: number;
+                partidosPerdidos: number;
+                setsGanados: number;
+                setsPerdidos: number;
+                juegosGanados: number;
+                juegosPerdidos: number;
+                juegosDif: number; */
                 partido.jugadores.forEach((pareja: any) => {
                     if(pareja == ganadores){
                         if(partido.jugadores.indexOf(pareja) == 0){

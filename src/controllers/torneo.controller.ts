@@ -14,6 +14,7 @@ schedule.scheduleJob('0 0 7 * * *', () => {
 
 async function checkStartTorneos(){
     let torneoID: string;
+    let groupName: string;
     let users = await User.find({}, {'torneos': 1}).populate('torneos');
     Torneo.find({"torneoIniciado":false}).then((data) => {
         if (data==null) console.log("Torneos not found");
@@ -35,7 +36,7 @@ async function checkStartTorneos(){
                         let jugadores = torneo.players.slice(i, i + 4)
                         if(jugadores.length % 4 == 0){ 
                             //Te los mete en el grupo
-                            let groupName = nameGroups[j];
+                            groupName = nameGroups[j];
                             j++;
                             let statisticsIniciales = {
                                 partidosJugados: 0,
@@ -116,7 +117,7 @@ async function checkStartTorneos(){
                     await Torneo.updateOne({name: torneo.name}, {$set: {players: torneo.players, previa: previaToSave}, $addToSet: {sobra: cola}}).then(async data => {
                         if(data.nModified != 1) console.log("No se ha modificado");
                         else{
-                            await createPartidosPrevia(previaToSave, torneo._id);
+                            await createPartidosPrevia(previaToSave, torneo._id, groupName);
                         } 
                     })
                 } else if(torneo.players.length < 4 && tocaEmpezar){
@@ -134,16 +135,22 @@ async function checkStartTorneos(){
     });
 }
 
-async function createPartidosPrevia(previa: any, torneoID: string){
+async function createPartidosPrevia(previa: any, torneoID: string, groupName: string){
     let torneo: ITorneo;
+    let infoTorneo: any;
     Torneo.findOne({"_id": torneoID}).then((data: any) => {
         torneo = data;
+        infoTorneo = {
+            idTorneo: torneoID,
+            vuelta: 'previa',
+            grupo: groupName
+        }
     });
     await previa.grupos.forEach(async (group: any) => {
         if(group.partidos.length != 0) console.log("Jaja");
         let players = group.classification;
         let partido1 = new Partido({
-            idTorneo: torneoID,
+            torneo: infoTorneo,
             resultado: {},
             ganadores: [],
             jugadores: {
@@ -152,7 +159,7 @@ async function createPartidosPrevia(previa: any, torneoID: string){
             }
         });
         let partido2 = new Partido({
-            idTorneo: torneoID,
+            torneo: infoTorneo,
             resultado: {},
             ganadores: [],
             jugadores: {
@@ -161,7 +168,7 @@ async function createPartidosPrevia(previa: any, torneoID: string){
             }
         });
         let partido3 = new Partido({
-            idTorneo: torneoID,
+            torneo: infoTorneo,
             resultado: {},
             ganadores: [],
             jugadores: {

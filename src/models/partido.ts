@@ -4,9 +4,17 @@ import { IUser } from './user';
 
 let partidoSchema = mongoose.Schema;
 const partido = new partidoSchema({
-    idTorneo: {
-        type: Schema.Types.ObjectId,
-        ref: 'Torneo'
+    torneo: {
+        idTorneo: {
+            type: Schema.Types.ObjectId,
+            ref: 'Torneo'
+        },
+        vuelta: {
+            type: String
+        },
+        grupo: {
+            type: String
+        }
     },
     jugadores: {
         pareja1: [{
@@ -37,7 +45,7 @@ const partido = new partidoSchema({
 
 //Interfaz para tratar respuesta como documento
 export interface IPartido extends Document {
-    idTorneo: any;
+    torneo: any;
     jugadores: any;
     resultado: Array<string>;
     ganadores: Array<IUser>;
@@ -46,7 +54,7 @@ export interface IPartido extends Document {
 
 partido.methods.partidoToJSON = function(){
     return {
-        idTorneo: this.idTorneo,
+        torneo: this.torneo,
         jugadores: this.jugadores,
         resultado: this.resultado,
         ganadores: this.ganadores
