@@ -1,11 +1,7 @@
 import { Request, Response } from "express";
-import config from "../config/config";
 import Partido from "../models/partido";
 import User from "../models/user";
 import Torneo from "../models/torneo";
-import { idText } from "typescript";
-import user from "../models/user";
-import partido from "../models/partido";
 
 async function getPartidosTorneo(req: Request, res: Response){
     Partido.find({idTorneo: req.body.name}).then((data) => {

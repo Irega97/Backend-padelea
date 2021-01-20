@@ -6,9 +6,15 @@ import notificationsController from "./notifications.controller";
 
 async function getColaPlayers(req: Request, res: Response){
     try {
-        Torneo.findOne({'name': req.params.name}, {cola: 1}).populate({path: 'cola', select: 'username name image'}).then((data) => {
+        Torneo.findOne({'name': req.params.name}, {cola: 1, players: 1, maxPlayers: 1, fechaInicio: 1}).populate({path: 'cola', select: 'username name image'}).then((data) => {
             if(data==null) return res.status(404).json({message: "Cola not found"});
-            return res.status(200).json(data);
+            let dataToSend = {
+                cola: data.cola,
+                length: data.players.length,
+                max: data.maxPlayers,
+                fechaInicio: data.fechaInicio
+            }
+            return res.status(200).json(dataToSend);
         })
     } catch(err){
         console.log(err);

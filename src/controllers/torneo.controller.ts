@@ -4,6 +4,7 @@ import Torneo, { ITorneo } from "../models/torneo";
 import User from "../models/user";
 import Partido from "../models/partido";
 const schedule = require('node-schedule');
+import Chat from '../models/chat';
 
 //Función que comprueba cada día a las 07:00:00h que torneos han empezado
 schedule.scheduleJob('0 0 7 * * *', () => {
@@ -57,6 +58,22 @@ async function checkStartTorneos(){
                                 partidos: []
                             }
                             previa.push(grupo); 
+                            let mensaje = {
+                                
+                            }
+
+                            let chat = new Chat({
+                                users: jugadores,
+                                name: torneo.name + " Previa " + groupName,
+                                admin: torneo.admin,
+                                image: torneo.image,
+                                mensajes: mensaje
+                            });
+                        
+                            let chatuser = {
+                                chat: chat,
+                                ultimoleido: 0
+                            }
                         } else {
                             //te los mete en cola
                             for(let i = 0; i < jugadores.length; i++)
