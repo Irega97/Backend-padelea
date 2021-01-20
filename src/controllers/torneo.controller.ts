@@ -58,8 +58,16 @@ async function checkStartTorneos(){
                                 partidos: []
                             }
                             previa.push(grupo); 
-                            let mensaje = {
-                                
+                            let message1: any = {
+                                body : "Ha empezado la previa del torneo " + torneo.name,
+                                date: new Date(Date.now()),
+                                leidos: []
+                            }
+
+                            let message2: any = {
+                                body : "Este es el chat del Grupo " + groupName,
+                                date: new Date(Date.now()),
+                                leidos: [] 
                             }
 
                             let chat = new Chat({
@@ -67,13 +75,28 @@ async function checkStartTorneos(){
                                 name: torneo.name + " Previa " + groupName,
                                 admin: torneo.admin,
                                 image: torneo.image,
-                                mensajes: mensaje
+                                mensajes: [message1, message2]
                             });
                         
                             let chatuser = {
                                 chat: chat,
                                 ultimoleido: 0
                             }
+
+                            chat.save().then(datachat => {
+                                jugadores.forEach(jugador => {
+                                    User.findOneAndUpdate({"_id": jugador}, {$addToSet: {chats: chatuser}}).then(() => {
+                                        const sockets = require('../sockets/socket').getVectorSockets();
+                                        sockets.forEach((socket: any) =>{
+                                            if (socket._id == jugador){
+                                            socket.join(datachat._id);
+                                            const io = require('../sockets/socket').getSocket();
+                                            io.to(jugador).emit('nuevoChat', chatuser.chat);
+                                        }
+                                        })
+                                    })
+                                });
+                            });
                         } else {
                             //te los mete en cola
                             for(let i = 0; i < jugadores.length; i++)
