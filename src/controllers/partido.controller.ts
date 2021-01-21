@@ -32,11 +32,14 @@ async function addResultados(req: Request, res: Response) {
     //Variables auxiliares
     let torneo: any;
     let ronda: any;
+<<<<<<< HEAD
     let nombreGrupo: any;
     let confirmed: number = 0;
     let cambiar: Boolean = true;
 
     //Buscamos torneo al que pertenece el partido
+=======
+>>>>>>> b683357802d0a0f16475aa437d777a07d9e43d0f
     await Torneo.findOne({"_id": req.body.idTorneo}).then((data) => {
         torneo = data;
     });
@@ -74,11 +77,24 @@ async function addResultados(req: Request, res: Response) {
                 if (cambiar){
                     Torneo.findOneAndUpdate({"_id": req.body.idTorneo}, {$set: {partidosConfirmados: confirmed}});
                 }
+<<<<<<< HEAD
                 //Calculamos las estadisticas
                 calculateStatistics(sets1, sets2, juegos1, juegos2, ganadores, torneo, partido, ronda, nombreGrupo).then((hecho) => {
                     if(hecho == true) return res.status(200).json(data);
                     else return res.status(400).json({message: "Bad Request"});
                 });
+=======
+
+                /*partido.jugadores.forEach((pareja: any) => {
+                    if(pareja == ganadores){
+                        if(partido.jugadores.indexOf(pareja) == 0){
+                            
+                        }
+                    }
+                })*/
+
+                res.status(200).json(data);
+>>>>>>> b683357802d0a0f16475aa437d777a07d9e43d0f
             }).catch((err)  => {
                 res.status(500).json(err);
             });
@@ -239,7 +255,10 @@ function getInfoGrupos(req: Request, res: Response){
                 while (i< data.previa.grupos.length && !enc){
                     if (data.previa.grupos[i].groupName == req.params.grupo){
                         enc = true;
-                        dataToSend = data.previa.grupos[i]
+                        dataToSend = {
+                            grupos: data.previa.grupos[i],
+                            idTorneo: data._id
+                        }
                     }
                     else
                         i++;
@@ -260,7 +279,10 @@ function getInfoGrupos(req: Request, res: Response){
                     while (j< data.rondas[i].grupos.length && !enc){
                         if (data.rondas[i].grupos[j].groupName == req.params.grupo){
                             enc = true;
-                            dataToSend = data.rondas[i].grupos[j];
+                            dataToSend = {
+                                grupos: data.rondas[i].grupos[j],
+                                idTorneo: data._id
+                            } 
                         }
                         else
                             i++;
