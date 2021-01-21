@@ -47,7 +47,7 @@ const partido = new partidoSchema({
 export interface IPartido extends Document {
     torneo: any;
     jugadores: any;
-    resultado: Array<string>;
+    resultado: any;
     ganadores: Array<IUser>;
     partidoToJson(): JSON;
 }

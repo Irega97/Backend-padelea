@@ -160,21 +160,19 @@ async function checkStartTorneos(){
 
 async function createPartidosPrevia(previa: any, torneoID: string, groupName: string){
     let torneo: ITorneo;
-    let infoTorneo: any;
-    Torneo.findOne({"_id": torneoID}).then((data: any) => {
+    let infoTorneo = {
+        idTorneo: torneoID,
+        vuelta: 'previa',
+        grupo: groupName
+    }
+    await Torneo.findOne({"_id": torneoID}).then((data: any) => {
         torneo = data;
-        infoTorneo = {
-            idTorneo: torneoID,
-            vuelta: 'previa',
-            grupo: groupName
-        }
     });
     await previa.grupos.forEach(async (group: any) => {
         if(group.partidos.length != 0) console.log("Jaja");
         let players = group.classification;
         let partido1 = new Partido({
             torneo: infoTorneo,
-            resultado: {},
             ganadores: [],
             jugadores: {
                 pareja1: [players[0].player, players[1].player],
@@ -183,7 +181,6 @@ async function createPartidosPrevia(previa: any, torneoID: string, groupName: st
         });
         let partido2 = new Partido({
             torneo: infoTorneo,
-            resultado: {},
             ganadores: [],
             jugadores: {
                 pareja1: [players[0].player, players[2].player],
@@ -192,7 +189,6 @@ async function createPartidosPrevia(previa: any, torneoID: string, groupName: st
         });
         let partido3 = new Partido({
             torneo: infoTorneo,
-            resultado: {},
             ganadores: [],
             jugadores: {
                 pareja1: [players[0].player, players[3].player],
@@ -332,6 +328,19 @@ async function createTorneo(req: Request, res: Response){
     let duracionRondas = req.body.duracionRondas;
     let maxPlayers = req.body.maxPlayers;
     let participa = req.body.participa;
+    let statisticsIniciales = {
+        partidosJugados: 0,
+        partidosGanados: 0,
+        partidosPerdidos: 0,
+        setsGanados: 0,
+        setsPerdidos: 0,
+        juegosGanados: 0,
+        juegosPerdidos: 0,
+        juegosDif: 0,
+        puntos: 0,
+        puntosExtra: 0
+    };
+
     let torneo = new Torneo({
         name: name,
         type: type,
@@ -355,7 +364,7 @@ async function createTorneo(req: Request, res: Response){
     }
     torneo.save().then((data) => {
         if(participa == true){
-            User.updateOne({"_id": req.user}, {$addToSet: {torneos : {torneo: data.id, statistics: null, status: 1}}}).then(user => {
+            User.updateOne({"_id": req.user}, {$addToSet: {torneos : {torneo: data.id, statistics: statisticsIniciales, status: 1}}}).then(user => {
                 if (user == null) return res.status(404).json({message: "User not found"});
             }, (error) =>{
                 console.log(error);
@@ -377,6 +386,18 @@ async function joinTorneo(req: Request, res: Response){
         let tID = t?.id;
         let inscriptionsPeriod: boolean;
         let torneoLleno: boolean;
+        let statisticsIniciales = {
+            partidosJugados: 0,
+            partidosGanados: 0,
+            partidosPerdidos: 0,
+            setsGanados: 0,
+            setsPerdidos: 0,
+            juegosGanados: 0,
+            juegosPerdidos: 0,
+            juegosDif: 0,
+            puntos: 0,
+            puntosExtra: 0
+        };
 
         const io = require('../sockets/socket').getSocket()
 
@@ -394,7 +415,7 @@ async function joinTorneo(req: Request, res: Response){
                         console.log("torneo: ", torneo);
                         if(torneo.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
                         else {
-                            User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: null, status: 1}]}}).then(user => {
+                            User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: statisticsIniciales, status: 1}]}}).then(user => {
                                 if(user.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
                                 let playerToSend = {
                                     torneo: req.params.name,
@@ -418,7 +439,7 @@ async function joinTorneo(req: Request, res: Response){
                         Torneo.updateOne({"_id": t?._id},{$addToSet: {cola: data?.id}}).then(torneo => {
                             if(torneo.nModified != 1) return res.status(400).json({message: "Ya has solicitado unirte"});
                             else {
-                                User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: null, status: 0}]}}).then(user => {
+                                User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: statisticsIniciales, status: 0}]}}).then(user => {
                                     if(user.nModified != 1) return res.status(400).json({message: "Ya has solicitado unirte"});
                                 });
                             }
