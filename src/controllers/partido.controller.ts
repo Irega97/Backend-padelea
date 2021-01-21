@@ -25,9 +25,8 @@ async function addResultados(req: Request, res: Response) {
     const ganadores = req.body.ganadores;
     let torneo: any;
     let ronda: any;
-    Torneo.findOne({"_id": req.body.idTorneo}).then((data) => {
+    await Torneo.findOne({"_id": req.body.idTorneo}).then((data) => {
         torneo = data;
-        console.log(data);
     });
     if (torneo != null)
         torneo.partidosConfirmados = torneo.partidosConfirmados + 1;
@@ -50,20 +49,19 @@ async function addResultados(req: Request, res: Response) {
             let resultado: any;
             if(set3!='') resultado = {set1:set1, set2:set2, set3:set3};
             else resultado = {set1:set1, set2: set2, set3:''};
-            console.log(resultado);
             
             Partido.updateOne({"_id": idPartido}, {$set: {resultado: [resultado], ganadores: ganadores}}).then((data)  =>  {
                 if (cambiar){
                     Torneo.findOneAndUpdate({"_id": req.body.idTorneo}, {$set: {partidosConfirmados: torneo?.partidosConfirmados}})
                 }
 
-                partido.jugadores.forEach((pareja: any) => {
+                /*partido.jugadores.forEach((pareja: any) => {
                     if(pareja == ganadores){
                         if(partido.jugadores.indexOf(pareja) == 0){
                             
                         }
                     }
-                })
+                })*/
 
                 res.status(200).json(data);
             }).catch((err)  => {
@@ -124,7 +122,10 @@ function getInfoGrupos(req: Request, res: Response){
                 while (i< data.previa.grupos.length && !enc){
                     if (data.previa.grupos[i].groupName == req.params.grupo){
                         enc = true;
-                        dataToSend = data.previa.grupos[i]
+                        dataToSend = {
+                            grupos: data.previa.grupos[i],
+                            idTorneo: data._id
+                        }
                     }
                     else
                         i++;
@@ -145,7 +146,10 @@ function getInfoGrupos(req: Request, res: Response){
                     while (j< data.rondas[i].grupos.length && !enc){
                         if (data.rondas[i].grupos[j].groupName == req.params.grupo){
                             enc = true;
-                            dataToSend = data.rondas[i].grupos[j];
+                            dataToSend = {
+                                grupos: data.rondas[i].grupos[j],
+                                idTorneo: data._id
+                            } 
                         }
                         else
                             i++;
