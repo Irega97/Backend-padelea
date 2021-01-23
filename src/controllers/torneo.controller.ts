@@ -444,7 +444,7 @@ async function joinTorneo(req: Request, res: Response){
                                 });
                             }
                             
-                            if (t?.type == "private" && t?.admin != undefined){
+                            if (t?.admin != undefined){
                                 let newNotification = {
                                     type: "Cola",
                                     description: data?.username + " ha solicitado unirse al torneo " + t.name,
