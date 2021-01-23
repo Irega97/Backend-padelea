@@ -401,7 +401,7 @@ async function createTorneo(req: Request, res: Response){
                 return res.status(500).json({message: "Internal Server Error"});
             });
         }
-        const io = require('../sockets/socket').getSocket()
+        const io = require('../sockets/socket').getSocket();
         io.emit('nuevoTorneo', torneo);
         return res.status(201).json(data);
     }, (error) =>{
@@ -617,7 +617,8 @@ async function getRanking(req: Request, res: Response){
         if(data == null) return res.status(404).json({message: "Torneo not found"});
         console.log("aqui: ", data);
         return res.status(200).json(data);
+        
     });
 }
 
-export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, getVueltas, getRanking }
+export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, checkStartVueltas, getVueltas, getRanking }
