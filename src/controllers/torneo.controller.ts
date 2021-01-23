@@ -442,7 +442,6 @@ async function joinTorneo(req: Request, res: Response){
                 
                 if(!torneoLleno && inscriptionsPeriod && t.type != "private"){
                     Torneo.updateOne({"_id": t?._id},{$addToSet: {players: data?.id}}).then(torneo => {
-                        console.log("torneo: ", torneo);
                         if(torneo.nModified != 1) return res.status(400).json({message: "Ya estás inscrito"});
                         else {
                             User.updateOne({"_id": data?._id},{$addToSet: {torneos: [{torneo: tID, statistics: statisticsIniciales, status: 1}]}}).then(user => {
