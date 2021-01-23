@@ -71,23 +71,20 @@ async function addResultados(req: Request, res: Response) {
             //Actualizamos el partido
             Partido.findOneAndUpdate({"_id": idPartido}, {$set: {resultado: resultado, ganadores:ganadores}}).then(async (data)  =>  {
                 //Si no se ha modificado antes, sumamos un numero a partidos confirmados
-                console.log("hola: ", data);
-                if (cambiar){
+                if (cambiar)
                     await Torneo.findOneAndUpdate({"_id": req.body.idTorneo}, {$set: {partidosConfirmados: confirmed}});
-                    console.log("params: ", sets1, sets2, juegos1, juegos2, ganadores, torneo, partido, ronda, nombreGrupo);
-                    //Calculamos las estadisticas
-                    calculateStatistics(sets1, sets2, juegos1, juegos2, ganadores, torneo, partido, ronda, nombreGrupo).then(async (hecho) => {
-                        if(hecho) {
-                            await Torneo.updateOne({"_id":torneo._id},{$set: {previa: torneo.previa, rondas: torneo.rondas}}).then((data) => {
-                                if(data.nModified!=1) return res.status(400).json({message: "Bad Request"});
-                                else return res.status(200).json(torneo);
-                            });
-                        }
-                        else return res.status(400).json({message: "Bad Request"});
-                    });
-                } else {
-                    calculateModifiedStatistics(sets1, sets2, juegos1, juegos2, ganadores, torneo, partido, ronda, nombreGrupo);
-                }                
+
+                console.log("params: ", sets1, sets2, juegos1, juegos2, ganadores, torneo, partido, ronda, nombreGrupo);
+                //Calculamos las estadisticas
+                calculateStatistics(sets1, sets2, juegos1, juegos2, ganadores, torneo, partido, ronda, nombreGrupo, cambiar).then(async (hecho) => {
+                    if(hecho) {
+                        await Torneo.updateOne({"_id":torneo._id},{$set: {previa: torneo.previa, rondas: torneo.rondas}}).then((data) => {
+                            if(data.nModified!=1) return res.status(400).json({message: "Bad Request"});
+                            else return res.status(200).json(torneo);
+                        });
+                    }
+                    else return res.status(400).json({message: "Bad Request"});
+                });             
             }).catch((err)  => {
                 res.status(500).json(err);
             });
@@ -95,7 +92,7 @@ async function addResultados(req: Request, res: Response) {
     });
 }
 
-async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2: any, ganadores: any, torneo: any, partido:any, ronda: any, nombreGrupo: any){
+async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2: any, ganadores: any, torneo: any, partido:any, ronda: any, nombreGrupo: any, cambiar: Boolean){
     //Variable del return
     let hecho = true;
     
@@ -106,7 +103,277 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
     u3 = partido.jugadores.pareja2[0];
     u4 = partido.jugadores.pareja2[1];
 
-    let statsWinner = {
+    await User.findOne({"_id": u1}, {torneos: 1, statistics: 1}).then((data) => {
+        u1 = data;
+    });
+    await User.findOne({"_id": u2}, {torneos: 1, statistics: 1}).then((data) => {
+        u2 = data;
+    });  
+    await User.findOne({"_id": u3}, {torneos: 1, statistics: 1}).then((data) => {
+        u3 = data;
+    });
+    await User.findOne({"_id": u4}, {torneos : 1, statistics: 1}).then((data) => {
+        u4 = data;
+    });  
+
+    let statsPareja1 = {
+        partidosJugados: 1,
+        partidosGanados: 0,
+        partidosPerdidos: 0,
+        juegosGanados: juegos1,
+        juegosPerdidos: juegos2,
+        juegosDif: juegos1 - juegos2,
+        setsGanados: sets1,
+        setsPerdidos: sets2,
+        puntos: 0
+    }
+
+    let statsPareja2 = {
+        partidosJugados: 1,
+        partidosGanados: 0,
+        partidosPerdidos: 0,
+        juegosGanados: juegos2,
+        juegosPerdidos: juegos1,
+        juegosDif: juegos2 - juegos1,
+        setsGanados: sets2,
+        setsPerdidos: sets1,
+        puntos: 0
+    }
+
+    let statsPareja1Viejo = {
+        partidosJugados: 0,
+        partidosGanados: 0,
+        partidosPerdidos: 0,
+        juegosGanados: 0,
+        juegosPerdidos: 0,
+        juegosDif: 0,
+        setsGanados: 0,
+        setsPerdidos: 0,
+        puntos: 0
+    }
+
+    let statsPareja2Viejo = {
+        partidosJugados: 0,
+        partidosGanados: 0,
+        partidosPerdidos: 0,
+        juegosGanados: 0,
+        juegosPerdidos: 0,
+        juegosDif: 0,
+        setsGanados: 0,
+        setsPerdidos: 0,
+        puntos: 0
+    }
+
+    if (ganadores[0]._id.toString() == partido.jugadores.pareja1[0].toString() || ganadores[1]._id.toString() == partido.jugadores.pareja1[0].toString()){
+        statsPareja1.partidosGanados = 1;
+        statsPareja1.puntos = 2 + sets1;
+        statsPareja2.partidosPerdidos = 1;
+        statsPareja2.puntos = 1 + sets2;
+    }
+
+    else{
+        statsPareja2.partidosGanados = 1;
+        statsPareja2.puntos = 2 + sets2;
+        statsPareja1.partidosPerdidos = 1;
+        statsPareja1.puntos = 1 + sets1;
+    }
+
+    if (!cambiar){
+
+    }
+
+    u1.statistics.partidosJugados = u1.statistics.partidosJugados + statsPareja1.partidosJugados;
+    u1.statistics.partidosGanados = u1.statistics.partidosGanados + statsPareja1.partidosGanados;
+    u1.statistics.partidosPerdidos = u1.statistics.partidosPerdidos + statsPareja1.partidosPerdidos;
+    u1.statistics.setsGanados = u1.statistics.setsGanados + statsPareja1.setsGanados;
+    u1.statistics.setsPerdidos = u1.statistics.setsPerdidos + statsPareja1.setsPerdidos;
+    u1.statistics.juegosPerdidos = u1.statistics.juegosPerdidos + statsPareja1.juegosPerdidos;
+    u1.statistics.juegosGanados = u1.statistics.juegosGanados + statsPareja1.juegosGanados;
+    u1.statistics.juegosDif = u1.statistics.juegosDif + statsPareja1.juegosDif;
+
+    u2.statistics.partidosJugados = u2.statistics.partidosJugados + statsPareja1.partidosJugados;
+    u2.statistics.partidosGanados = u2.statistics.partidosGanados + statsPareja1.partidosGanados;
+    u2.statistics.partidosPerdidos = u2.statistics.partidosPerdidos + statsPareja1.partidosPerdidos;
+    u2.statistics.setsGanados = u2.statistics.setsGanados + statsPareja1.setsGanados;
+    u2.statistics.setsPerdidos = u2.statistics.setsPerdidos + statsPareja1.setsPerdidos;
+    u2.statistics.juegosPerdidos = u2.statistics.juegosPerdidos + statsPareja1.juegosPerdidos;
+    u2.statistics.juegosGanados = u2.statistics.juegosGanados + statsPareja1.juegosGanados;
+    u2.statistics.juegosDif = u2.statistics.juegosDif + statsPareja1.juegosDif;
+
+    u3.statistics.partidosJugados = u3.statistics.partidosJugados + statsPareja2.partidosJugados;
+    u3.statistics.partidosGanados = u3.statistics.partidosGanados + statsPareja2.partidosGanados;
+    u3.statistics.partidosPerdidos = u3.statistics.partidosPerdidos + statsPareja2.partidosPerdidos;
+    u3.statistics.setsGanados = u3.statistics.setsGanados + statsPareja2.setsGanados;
+    u3.statistics.setsPerdidos = u3.statistics.setsPerdidos + statsPareja2.setsPerdidos;
+    u3.statistics.juegosPerdidos = u3.statistics.juegosPerdidos + statsPareja2.juegosPerdidos;
+    u3.statistics.juegosGanados = u3.statistics.juegosGanados + statsPareja2.juegosGanados;
+    u3.statistics.juegosDif = u3.statistics.juegosDif + statsPareja2.juegosDif;
+
+    u4.statistics.partidosJugados = u4.statistics.partidosJugados + statsPareja2.partidosJugados;
+    u4.statistics.partidosGanados = u4.statistics.partidosGanados + statsPareja2.partidosGanados;
+    u4.statistics.partidosPerdidos = u4.statistics.partidosPerdidos + statsPareja2.partidosPerdidos;
+    u4.statistics.setsGanados = u4.statistics.setsGanados + statsPareja2.setsGanados;
+    u4.statistics.setsPerdidos = u4.statistics.setsPerdidos + statsPareja2.setsPerdidos;
+    u4.statistics.juegosPerdidos = u4.statistics.juegosPerdidos + statsPareja2.juegosPerdidos;
+    u4.statistics.juegosGanados = u4.statistics.juegosGanados + statsPareja2.juegosGanados;
+    u4.statistics.juegosDif = u4.statistics.juegosDif + statsPareja2.juegosDif;
+
+    await u1.torneos.forEach((t: any) => {
+        if(t.torneo.toString() == torneo._id.toString()){
+            t.statistics.partidosJugados = t.statistics.partidosJugados + statsPareja1.partidosJugados;
+            t.statistics.partidosGanados = t.statistics.partidosGanados + statsPareja1.partidosGanados;
+            t.statistics.partidosPerdidos = t.statistics.partidosPerdidos + statsPareja1.partidosPerdidos;
+            t.statistics.setsGanados = t.statistics.setsGanados + statsPareja1.setsGanados;
+            t.statistics.setsPerdidos = t.statistics.setsPerdidos + statsPareja1.setsPerdidos;
+            t.statistics.juegosPerdidos = t.statistics.juegosPerdidos + statsPareja1.juegosPerdidos;
+            t.statistics.juegosGanados = t.statistics.juegosGanados + statsPareja1.juegosGanados;
+            t.statistics.juegosDif = t.statistics.juegosDif + statsPareja1.juegosDif;
+            t.statistics.puntos = t.statistics.puntos + statsPareja1.puntos;
+        }
+    });
+    await User.updateOne({"_id": u1._id}, {$set: {torneos: u1.torneos, statistics: u1.statistics}}).then((data) => {
+        if(data.nModified != 1) hecho = false;
+    });
+
+    await u2.torneos.forEach((t: any) => {
+        if(t.torneo.toString() == torneo._id.toString()){
+            t.statistics.partidosJugados = t.statistics.partidosJugados + statsPareja1.partidosJugados;
+            t.statistics.partidosGanados = t.statistics.partidosGanados + statsPareja1.partidosGanados;
+            t.statistics.partidosPerdidos = t.statistics.partidosPerdidos + statsPareja1.partidosPerdidos;
+            t.statistics.setsGanados = t.statistics.setsGanados + statsPareja1.setsGanados;
+            t.statistics.setsPerdidos = t.statistics.setsPerdidos + statsPareja1.setsPerdidos;
+            t.statistics.juegosPerdidos = t.statistics.juegosPerdidos + statsPareja1.juegosPerdidos;
+            t.statistics.juegosGanados = t.statistics.juegosGanados + statsPareja1.juegosGanados;
+            t.statistics.juegosDif = t.statistics.juegosDif + statsPareja1.juegosDif;
+            t.statistics.puntos = t.statistics.puntos + statsPareja1.puntos;
+        }
+    });
+    await User.updateOne({"_id": u2._id}, {$set: {torneos: u2.torneos, statistics: u2.statistics}}).then((data) => {
+        if(data.nModified != 1) hecho = false;
+    });
+
+    await u3.torneos.forEach((t: any) => {
+        if(t.torneo.toString() == torneo._id.toString()){
+            t.statistics.partidosJugados = t.statistics.partidosJugados + statsPareja2.partidosJugados;
+            t.statistics.partidosGanados = t.statistics.partidosGanados + statsPareja2.partidosGanados;
+            t.statistics.partidosPerdidos = t.statistics.partidosPerdidos + statsPareja2.partidosPerdidos;
+            t.statistics.setsGanados = t.statistics.setsGanados + statsPareja2.setsGanados;
+            t.statistics.setsPerdidos = t.statistics.setsPerdidos + statsPareja2.setsPerdidos;
+            t.statistics.juegosPerdidos = t.statistics.juegosPerdidos + statsPareja2.juegosPerdidos;
+            t.statistics.juegosGanados = t.statistics.juegosGanados + statsPareja2.juegosGanados;
+            t.statistics.juegosDif = t.statistics.juegosDif + statsPareja2.juegosDif;
+            t.statistics.puntos = t.statistics.puntos + statsPareja2.puntos;
+        }
+    });
+    await User.updateOne({"_id": u3._id}, {$set: {torneos: u3.torneos, statistics: u3.statistics}}).then((data) => {
+        if(data.nModified != 1) hecho = false;
+    });
+
+    await u4.torneos.forEach((t: any) => {
+        if(t.torneo.toString() == torneo._id.toString()){
+            t.statistics.partidosJugados = t.statistics.partidosJugados + statsPareja2.partidosJugados;
+            t.statistics.partidosGanados = t.statistics.partidosGanados + statsPareja2.partidosGanados;
+            t.statistics.partidosPerdidos = t.statistics.partidosPerdidos + statsPareja2.partidosPerdidos;
+            t.statistics.setsGanados = t.statistics.setsGanados + statsPareja2.setsGanados;
+            t.statistics.setsPerdidos = t.statistics.setsPerdidos + statsPareja2.setsPerdidos;
+            t.statistics.juegosPerdidos = t.statistics.juegosPerdidos + statsPareja2.juegosPerdidos;
+            t.statistics.juegosGanados = t.statistics.juegosGanados + statsPareja2.juegosGanados;
+            t.statistics.juegosDif = t.statistics.juegosDif + statsPareja2.juegosDif;
+            t.statistics.puntos = t.statistics.puntos + statsPareja2.puntos;
+        }
+    });
+    await User.updateOne({"_id": u4._id}, {$set: {torneos: u4.torneos, statistics: u4.statistics}}).then((data) => {
+        if(data.nModified != 1) hecho = false;
+    });
+
+    if(ronda == 'previa'){
+        torneo.previa.grupos.forEach((grupo: any) => {
+            if(grupo.groupName.toString() == nombreGrupo.toString()) {
+                grupo.classification.forEach((player: any) => {
+                    // Si es pareja1
+                    if(player.player.toString() == u1._id.toString() || player.player.toString() == u2._id.toString()){
+                        player.statistics.partidosJugados = player.statistics.partidosJugados + statsPareja1.partidosJugados;
+                        player.statistics.partidosGanados = player.statistics.partidosGanados + statsPareja1.partidosGanados;
+                        player.statistics.partidosPerdidos = player.statistics.partidosPerdidos + statsPareja1.partidosPerdidos;
+                        player.statistics.setsGanados = player.statistics.setsGanados + statsPareja1.setsGanados;
+                        player.statistics.setsPerdidos = player.statistics.setsPerdidos + statsPareja1.setsPerdidos;
+                        player.statistics.juegosPerdidos = player.statistics.juegosPerdidos + statsPareja1.juegosPerdidos;
+                        player.statistics.juegosGanados = player.statistics.juegosGanados + statsPareja1.juegosGanados;
+                        player.statistics.juegosDif = player.statistics.juegosDif + statsPareja1.juegosDif;
+                        player.statistics.puntos = player.statistics.puntos + statsPareja1.puntos;
+                    } 
+                    // Si es pareja2
+                    else {
+                        player.statistics.partidosJugados = player.statistics.partidosJugados + statsPareja2.partidosJugados;
+                        player.statistics.partidosGanados = player.statistics.partidosGanados + statsPareja2.partidosGanados;
+                        player.statistics.partidosPerdidos = player.statistics.partidosPerdidos + statsPareja2.partidosPerdidos;
+                        player.statistics.setsGanados = player.statistics.setsGanados + statsPareja2.setsGanados;
+                        player.statistics.setsPerdidos = player.statistics.setsPerdidos + statsPareja2.setsPerdidos;
+                        player.statistics.juegosPerdidos = player.statistics.juegosPerdidos + statsPareja2.juegosPerdidos;
+                        player.statistics.juegosGanados = player.statistics.juegosGanados + statsPareja2.juegosGanados;
+                        player.statistics.juegosDif = player.statistics.juegosDif + statsPareja2.juegosDif;
+                        player.statistics.puntos = player.statistics.puntos + statsPareja2.puntos;
+                    }
+                });
+                
+                grupo.classification.sort((a: any,b: any) => {
+                    if (a.statistics.puntos > b.statistics.puntos)
+                        return -1;
+
+                    else if (a.statistics.puntos < b.statistics.puntos)
+                        return 1;
+
+                    else{
+                        if (a.statistics.juegosDif > b.statistics.juegosDif)
+                            return -1;
+
+                        else return 1;
+                    }
+                })
+            } else hecho = false;
+        })
+    }
+
+    else{
+        let i: number = 0;
+        let aux: boolean = false;
+        torneo.rondas.forEach((round: any) => {
+            if(round.name == ronda) {
+                i = torneo.rondas.indexOf(round);
+                aux = true;
+            } else hecho = false;
+        });
+        if(aux) torneo.rondas[i].grupos.forEach((grupo: any) => {
+            if(grupo.groupName.toString() == nombreGrupo.toString()) {
+                grupo.classification.forEach((player: any) => {
+                    // Si ha ganado
+                    if(player.player.toString() == u1._id.toString() || player.player.toString() == u2._id.toString()){
+                        player.statistics.partidosJugados = player.statistics.partidosJugados + statsPareja1.partidosJugados;
+                        player.statistics.partidosGanados = player.statistics.partidosGanados + statsPareja1.partidosGanados;
+                        player.statistics.partidosPerdidos = player.statistics.partidosPerdidos + statsPareja1.partidosPerdidos;
+                        player.statistics.setsGanados = player.statistics.setsGanados + statsPareja1.setsGanados;
+                        player.statistics.setsPerdidos = player.statistics.setsPerdidos + statsPareja1.setsPerdidos;
+                        player.statistics.juegosPerdidos = player.statistics.juegosPerdidos + statsPareja1.juegosPerdidos;
+                        player.statistics.juegosGanados = player.statistics.juegosGanados + statsPareja1.juegosGanados;
+                        player.statistics.juegosDif = player.statistics.juegosDif + statsPareja1.juegosDif;
+                    } 
+                    // Si ha perdido
+                    else {
+                        player.statistics.partidosJugados = player.statistics.partidosJugados + statsPareja2.partidosJugados;
+                        player.statistics.partidosGanados = player.statistics.partidosGanados + statsPareja2.partidosGanados;
+                        player.statistics.partidosPerdidos = player.statistics.partidosPerdidos + statsPareja2.partidosPerdidos;
+                        player.statistics.setsGanados = player.statistics.setsGanados + statsPareja2.setsGanados;
+                        player.statistics.setsPerdidos = player.statistics.setsPerdidos + statsPareja2.setsPerdidos;
+                        player.statistics.juegosPerdidos = player.statistics.juegosPerdidos + statsPareja2.juegosPerdidos;
+                        player.statistics.juegosGanados = player.statistics.juegosGanados + statsPareja2.juegosGanados;
+                        player.statistics.juegosDif = player.statistics.juegosDif + statsPareja2.juegosDif;
+                    }
+                })
+            } else hecho = false;
+        })
+    }
+
+    /*let statsWinner = {
         partidosJugados: 1,
         partidosGanados: 1,
         partidosPerdidos: 0,
@@ -161,58 +428,13 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
         }
 
         
-        await User.findOne({"_id": u1}, {torneos: 1, statistics: 1}).then((data) => {
-            u1 = data;
-        });
-        await User.findOne({"_id": u2}, {torneos: 1, statistics: 1}).then((data) => {
-            u2 = data;
-        });  
-        await User.findOne({"_id": u3}, {torneos: 1, statistics: 1}).then((data) => {
-            u3 = data;
-        });
-        await User.findOne({"_id": u4}, {torneos : 1, statistics: 1}).then((data) => {
-            u4 = data;
-        });  
+        
 
         console.log("gan: ", parejaGanadora);
 
         if(parejaGanadora == 1){
             //ESTADISTICAS TOTALES DEL JUGADOR
-            u1.statistics.partidosJugados = u1.statistics.partidosJugados + statsWinner.partidosJugados;
-            u1.statistics.partidosGanados = u1.statistics.partidosGanados + statsWinner.partidosGanados;
-            u1.statistics.partidosPerdidos = u1.statistics.partidosPerdidos + statsWinner.partidosPerdidos;
-            u1.statistics.setsGanados = u1.statistics.setsGanados + statsWinner.setsGanados;
-            u1.statistics.setsPerdidos = u1.statistics.setsPerdidos + statsWinner.setsPerdidos;
-            u1.statistics.juegosPerdidos = u1.statistics.juegosPerdidos + statsWinner.juegosPerdidos;
-            u1.statistics.juegosGanados = u1.statistics.juegosGanados + statsWinner.juegosGanados;
-            u1.statistics.juegosDif = u1.statistics.juegosDif + statsWinner.juegosDif;
-
-            u2.statistics.partidosJugados = u2.statistics.partidosJugados + statsWinner.partidosJugados;
-            u2.statistics.partidosGanados = u2.statistics.partidosGanados + statsWinner.partidosGanados;
-            u2.statistics.partidosPerdidos = u2.statistics.partidosPerdidos + statsWinner.partidosPerdidos;
-            u2.statistics.setsGanados = u2.statistics.setsGanados + statsWinner.setsGanados;
-            u2.statistics.setsPerdidos = u2.statistics.setsPerdidos + statsWinner.setsPerdidos;
-            u2.statistics.juegosPerdidos = u2.statistics.juegosPerdidos + statsWinner.juegosPerdidos;
-            u2.statistics.juegosGanados = u2.statistics.juegosGanados + statsWinner.juegosGanados;
-            u2.statistics.juegosDif = u2.statistics.juegosDif + statsWinner.juegosDif;
-
-            u3.statistics.partidosJugados = u3.statistics.partidosJugados + statsLoser.partidosJugados;
-            u3.statistics.partidosGanados = u3.statistics.partidosGanados + statsLoser.partidosGanados;
-            u3.statistics.partidosPerdidos = u3.statistics.partidosPerdidos + statsLoser.partidosPerdidos;
-            u3.statistics.setsGanados = u3.statistics.setsGanados + statsLoser.setsGanados;
-            u3.statistics.setsPerdidos = u3.statistics.setsPerdidos + statsLoser.setsPerdidos;
-            u3.statistics.juegosPerdidos = u3.statistics.juegosPerdidos + statsLoser.juegosPerdidos;
-            u3.statistics.juegosGanados = u3.statistics.juegosGanados + statsLoser.juegosGanados;
-            u3.statistics.juegosDif = u3.statistics.juegosDif + statsLoser.juegosDif;
-
-            u4.statistics.partidosJugados = u4.statistics.partidosJugados + statsLoser.partidosJugados;
-            u4.statistics.partidosGanados = u4.statistics.partidosGanados + statsLoser.partidosGanados;
-            u4.statistics.partidosPerdidos = u4.statistics.partidosPerdidos + statsLoser.partidosPerdidos;
-            u4.statistics.setsGanados = u4.statistics.setsGanados + statsLoser.setsGanados;
-            u4.statistics.setsPerdidos = u4.statistics.setsPerdidos + statsLoser.setsPerdidos;
-            u4.statistics.juegosPerdidos = u4.statistics.juegosPerdidos + statsLoser.juegosPerdidos;
-            u4.statistics.juegosGanados = u4.statistics.juegosGanados + statsLoser.juegosGanados;
-            u4.statistics.juegosDif = u4.statistics.juegosDif + statsLoser.juegosDif;
+            
 
             //ESTADISTICAS TOTALES DEL JUGADOR EN EL TORNEO
             await u1.torneos.forEach((t: any) => {
@@ -453,8 +675,7 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
     } catch (error) {
         console.log(error);
         hecho = false;
-    }
-
+    }*/
     return hecho;
 }
 

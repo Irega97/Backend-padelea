@@ -9,7 +9,7 @@ import Chat from '../models/chat';
 //Función que comprueba cada día a las 07:00:00h que torneos han empezado
 schedule.scheduleJob('0 0 7 * * *', () => {
     checkStartTorneos();
-    //checkStartVueltas();
+    checkStartVueltas();
 });
 
 async function checkStartTorneos(){
@@ -258,6 +258,36 @@ async function createPartidosPrevia(previa: any, torneoID: string, groupName: st
                 });
             }
         });
+    });
+}
+
+async function checkStartVueltas(){
+    let torneoID: string;
+    let groupame: string;
+    let users = await User.find({}, {'torneos': 1}).populate('torneos');
+    Torneo.find({"torneoIniciado":true}).then((data) => {
+        data.forEach(torneo => {
+            if (torneo.rondas.length == 0){
+                if (Date.parse(torneo.previa.fechaFin.toString()) <= Date.now()){
+                    //GrupoA1-> 1er G01, 2o G02, 1er G03, 2o G04
+    
+                    //GrupoA2-> 2do G01, 1er G02, 2do G03, 1ro G04 
+    
+                    //GrupoB1-> 3ro G01, 4to G02, 3ro G03, 4to G04
+    
+                    //GrupoB2-> 4to G01, 3o G02, 4to G03, 3ro G04
+    
+                    //Si hay 1 grupo igual, si hay 2 grupos 2o y 4to cambian, si hay 3 
+                }
+            }
+            else{
+                if (Date.parse(torneo.rondas[torneo.rondas.length - 1].fechaFin.toString()) <= Date.now()){
+                    torneo.rondas[torneo.rondas.length - 1].grupos.forEach((grupo:any) => {
+
+                    })
+                }
+            }
+        })
     });
 }
 
@@ -581,4 +611,4 @@ async function getVueltas(req: Request, res: Response){
     })
 }
 
-export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, getVueltas }
+export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, checkStartVueltas, getVueltas }
