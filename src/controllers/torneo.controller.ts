@@ -581,4 +581,14 @@ async function getVueltas(req: Request, res: Response){
     })
 }
 
-export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, getVueltas }
+async function getRanking(req: Request, res: Response){
+    const torneoName = req.params.name;
+    console.log("name ", torneoName);
+    Torneo.findOne({"name": torneoName},{players: 1}).populate({path:'players', select: 'torneos'}).then((data) => {
+        if(data == null) return res.status(404).json({message: "Torneo not found"});
+        console.log("aqui: ", data);
+        return res.status(200).json(data);
+    });
+}
+
+export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, getVueltas, getRanking }
