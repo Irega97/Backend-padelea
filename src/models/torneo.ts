@@ -48,6 +48,10 @@ const torneo = new torneoSchema({
     finalizado: {
         type: Boolean
     },
+    ganador: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    },
     players: [{
         type: Schema.Types.ObjectId,
         ref: 'User'

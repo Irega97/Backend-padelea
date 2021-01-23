@@ -6,13 +6,13 @@ import notificationsController from "./notifications.controller";
 
 async function getColaPlayers(req: Request, res: Response){
     try {
-        Torneo.findOne({'name': req.params.name}, {cola: 1, players: 1, maxPlayers: 1, fechaInicio: 1}).populate({path: 'cola', select: 'username name image'}).then((data) => {
+        Torneo.findOne({'name': req.params.name}, {cola: 1, players: 1, maxPlayers: 1, torneoIniciado: 1}).populate({path: 'cola', select: 'username name image'}).then((data) => {
             if(data==null) return res.status(404).json({message: "Cola not found"});
             let dataToSend = {
                 cola: data.cola,
                 length: data.players.length,
                 max: data.maxPlayers,
-                fechaInicio: data.fechaInicio
+                torneoIniciado: data.torneoIniciado
             }
             return res.status(200).json(dataToSend);
         })
@@ -116,7 +116,34 @@ function empezarPrevia(req: Request, res: Response){
 }
 
 function finalizarRonda(req: Request, res: Response){
-    return res.status(200).json({message: "Función en desarrollo"});
+    Torneo.findOne({"name": req.params.name}).then(data => {
+        if (data?.rondas.length == 0){
+            if (data.partidosConfirmados == data.previa.grupos.length*3){
+                let fechafin = new Date(Date.now());
+                data.previa.fechaFin = fechafin;
+                Torneo.updateOne({"name": req.params.name}, {$set: {previa: data.previa}}).then(data => {
+                    TorneoController.checkStartVueltas();
+                    return res.status(200).json({message: "Función en desarrollo"});
+                })
+            }  
+
+            else
+                return res.status(409).json({message: "No se han jugado todos los partidos aún"});
+        }
+
+        else{
+            if (data?.partidosConfirmados == data?.rondas[data?.rondas.length - 1].grupos.length*3){
+                let fechafin = new Date(Date.now());
+                data.rondas[data.rondas.length - 1].fechaFin = fechafin;
+                Torneo.updateOne({"name": req.params.name}, {$set: {rondas: data.rondas}}).then(data => {
+                    return res.status(200).json({message: "Función en desarrollo"});
+                })
+            }  
+
+            else
+                return res.status(409).json({message: "No se han jugado todos los partidos aún"});
+        }
+    });
 }
 
 export default { getColaPlayers, acceptPlayers, empezarPrevia, finalizarRonda };

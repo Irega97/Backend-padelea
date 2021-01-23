@@ -50,9 +50,7 @@ async function register(req:Request, res:Response) {
             setsPerdidos: 0,
             juegosGanados: 0,
             juegosPerdidos: 0,
-            juegosDif: 0,
-            puntos: 0,
-            puntosExtra: 0
+            juegosDif: 0
         };
 
         let u = new User({
