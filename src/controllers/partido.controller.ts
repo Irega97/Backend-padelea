@@ -69,22 +69,25 @@ async function addResultados(req: Request, res: Response) {
             else resultado = {set1:set1, set2: set2, set3:''};
             
             //Actualizamos el partido
-            Partido.findOneAndUpdate({"_id": idPartido}, {$set: {resultado: resultado, ganadores:ganadores}}).then((data)  =>  {
+            Partido.findOneAndUpdate({"_id": idPartido}, {$set: {resultado: resultado, ganadores:ganadores}}).then(async (data)  =>  {
                 //Si no se ha modificado antes, sumamos un numero a partidos confirmados
+                console.log("hola: ", data);
                 if (cambiar){
-                    Torneo.findOneAndUpdate({"_id": req.body.idTorneo}, {$set: {partidosConfirmados: confirmed}});
-                }
-                console.log("params: ", sets1, sets2, juegos1, juegos2, ganadores, torneo, partido, ronda, nombreGrupo);
-                //Calculamos las estadisticas
-                calculateStatistics(sets1, sets2, juegos1, juegos2, ganadores, torneo, partido, ronda, nombreGrupo).then((hecho) => {
-                    if(hecho) {
-                        Torneo.updateOne({"_id":torneo._id},{$set: {previa: torneo.previa, rondas: torneo.rondas}}).then((data) => {
-                            if(data.nModified!=1) return res.status(400).json({message: "Bad Request"});
-                            else return res.status(200).json(torneo);
-                        });
-                    }
-                    else return res.status(400).json({message: "Bad Request"});
-                });
+                    await Torneo.findOneAndUpdate({"_id": req.body.idTorneo}, {$set: {partidosConfirmados: confirmed}});
+                    console.log("params: ", sets1, sets2, juegos1, juegos2, ganadores, torneo, partido, ronda, nombreGrupo);
+                    //Calculamos las estadisticas
+                    calculateStatistics(sets1, sets2, juegos1, juegos2, ganadores, torneo, partido, ronda, nombreGrupo).then(async (hecho) => {
+                        if(hecho) {
+                            await Torneo.updateOne({"_id":torneo._id},{$set: {previa: torneo.previa, rondas: torneo.rondas}}).then((data) => {
+                                if(data.nModified!=1) return res.status(400).json({message: "Bad Request"});
+                                else return res.status(200).json(torneo);
+                            });
+                        }
+                        else return res.status(400).json({message: "Bad Request"});
+                    });
+                } else {
+                    calculateModifiedStatistics(sets1, sets2, juegos1, juegos2, ganadores, torneo, partido, ronda, nombreGrupo);
+                }                
             }).catch((err)  => {
                 res.status(500).json(err);
             });
@@ -103,45 +106,32 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
     u3 = partido.jugadores.pareja2[0];
     u4 = partido.jugadores.pareja2[1];
 
+    let statsWinner = {
+        partidosJugados: 1,
+        partidosGanados: 1,
+        partidosPerdidos: 0,
+        juegosGanados: 0,
+        juegosPerdidos: 0,
+        juegosDif: 0,
+        setsGanados: 0,
+        setsPerdidos: 0
+    }
+
+    let statsLoser = {
+        partidosJugados: 1,
+        partidosGanados: 0,
+        partidosPerdidos: 1,
+        juegosGanados: 0,
+        juegosPerdidos: 0,
+        juegosDif: 0,
+        setsGanados: 0,
+        setsPerdidos: 0
+    }
+
+    //Variables auxiliares
+    let parejaGanadora: number;
+
     try {
-        await User.findOne({"_id": u1}, {torneos: 1, statistics: 1}).then((data) => {
-            u1 = data;
-        });
-        await User.findOne({"_id": u2}, {torneos: 1, statistics: 1}).then((data) => {
-            u2 = data;
-        });  
-        await User.findOne({"_id": u3}, {torneos: 1, statistics: 1}).then((data) => {
-            u3 = data;
-        });
-        await User.findOne({"_id": u4}, {torneos : 1, statistics: 1}).then((data) => {
-            u4 = data;
-        });  
-
-        let statsWinner = {
-            partidosJugados: 1,
-            partidosGanados: 1,
-            partidosPerdidos: 0,
-            juegosGanados: 0,
-            juegosPerdidos: 0,
-            juegosDif: 0,
-            setsGanados: 0,
-            setsPerdidos: 0
-        }
-
-        let statsLoser = {
-            partidosJugados: 1,
-            partidosGanados: 0,
-            partidosPerdidos: 1,
-            juegosGanados: 0,
-            juegosPerdidos: 0,
-            juegosDif: 0,
-            setsGanados: 0,
-            setsPerdidos: 0
-        }
-
-        //Variables auxiliares
-        let parejaGanadora: number;
-
         if(ganadores[0]._id.toString() == partido.jugadores.pareja1[0].toString() || ganadores[1]._id.toString() == partido.jugadores.pareja1[0].toString()) {
             parejaGanadora = 1;
             
@@ -169,6 +159,20 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
             statsLoser.juegosPerdidos = juegos2;
             statsLoser.juegosDif = (juegos1 - juegos2);
         }
+
+        
+        await User.findOne({"_id": u1}, {torneos: 1, statistics: 1}).then((data) => {
+            u1 = data;
+        });
+        await User.findOne({"_id": u2}, {torneos: 1, statistics: 1}).then((data) => {
+            u2 = data;
+        });  
+        await User.findOne({"_id": u3}, {torneos: 1, statistics: 1}).then((data) => {
+            u3 = data;
+        });
+        await User.findOne({"_id": u4}, {torneos : 1, statistics: 1}).then((data) => {
+            u4 = data;
+        });  
 
         console.log("gan: ", parejaGanadora);
 
@@ -213,7 +217,6 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
             //ESTADISTICAS TOTALES DEL JUGADOR EN EL TORNEO
             await u1.torneos.forEach((t: any) => {
                 if(t.torneo.toString() == torneo._id.toString()){
-                    console.log("entra");
                     t.statistics.partidosJugados = t.statistics.partidosJugados + statsWinner.partidosJugados;
                     t.statistics.partidosGanados = t.statistics.partidosGanados + statsWinner.partidosGanados;
                     t.statistics.partidosPerdidos = t.statistics.partidosPerdidos + statsWinner.partidosPerdidos;
@@ -222,7 +225,6 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
                     t.statistics.juegosPerdidos = t.statistics.juegosPerdidos + statsWinner.juegosPerdidos;
                     t.statistics.juegosGanados = t.statistics.juegosGanados + statsWinner.juegosGanados;
                     t.statistics.juegosDif = t.statistics.juegosDif + statsWinner.juegosDif;
-                    console.log(t.statistics);
                 }
             });
             await User.updateOne({"_id": u1._id}, {$set: {torneos: u1.torneos, statistics: u1.statistics}}).then((data) => {
@@ -454,6 +456,34 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
     }
 
     return hecho;
+}
+
+async function calculateModifiedStatistics(sets1: any, sets2: any, juegos1: any, juegos2: any, ganadores: any, torneo: any, partido:any, ronda: any, nombreGrupo: any){
+    
+    let res1 = partido.resultado.set1.split('-');
+    let res2 = partido.resultado.set2.split('-');
+    
+    let statsWinnerNew = {
+        partidosJugados: 1,
+        partidosGanados: 1,
+        partidosPerdidos: 0,
+        juegosGanados: 0,
+        juegosPerdidos: 0,
+        juegosDif: 0,
+        setsGanados: 0,
+        setsPerdidos: 0
+    }
+
+    let statsLoserNew = {
+        partidosJugados: 1,
+        partidosGanados: 0,
+        partidosPerdidos: 1,
+        juegosGanados: 0,
+        juegosPerdidos: 0,
+        juegosDif: 0,
+        setsGanados: 0,
+        setsPerdidos: 0
+    }
 }
 
 async function addPartido(req: Request, res: Response){
