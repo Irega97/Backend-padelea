@@ -74,10 +74,13 @@ async function acceptPlayers(req: Request, res: Response){
                                 User.updateOne({"_id": userID}, {$addToSet: {notifications: newNotification}}).then(data =>{
                                     if (data.nModified == 1)
                                         io.to(userID).emit('nuevaNotificacion', newNotification);
+                                        io.to(userID).emit('aceptadoCola', req.params.name);
                                 });
                             }
-                            else 
+                            else {
                                 message = "Usuario rechazado";
+                                io.to(userID).emit('rechazadoCola', req.params.name);
+                            }
 
                             d.admin.forEach(admin => {
                                 notificationsController.deleteNotification("Cola", admin, user.username, req.params.name).then(data => {
