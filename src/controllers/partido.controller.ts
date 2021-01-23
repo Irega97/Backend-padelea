@@ -188,19 +188,19 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
         statsPareja1Viejo.juegosGanados = parseInt(res1v[0]) + parseInt(res2v[0]);
         statsPareja2Viejo.juegosGanados = parseInt(res1v[1]) + parseInt(res2v[1]);
         statsPareja1Viejo.juegosPerdidos = statsPareja2Viejo.juegosGanados;
-        statsPareja2Viejo.juegosPerdidos = statsPareja1Viejo.juegosPerdidos;
-        statsPareja1.juegosDif = statsPareja1.juegosGanados - statsPareja1.juegosPerdidos;
-        statsPareja2.juegosDif = statsPareja2.juegosGanados - statsPareja2.juegosPerdidos;
+        statsPareja2Viejo.juegosPerdidos = statsPareja1Viejo.juegosGanados;
+        statsPareja1Viejo.juegosDif = statsPareja1Viejo.juegosGanados - statsPareja1Viejo.juegosPerdidos;
+        statsPareja2Viejo.juegosDif = statsPareja2Viejo.juegosGanados - statsPareja2Viejo.juegosPerdidos;
          
         if (parseInt(res1v[0]) > parseInt(res1v[1])) sets1v++;
         else sets2v++;
-        if (parseInt(res2v[1]) > parseInt(res2v[1])) sets1v++;
+        if (parseInt(res2v[0]) > parseInt(res2v[1])) sets1v++;
         else sets2v++;
 
-        statsPareja1.setsGanados = sets1v;
-        statsPareja1.setsPerdidos = sets2v;
-        statsPareja2.setsGanados = sets2v;
-        statsPareja2.setsPerdidos = sets1v;
+        statsPareja1Viejo.setsGanados = sets1v;
+        statsPareja1Viejo.setsPerdidos = sets2v;
+        statsPareja2Viejo.setsGanados = sets2v;
+        statsPareja2Viejo.setsPerdidos = sets1v;
         if (partido.ganadores[0].toString() == u1._id.toString() || partido.ganadores[0].toString() == u2._id.toString()){
             statsPareja1Viejo.partidosGanados = 1;
             statsPareja2Viejo.partidosPerdidos = 1;

@@ -621,4 +621,4 @@ async function getRanking(req: Request, res: Response){
     });
 }
 
-export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, getVueltas, getRanking }
+export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, checkStartVueltas, getVueltas, getRanking }
