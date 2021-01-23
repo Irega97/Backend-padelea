@@ -610,7 +610,6 @@ async function getVueltas(req: Request, res: Response){
     })
 }
 
-<<<<<<< HEAD
 async function getRanking(req: Request, res: Response){
     const torneoName = req.params.name;
     console.log("name ", torneoName);
@@ -622,6 +621,3 @@ async function getRanking(req: Request, res: Response){
 }
 
 export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, getVueltas, getRanking }
-=======
-export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, checkStartVueltas, getVueltas }
->>>>>>> efa0aaf8c5dfbadce4e2294135ab6a4715edd670
