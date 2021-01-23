@@ -216,6 +216,9 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
         }
     }
 
+    console.log("ParejaVieja1", statsPareja1Viejo);
+    console.log("ParejaVieja2", statsPareja2Viejo);
+
     u1.statistics.partidosJugados = u1.statistics.partidosJugados + statsPareja1.partidosJugados - statsPareja1Viejo.partidosJugados;
     u1.statistics.partidosGanados = u1.statistics.partidosGanados + statsPareja1.partidosGanados - statsPareja1Viejo.partidosGanados;
     u1.statistics.partidosPerdidos = u1.statistics.partidosPerdidos + statsPareja1.partidosPerdidos - statsPareja1Viejo.partidosPerdidos;
