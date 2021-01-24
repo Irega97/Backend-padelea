@@ -401,7 +401,7 @@ async function createTorneo(req: Request, res: Response){
                 return res.status(500).json({message: "Internal Server Error"});
             });
         }
-        const io = require('../sockets/socket').getSocket()
+        const io = require('../sockets/socket').getSocket();
         io.emit('nuevoTorneo', torneo);
         return res.status(201).json(data);
     }, (error) =>{
