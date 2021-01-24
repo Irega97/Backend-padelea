@@ -119,8 +119,8 @@ const torneo = new torneoSchema({
             partidos: [{
                 type: Schema.Types.ObjectId,
                 ref: 'Partido'
-            }]/* ,
-            chat: {
+            }]
+            /*chat: {
                 type: Schema.Types.ObjectId,
                 ref: 'Chat'
             } */

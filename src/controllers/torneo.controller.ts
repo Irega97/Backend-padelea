@@ -136,11 +136,13 @@ async function checkStartTorneos(){
                     let previaToSave: any = {
                         fechaFin: inicio,
                         grupos: previa
+                        //chat: datachat._id
                     }
                     await Torneo.updateOne({name: torneo.name}, {$set: {players: torneo.players, previa: previaToSave}, $addToSet: {sobra: cola}}).then(async data => {
                         if(data.nModified != 1) console.log("No se ha modificado");
                         else{
-                            await createPartidosPrevia(previaToSave, torneo._id, groupName);
+                            previaToSave.name = 'previa';
+                            await createPartidos(previaToSave, torneo._id, groupName);
                         } 
                     })
                 } else if(torneo.players.length < 4 && tocaEmpezar){
@@ -158,17 +160,19 @@ async function checkStartTorneos(){
     });
 }
 
-async function createPartidosPrevia(previa: any, torneoID: string, groupName: string){
+async function createPartidos(ronda: any, torneoID: string, groupName: string){
+    //PARAM RONDA: fechaFin, name, grupos
+    console.log("EYO: ", groupName);
     let torneo: ITorneo;
     let infoTorneo = {
         idTorneo: torneoID,
-        vuelta: 'previa',
+        vuelta: ronda.name,
         grupo: groupName
     }
     await Torneo.findOne({"_id": torneoID}).then((data: any) => {
         torneo = data;
     });
-    await previa.grupos.forEach(async (group: any) => {
+    await ronda.grupos.forEach(async (group: any) => {
         let players = group.classification;
         let partido1 = new Partido({
             torneo: infoTorneo,
@@ -231,7 +235,7 @@ async function createPartidosPrevia(previa: any, torneoID: string, groupName: st
             group.partidos.push(p3ID);
         });
 
-        await Torneo.updateOne({"_id": torneoID},{$set: {previa: previa, torneoIniciado: true}}).then((data) => {
+        await Torneo.updateOne({"_id": torneoID},{$set: {previa: ronda, torneoIniciado: true}}).then((data) => {
             if(data.nModified != 1 && torneo != null){
                 console.log("Torneo no actualizado");
                 return;
@@ -262,28 +266,93 @@ async function createPartidosPrevia(previa: any, torneoID: string, groupName: st
 
 async function checkStartVueltas(){
     let torneoID: string;
-    let groupame: string;
+    let groupName: string;
     let users = await User.find({}, {'torneos': 1}).populate('torneos');
-    Torneo.find({"torneoIniciado":true}).then((data) => {
-        data.forEach(torneo => {
+    Torneo.find({"torneoIniciado":true}).then(data => {
+        data.forEach(async torneo => {
             if (torneo.rondas.length == 0){
                 if (Date.parse(torneo.previa.fechaFin.toString()) <= Date.now()){
-                    //GrupoA1-> 1er G01, 2o G02, 1er G03, 2o G04
-    
-                    //GrupoA2-> 2do G01, 1er G02, 2do G03, 1ro G04 
-    
-                    //GrupoB1-> 3ro G01, 4to G02, 3ro G03, 4to G04
-    
-                    //GrupoB2-> 4to G01, 3o G02, 4to G03, 3ro G04
-    
-                    //Si hay 1 grupo igual, si hay 2 grupos 2o y 4to cambian, si hay 3 
+                    torneoID = torneo._id;
+                    let statisticsIniciales = {
+                        partidosJugados: 0,
+                        partidosGanados: 0,
+                        partidosPerdidos: 0,
+                        setsGanados: 0,
+                        setsPerdidos: 0,
+                        juegosGanados: 0,
+                        juegosPerdidos: 0,
+                        juegosDif: 0,
+                        puntos: 0,
+                        puntosExtra: 0
+                    }
+                    let nameGroups = config.letrasNombreVueltas;
+                    let grupos: any = [];
+                    let classification: any = [];
+                    let ronda = {
+                        name: "Vuelta 1",
+                        fechaFin: new Date(Date.now()),
+                        grupos: grupos
+                    };
+                    ronda.fechaFin.setDate(ronda.fechaFin.getDate() + torneo.duracionRondas);
+                    console.log("Fin Vuelta 1", ronda.fechaFin);
+                    let i: number = 0;
+                    while (i < torneo.previa.grupos.length){
+                        let grupo = {
+                            groupName: nameGroups[i],
+                            classification: classification,
+                            partidos: []
+                        }
+                        if (i + 1 < torneo.previa.grupos.length){
+                            if (i == 0){
+                                classification = [{player: torneo.previa.grupos[i].classification.player[0], statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i].classification.player[1], statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i + 1].classification.player[0], statistics: statisticsIniciales}, 
+                                                {player: torneo.previa.grupos[i + 1].classification.player[1], statistics: statisticsIniciales}]
+                            }
+
+                            else{
+                                classification = [{player: torneo.previa.grupos[i - 1].classification.player[2], statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i - 1].classification.player[3], statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i + 1].classification.player[0], statistics: statisticsIniciales}, 
+                                                {player: torneo.previa.grupos[i + 1].classification.player[1], statistics: statisticsIniciales}]
+                            }
+                        }
+                        else{
+                            if (i == 0){
+                                classification = [{player: torneo.previa.grupos[i].classification.player[0], statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i].classification.player[1], statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i].classification.player[2], statistics: statisticsIniciales}, 
+                                                {player: torneo.previa.grupos[i].classification.player[3], statistics: statisticsIniciales}]
+                            }
+                            else{
+                                classification = [{player: torneo.previa.grupos[i - 1].classification.player[2], statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i - 1].classification.player[3], statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i].classification.player[2], statistics: statisticsIniciales}, 
+                                                {player: torneo.previa.grupos[i].classification.player[3], statistics: statisticsIniciales}]
+                            }
+                        }
+                        ronda.grupos.push(grupo);
+                        i++;
+                    }
+
+                    await Torneo.updateOne({name: torneo.name}, {$addToSet: {rondas: ronda}}).then(async data => {
+                        if(data.nModified != 1) console.log("No se ha modificado");
+                        else{
+                            await createPartidos(ronda, torneoID, groupName);
+                        } 
+                    })
                 }
             }
             else{
                 if (Date.parse(torneo.rondas[torneo.rondas.length - 1].fechaFin.toString()) <= Date.now()){
-                    torneo.rondas[torneo.rondas.length - 1].grupos.forEach((grupo:any) => {
+                    if (torneo.rondas.length == torneo.numRondas){
 
-                    })
+                    }
+                    else{
+                        torneo.rondas[torneo.rondas.length - 1].grupos.forEach((grupo:any) => {
+
+                        })
+                    }
                 }
             }
         })
