@@ -371,7 +371,8 @@ async function checkStartVueltas(){
             else{
                 if (Date.parse(torneo.rondas[torneo.rondas.length - 1].fechaFin.toString()) <= Date.now()){
                     if (torneo.rondas.length == torneo.numRondas){
-                        let ganador = torneo.rondas[torneo.rondas.length - 1].grupos[0].classification[0].player
+                        let ganador = torneo.rondas[torneo.rondas.length - 1].grupos[0].classification[0].player;
+                        //PUNTOS EXTRA
                         await Torneo.updateOne({name: torneo.name}, {$set: {finalizado: true, partidosConfirmados: 0, ganador: ganador}})
                     }
 
@@ -394,7 +395,7 @@ async function checkStartVueltas(){
                         let puntosExtra: number[] = [];
                         let classification: any = [];
                         let ronda = {
-                            name: "Vuelta " + torneo.rondas.length + 1,
+                            name: "Vuelta " + (torneo.rondas.length + 1),
                             fechaFin: new Date(Date.now()),
                             grupos: grupos
                         };
@@ -459,11 +460,23 @@ async function checkStartVueltas(){
 
                             else{
                                 numGrupo = ((i / 2) - (i % 2)) - 1;
-                                if (i % 2 == 0){
+                                if (i % 2 != 0){
                                     grupo.classification = [{player: torneo.rondas[torneo.rondas.length - 1].grupos[i - 3].classification[3].player, statistics: statisticsIniciales}];
                                     puntosExtra.push(55 - 11*numGrupo);
-                                    grupo.classification = [{player: torneo.rondas[torneo.rondas.length - 1].grupos[i].classification[1].player, statistics: statisticsIniciales}];
-                                    puntosExtra.push(44 - 11*numGrupo);
+                                    grupo.classification.push({player: torneo.rondas[torneo.rondas.length - 1].grupos[i].classification[1].player, statistics: statisticsIniciales});
+                                    puntosExtra.push(46 - 11*numGrupo);
+                                    grupo.classification.push({player: torneo.rondas[torneo.rondas.length - 1].grupos[i - 1].classification[2].player, statistics: statisticsIniciales});
+                                    puntosExtra.push(45 - 11*numGrupo);
+
+                                    if (i + 1 < torneo.rondas[torneo.rondas.length - 1].grupos.length){
+                                        grupo.classification.push({player: torneo.rondas[torneo.rondas.length - 1].grupos[i + 1].classification[0].player, statistics: statisticsIniciales});
+                                        puntosExtra.push(44 - 11*numGrupo);
+                                    }
+
+                                    else{
+                                        grupo.classification.push({player: torneo.rondas[torneo.rondas.length - 1].grupos[i].classification[3].player, statistics: statisticsIniciales});
+                                        puntosExtra.push(44 - 11*numGrupo);
+                                    }
                                 }
 
                                 else{
@@ -494,8 +507,27 @@ async function checkStartVueltas(){
                                     }
                                 }
                             }
+                            grupo.classification.forEach(async (clasi:any) => {
+                                await User.findOne({"_id": clasi.player}, {torneo: 1}).populate('torneos').then(data => {
+                                    data?.torneos.forEach(async torneo => {
+                                        if (torneo.torneo.toString() == torneoID.toString()){
+                                            torneo.statistics.puntosExtra = torneo.statistics.puntosExtra + puntosExtra[0];
+                                            puntosExtra.splice(0, 1);
+                                            console.log("Puntos", data?.torneos);
+                                            await User.updateOne({"_id": clasi.player}, {$set: {torneos: data?.torneos}});
+                                        }
+                                    })
+                                })
+                            })
+                            ronda.grupos.push(grupo);
                             i++;
                         }
+                        await Torneo.updateOne({name: torneo.name}, {$addToSet: {rondas: ronda}, $set: {partidosConfirmados: 0}}).then(async data => {
+                            if(data.nModified != 1) console.log("No se ha modificado");
+                            else{
+                                await createPartidos(ronda, torneoID);
+                            } 
+                        })
                     }
                 }
             }

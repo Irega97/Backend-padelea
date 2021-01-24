@@ -13,7 +13,7 @@ async function getColaPlayers(req: Request, res: Response){
                 length: data.players.length,
                 max: data.maxPlayers,
                 torneoIniciado: data.torneoIniciado,
-                numVuelta: data.numRondas,
+                numRondas: data.numRondas,
                 rondas: data.rondas.length
             }
             return res.status(200).json(dataToSend);
@@ -124,11 +124,9 @@ function finalizarRonda(req: Request, res: Response){
                 let fechafin = new Date(Date.now());
                 data.previa.fechaFin = fechafin;
                 Torneo.updateOne({"name": req.params.name}, {$set: {previa: data.previa}}).then(data => {
-                    torneoController.checkStartVueltas().then((data: any) => {
-                        return res.status(200).json({data});
-                    })
-                    
-                })
+                    torneoController.checkStartVueltas()
+                    return res.status(200).json({data});
+                });
             }  
 
             else
@@ -140,6 +138,7 @@ function finalizarRonda(req: Request, res: Response){
                 let fechafin = new Date(Date.now());
                 data.rondas[data.rondas.length - 1].fechaFin = fechafin;
                 Torneo.updateOne({"name": req.params.name}, {$set: {rondas: data.rondas}}).then(() => {
+                    torneoController.checkStartVueltas()
                     return res.status(200).json({message: "Vuelta Finalizada"});
                 })
             }  

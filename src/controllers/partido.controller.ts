@@ -374,7 +374,7 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
             if(round.name == ronda) {
                 i = torneo.rondas.indexOf(round);
                 aux = true;
-            } else hecho = false;
+            };
         });
         if(aux) torneo.rondas[i].grupos.forEach((grupo: any) => {
             if(grupo.groupName.toString() == nombreGrupo.toString()) {
@@ -404,10 +404,23 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
                         player.statistics.puntos = player.statistics.puntos + statsPareja2.puntos - statsPareja2Viejo.puntos;
                     }
                 })
+                grupo.classification.sort((a: any,b: any) => {
+                    if (a.statistics.puntos > b.statistics.puntos)
+                        return -1;
+        
+                    else if (a.statistics.puntos < b.statistics.puntos)
+                        return 1;
+        
+                    else{
+                        if (a.statistics.juegosDif > b.statistics.juegosDif)
+                            return -1;
+        
+                        else return 1;
+                    }
+                })
             }
         })
     }
-
     return hecho;
 }
 
@@ -489,7 +502,7 @@ function getInfoGrupos(req: Request, res: Response){
                             } 
                         }
                         else
-                            i++;
+                            j++;
                     }
                 }
             }
