@@ -612,13 +612,37 @@ async function getVueltas(req: Request, res: Response){
 
 async function getRanking(req: Request, res: Response){
     const torneoName = req.params.name;
+    let ranking: Array<any> = [];
     console.log("name ", torneoName);
-    Torneo.findOne({"name": torneoName},{players: 1}).populate({path:'players', select: 'torneos'}).then((data) => {
+    Torneo.findOne({"name": torneoName},{players: 1}).populate({path:'players', select: 'torneos username image'}).then((data) => {
         if(data == null) return res.status(404).json({message: "Torneo not found"});
         console.log("aqui: ", data);
-        return res.status(200).json(data);
-        
+        data.players.forEach((player: any) => {
+            player.torneos.forEach((torneo: any) => {
+                if(torneo.torneo.toString() == data._id.toString()){
+                    ranking.push({player: player, statistics: torneo.statistics});
+                }
+            })
+        });
+
+        ranking.sort((a: any,b: any) => {
+            if (a.statistics.puntos > b.statistics.puntos)
+                return -1;
+
+            else if (a.statistics.puntos < b.statistics.puntos)
+                return 1;
+
+            else{
+                if (a.statistics.juegosDif > b.statistics.juegosDif)
+                    return -1;
+
+                else return 1;
+            }
+        })
+
+        return res.status(200).json({isImage: true, ranking: ranking});
+
     });
 }
 
-export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, getVueltas, getRanking }
+export default { getTorneo, getTorneos, getTorneosUser, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, checkStartVueltas, getVueltas, getRanking }
