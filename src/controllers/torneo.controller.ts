@@ -169,7 +169,6 @@ async function createPartidosPrevia(previa: any, torneoID: string, groupName: st
         torneo = data;
     });
     await previa.grupos.forEach(async (group: any) => {
-        if(group.partidos.length != 0) console.log("Jaja");
         let players = group.classification;
         let partido1 = new Partido({
             torneo: infoTorneo,

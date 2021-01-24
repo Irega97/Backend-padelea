@@ -74,7 +74,6 @@ async function addResultados(req: Request, res: Response) {
                 if (cambiar)
                     await Torneo.findOneAndUpdate({"_id": req.body.idTorneo}, {$set: {partidosConfirmados: confirmed}});
 
-                console.log("params: ", sets1, sets2, juegos1, juegos2, ganadores, torneo, partido, ronda, nombreGrupo);
                 //Calculamos las estadisticas
                 calculateStatistics(sets1, sets2, juegos1, juegos2, ganadores, torneo, partido, ronda, nombreGrupo, cambiar).then(async (hecho) => {
                     if(hecho) {
@@ -215,9 +214,6 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
             statsPareja1Viejo.puntos = 1 + sets2v;
         }
     }
-
-    console.log("ParejaVieja1", statsPareja1Viejo);
-    console.log("ParejaVieja2", statsPareja2Viejo);
 
     u1.statistics.partidosJugados = u1.statistics.partidosJugados + statsPareja1.partidosJugados - statsPareja1Viejo.partidosJugados;
     u1.statistics.partidosGanados = u1.statistics.partidosGanados + statsPareja1.partidosGanados - statsPareja1Viejo.partidosGanados;
