@@ -27,6 +27,10 @@ const torneo = new torneoSchema({
         type: Date
     },
     ubicacion: {
+
+        name:{
+            type:String
+        },
         lat: {
             type: String
         },
