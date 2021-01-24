@@ -465,10 +465,8 @@ async function checkStartVueltas(){
                                 // numgru:[ 1  1  2  2  3  3]
                                 let aux = i/2;
                                 if(aux % 1 == 0){
-                                    numGrupo = aux;
-                                } else numGrupo = aux - 0.5;
-                                /* numGrupo = ((i / 2) - (i % 2)) - 1;
-                                if(numGrupo < 0) numGrupo*(-1); */
+                                    numGrupo = aux - 1;
+                                } else numGrupo = aux - 1.5;
                                 if (i % 2 != 0){
                                     grupo.classification = [{player: torneo.rondas[torneo.rondas.length - 1].grupos[i - 3].classification[3].player, statistics: statisticsIniciales}];
                                     puntosExtra.push(55 - 11*numGrupo);
