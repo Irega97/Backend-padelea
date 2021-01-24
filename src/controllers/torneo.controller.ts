@@ -142,7 +142,7 @@ async function checkStartTorneos(){
                         if(data.nModified != 1) console.log("No se ha modificado");
                         else{
                             previaToSave.name = 'previa';
-                            await createPartidos(previaToSave, torneo._id, groupName);
+                            await createPartidos(previaToSave, torneo._id);
                         } 
                     })
                 } else if(torneo.players.length < 4 && tocaEmpezar){
@@ -160,20 +160,20 @@ async function checkStartTorneos(){
     });
 }
 
-async function createPartidos(ronda: any, torneoID: string, groupName: string){
+async function createPartidos(ronda: any, torneoID: string){
     //PARAM RONDA: fechaFin, name, grupos
-    console.log("EYO: ", groupName);
     let torneo: ITorneo;
     let infoTorneo = {
         idTorneo: torneoID,
         vuelta: ronda.name,
-        grupo: groupName
+        grupo: ''
     }
     await Torneo.findOne({"_id": torneoID}).then((data: any) => {
         torneo = data;
     });
     await ronda.grupos.forEach(async (group: any) => {
         let players = group.classification;
+        infoTorneo.grupo = group.groupName;
         let partido1 = new Partido({
             torneo: infoTorneo,
             ganadores: [],
@@ -235,39 +235,67 @@ async function createPartidos(ronda: any, torneoID: string, groupName: string){
             group.partidos.push(p3ID);
         });
 
-        await Torneo.updateOne({"_id": torneoID},{$set: {previa: ronda, torneoIniciado: true}}).then((data) => {
-            if(data.nModified != 1 && torneo != null){
-                console.log("Torneo no actualizado");
-                return;
-            } else {
-                console.log("Torneo iniciado correctamente!")
-                let newNotification = {
-                    type: "Torneo",
-                    description: "El torneo " + torneo.name + " ha empezado!",
-                    status: 1,
-                    origen: torneo.name,
-                    image: torneo.image
-                }
-                torneo.players.forEach((player) => {
-                    User.updateOne({"_id": player._id},{$addToSet: {notifications: newNotification}}).then(data =>{
-                        if (data.nModified == 1){
-                            const io = require('../sockets/socket').getSocket()
-                            io.to(player._id).emit('nuevaNotificacion', newNotification);
-                        }
-                        else{
-                            return;
-                        }
+        if(ronda.name.toString() == 'previa'){
+            await Torneo.updateOne({"_id": torneoID},{$set: {previa: ronda, torneoIniciado: true}}).then((data) => {
+                if(data.nModified != 1 && torneo != null){
+                    console.log("Torneo no actualizado");
+                    return;
+                } else {
+                    console.log("Torneo iniciado correctamente!")
+                    let newNotification = {
+                        type: "Torneo",
+                        description: "El torneo " + torneo.name + " ha empezado!",
+                        status: 1,
+                        origen: torneo.name,
+                        image: torneo.image
+                    }
+                    torneo.players.forEach((player) => {
+                        User.updateOne({"_id": player._id},{$addToSet: {notifications: newNotification}}).then(data =>{
+                            if (data.nModified == 1){
+                                const io = require('../sockets/socket').getSocket()
+                                io.to(player._id).emit('nuevaNotificacion', newNotification);
+                            }
+                            else{
+                                return;
+                            }
+                        });
                     });
-                });
-            }
-        });
+                }
+            });
+        } else {
+            torneo.rondas[torneo.rondas.length - 1] = ronda;
+            await Torneo.updateOne({"_id": torneoID},{$set: {rondas: torneo.rondas}}).then((data) => {
+                if(data.nModified != 1 && torneo != null){
+                    console.log("Torneo no actualizado");
+                    return;
+                } else {
+                    console.log("Torneo iniciado correctamente!")
+                    let newNotification = {
+                        type: "Torneo",
+                        description: "El torneo " + torneo.name + " ha empezado!",
+                        status: 1,
+                        origen: torneo.name,
+                        image: torneo.image
+                    }
+                    torneo.players.forEach((player) => {
+                        User.updateOne({"_id": player._id},{$addToSet: {notifications: newNotification}}).then(data =>{
+                            if (data.nModified == 1){
+                                const io = require('../sockets/socket').getSocket()
+                                io.to(player._id).emit('nuevaNotificacion', newNotification);
+                            }
+                            else{
+                                return;
+                            }
+                        });
+                    });
+                }
+            });
+        }
     });
 }
 
 async function checkStartVueltas(){
     let torneoID: string;
-    let groupName: string;
-    let users = await User.find({}, {'torneos': 1}).populate('torneos');
     Torneo.find({"torneoIniciado":true}).then(data => {
         data.forEach(async torneo => {
             if (torneo.rondas.length == 0){
@@ -304,31 +332,31 @@ async function checkStartVueltas(){
                         }
                         if (i + 1 < torneo.previa.grupos.length){
                             if (i == 0){
-                                classification = [{player: torneo.previa.grupos[i].classification.player[0], statistics: statisticsIniciales},
-                                                {player: torneo.previa.grupos[i].classification.player[1], statistics: statisticsIniciales},
-                                                {player: torneo.previa.grupos[i + 1].classification.player[0], statistics: statisticsIniciales}, 
-                                                {player: torneo.previa.grupos[i + 1].classification.player[1], statistics: statisticsIniciales}]
+                                classification = [{player: torneo.previa.grupos[i].classification[0].player, statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i].classification[1].player, statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i + 1].classification[0].player, statistics: statisticsIniciales}, 
+                                                {player: torneo.previa.grupos[i + 1].classification[1].player, statistics: statisticsIniciales}]
                             }
 
                             else{
-                                classification = [{player: torneo.previa.grupos[i - 1].classification.player[2], statistics: statisticsIniciales},
-                                                {player: torneo.previa.grupos[i - 1].classification.player[3], statistics: statisticsIniciales},
-                                                {player: torneo.previa.grupos[i + 1].classification.player[0], statistics: statisticsIniciales}, 
-                                                {player: torneo.previa.grupos[i + 1].classification.player[1], statistics: statisticsIniciales}]
+                                classification = [{player: torneo.previa.grupos[i - 1].classification[2].player, statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i - 1].classification[3].player, statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i + 1].classification[0].player, statistics: statisticsIniciales}, 
+                                                {player: torneo.previa.grupos[i + 1].classification[1].player, statistics: statisticsIniciales}]
                             }
                         }
                         else{
                             if (i == 0){
-                                classification = [{player: torneo.previa.grupos[i].classification.player[0], statistics: statisticsIniciales},
-                                                {player: torneo.previa.grupos[i].classification.player[1], statistics: statisticsIniciales},
-                                                {player: torneo.previa.grupos[i].classification.player[2], statistics: statisticsIniciales}, 
-                                                {player: torneo.previa.grupos[i].classification.player[3], statistics: statisticsIniciales}]
+                                classification = [{player: torneo.previa.grupos[i].classification[0].player, statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i].classification[1].player, statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i].classification[2].player, statistics: statisticsIniciales}, 
+                                                {player: torneo.previa.grupos[i].classification[3].player, statistics: statisticsIniciales}]
                             }
                             else{
-                                classification = [{player: torneo.previa.grupos[i - 1].classification.player[2], statistics: statisticsIniciales},
-                                                {player: torneo.previa.grupos[i - 1].classification.player[3], statistics: statisticsIniciales},
-                                                {player: torneo.previa.grupos[i].classification.player[2], statistics: statisticsIniciales}, 
-                                                {player: torneo.previa.grupos[i].classification.player[3], statistics: statisticsIniciales}]
+                                classification = [{player: torneo.previa.grupos[i - 1].classification[2].player, statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i - 1].classification[3].player, statistics: statisticsIniciales},
+                                                {player: torneo.previa.grupos[i].classification[2].player, statistics: statisticsIniciales}, 
+                                                {player: torneo.previa.grupos[i].classification[3].player, statistics: statisticsIniciales}]
                             }
                         }
                         ronda.grupos.push(grupo);
@@ -338,7 +366,7 @@ async function checkStartVueltas(){
                     await Torneo.updateOne({name: torneo.name}, {$addToSet: {rondas: ronda}}).then(async data => {
                         if(data.nModified != 1) console.log("No se ha modificado");
                         else{
-                            await createPartidos(ronda, torneoID, groupName);
+                            await createPartidos(ronda, torneoID);
                         } 
                     })
                 }
