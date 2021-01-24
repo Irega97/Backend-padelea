@@ -88,7 +88,7 @@ const torneo = new torneoSchema({
                 type: String
             },
             classification: [{
-                players: {
+                player: {
                     type: Schema.Types.ObjectId,
                     ref: 'User'
                 },

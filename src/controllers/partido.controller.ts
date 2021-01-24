@@ -470,7 +470,7 @@ function getInfoGrupos(req: Request, res: Response){
     
             else{
                 while (i< data.rondas.length && !enc){
-                    if (data.rondas[i].nombre == req.params.vuelta)
+                    if (data.rondas[i].name == req.params.vuelta)
                         enc = true;
 
                     else
@@ -478,6 +478,7 @@ function getInfoGrupos(req: Request, res: Response){
                 }
 
                 if (enc){
+                    enc = false;
                     let j: number = 0;
                     while (j< data.rondas[i].grupos.length && !enc){
                         if (data.rondas[i].grupos[j].groupName == req.params.grupo){
