@@ -9,10 +9,11 @@ router.get('/all', passport.authenticate("jwt", {session: false}), torneoControl
 router.get('/all/:username', passport.authenticate("jwt", {session: false}), torneoController.getTorneosUser);
 router.get('/:name', passport.authenticate("jwt", {session: false}), torneoController.getTorneo);
 router.get('/:name/vueltas', passport.authenticate("jwt", {session: false}), torneoController.getVueltas);
-
 router.post('/new', passport.authenticate("jwt", {session: false}), torneoController.createTorneo);
 
 router.post('/join/:name', passport.authenticate("jwt", {session: false}), torneoController.joinTorneo);
 router.put('/leave/:name', passport.authenticate("jwt", {session: false}), torneoController.leaveTorneo);
+
+router.get('/ranking/:name', passport.authenticate("jwt", {session: false}), torneoController.getRanking);
 
 export default router;

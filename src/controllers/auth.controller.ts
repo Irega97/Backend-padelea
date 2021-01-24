@@ -42,6 +42,17 @@ async function register(req:Request, res:Response) {
     if(checkUsername) return res.status(409).json({code: 409, message: "Username already exists"});
     else if (checkEmail) return res.status(410).json({code: 410, message: "Email already exists"});
     else {
+        let statisticsIniciales = {
+            partidosJugados: 0,
+            partidosGanados: 0,
+            partidosPerdidos: 0,
+            setsGanados: 0,
+            setsPerdidos: 0,
+            juegosGanados: 0,
+            juegosPerdidos: 0,
+            juegosDif: 0
+        };
+
         let u = new User({
             "name": user.name,
             "firstName": user.firstName,
@@ -52,7 +63,8 @@ async function register(req:Request, res:Response) {
             "password": user.password,
             "provider": user.provider,
             "online": false,
-            "private": user.private
+            "private": user.private,
+            "statistics": statisticsIniciales
         });
         u.save().then((data) => {
             let usuarioToSend = {

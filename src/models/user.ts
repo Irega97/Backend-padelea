@@ -1,3 +1,4 @@
+import { IStatistics } from './statistics';
 /* nombre, descripcion, url, responsable */
 import mongoose, { Schema, Document} from 'mongoose';
 import { IPartido } from './partido';
@@ -59,7 +60,7 @@ const user = new userSchema({
             ref: 'Torneo'
         },
         statistics: {
-            type: Schema.Types.ObjectId,
+            type: Object,
             ref: 'Statistics'
         },
         status: {
@@ -87,7 +88,11 @@ const user = new userSchema({
         ultimoleido: {
             type: Number
         }
-    }]
+    }],
+    statistics: {
+        type: Object,
+        ref: 'Statistics'
+    }
 
 });
 
@@ -109,6 +114,7 @@ export interface IUser extends Document {
     notifications: Array<any>;
     provider: string;
     chats: Array<any>;
+    statistics: IStatistics;
     userToJson(): JSON;
 }
 
@@ -127,7 +133,8 @@ user.methods.userToJSON = function(){
         online: this.online,
         private: this.private,
         chat: this.chats,
-        partidos: this.partidos
+        partidos: this.partidos,
+        statistics: this.statistics
     };
 }
 
