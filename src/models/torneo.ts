@@ -27,7 +27,12 @@ const torneo = new torneoSchema({
         type: Date
     },
     ubicacion: {
-        type: String
+        lat: {
+            type: String
+        },
+        lng: {
+            type:String
+        }
     },
     reglamento: { // FOTO
         type: String
