@@ -459,7 +459,16 @@ async function checkStartVueltas(){
                             }
 
                             else{
-                                numGrupo = ((i / 2) - (i % 2)) - 1;
+                                // grupos:[ B1 B2 C1 C2 D1 D2]
+                                // i     :[ 2  3  4  5  6  7]
+                                // aux   :[ 1 1.5 2 2.5 3 3.5]
+                                // numgru:[ 1  1  2  2  3  3]
+                                let aux = i/2;
+                                if(aux % 1 == 0){
+                                    numGrupo = aux;
+                                } else numGrupo = aux - 0.5;
+                                /* numGrupo = ((i / 2) - (i % 2)) - 1;
+                                if(numGrupo < 0) numGrupo*(-1); */
                                 if (i % 2 != 0){
                                     grupo.classification = [{player: torneo.rondas[torneo.rondas.length - 1].grupos[i - 3].classification[3].player, statistics: statisticsIniciales}];
                                     puntosExtra.push(55 - 11*numGrupo);
@@ -872,10 +881,10 @@ async function getRanking(req: Request, res: Response){
         });
 
         ranking.sort((a: any,b: any) => {
-            if (a.statistics.puntos > b.statistics.puntos)
+            if (a.statistics.puntosExtra > b.statistics.puntosExtra)
                 return -1;
 
-            else if (a.statistics.puntos < b.statistics.puntos)
+            else if (a.statistics.puntosExtra < b.statistics.puntosExtra)
                 return 1;
 
             else{
