@@ -16,12 +16,13 @@ io.on('connection', (socket: any) => {
       "user": user.username,
       "estado": true 
     }
+    
     chatController.getIdMyChats(user.id).then((data:any) =>{
       data.chats.forEach((chat:any) =>{
         socket.join(chat.chat._id);
       })
       io.emit("actConectado", info);
-      sockets.push(socket)
+      sockets.push(socket);
     });
   });
 
@@ -41,25 +42,15 @@ io.on('connection', (socket: any) => {
       authController.setOnlineStatus(socket._id, false);
       io.emit('actConectado', info);
       console.log(socket.username + " se ha desconectado");
-      socket._id = undefined;
-      socket.username = undefined;
-      //io.emit('usuarioDesconectado', {user: socket.username, event: 'left'});  
+      let i = sockets.indexOf(socket);
+      sockets.splice(i, 1);
     }
   });
 
   socket.on('nuevaSala', (chatid : any) =>{
     socket.join(chatid);
-    //chatId = chatid;
     console.log("Sala " + chatid + " creada");
   });
-  /*socket.on('set-name', (name: any) => {
-    socket.username = name;
-    io.emit('users-changed', {user: name, event: 'joined'});    
-  });*/
-  
-  /*socket.on('send-message', (message: any) => {
-    socket.to(chatId).emit('message', {msg: message.text, user: socket.username, createdAt: new Date()});    
-  });*/
 });
 
 function getSocket(){

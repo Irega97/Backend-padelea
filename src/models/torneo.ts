@@ -1,3 +1,4 @@
+import { IStatistics } from './statistics';
 /* nombre, descripcion, url, responsable */
 import mongoose, { Schema, Document} from 'mongoose';
 
@@ -26,12 +27,24 @@ const torneo = new torneoSchema({
         type: Date
     },
     ubicacion: {
-        type: String
+
+        name:{
+            type:String
+        },
+        lat: {
+            type: String
+        },
+        lng: {
+            type:String
+        }
     },
     reglamento: { // FOTO
         type: String
     },
     numRondas: {
+        type: Number
+    },
+    duracionRondas: {
         type: Number
     },
     admin: [{
@@ -44,6 +57,10 @@ const torneo = new torneoSchema({
     finalizado: {
         type: Boolean
     },
+    ganador: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    },
     players: [{
         type: Schema.Types.ObjectId,
         ref: 'User'
@@ -52,40 +69,72 @@ const torneo = new torneoSchema({
         type: Schema.Types.ObjectId,
         ref: 'User'
     }],
+    sobra: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    partidosConfirmados: {
+        type: Number
+    },
     rondas: [{
-        numero: {
-            type: Number
+        name: {
+            type: String
         },
         fechaFin: {
             type: Date
         },
-        partidos: [{
-            type: Schema.Types.ObjectId,
-            ref: 'Partido'
+        grupos: [{
+            groupName: {
+                type: String
+            },
+            classification: [{
+                player: {
+                    type: Schema.Types.ObjectId,
+                    ref: 'User'
+                },
+                statistics: {
+                    type: Object,
+                    ref: 'Statistics'
+                }
+            }],
+            partidos: [{
+                type: Schema.Types.ObjectId,
+                ref: 'Partido'
+            }],
+            chat: {
+                type: Schema.Types.ObjectId,
+                ref: 'Chat'
+            }
         }]
     }],
-    previa: [{
-        groupName: {
-            type: String
+    previa: {
+        fechaFin: {
+            type: Date
         },
-        classification: [{
-            type: Schema.Types.ObjectId,
-            ref: 'User'
-        }],
-        partidos:[{
-            type: Schema.Types.ObjectId,
-            ref: 'Partido'
+        grupos: [{
+            groupName: {
+                type: String
+            },
+            classification: [{
+                player: {
+                    type: Schema.Types.ObjectId,
+                    ref: 'User'
+                },
+                statistics: {
+                    type: Object,
+                    ref: 'Statistics'
+                }
+            }],
+            partidos: [{
+                type: Schema.Types.ObjectId,
+                ref: 'Partido'
+            }]
+            /*chat: {
+                type: Schema.Types.ObjectId,
+                ref: 'Chat'
+            } */
         }]
-    }],
-    grupos: [{
-        groupName: {
-            type: String
-        },
-        classification: [{
-            type: Schema.Types.ObjectId,
-            ref: 'User'
-        }]
-    }]
+    }
 });
 
 //Interfaz para tratar respuesta como documento
@@ -101,14 +150,15 @@ export interface ITorneo extends Document {
     ubicacion: string;
     reglamento: string;
     numRondas: number;
+    duracionRondas: number;
     admin: Array<any>;
     maxPlayers: number;
     finalizado: boolean;
     players: Array<any>;
     cola: Array<any>;
+    partidosConfirmados: number;
     rondas: Array<any>;
-    previa: Array<any>;
-    grupos: Array<any>;
+    previa: any;
     torneoToJson(): JSON;
 }
 
@@ -124,14 +174,15 @@ torneo.methods.torneoToJSON = function(){
         ubicacion: this.ubicacion,
         reglamento: this.reglamento,
         numRondas: this.numRondas,
+        duracionRondas: this.duracionRondas,
         admin : this.admin,
         maxPlayers: this.maxPlayers,
         finalizado: this.finalizado,
         players : this.players,
         cola: this.cola,
+        partidosConfirmados: this.partidosConfirmados,
         rondas: this.rondas,
-        previa: this.previa,
-        grupos: this.grupos
+        previa: this.previa
     };
 }
 
