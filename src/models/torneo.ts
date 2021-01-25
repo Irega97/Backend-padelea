@@ -27,7 +27,16 @@ const torneo = new torneoSchema({
         type: Date
     },
     ubicacion: {
-        type: String
+
+        name:{
+            type:String
+        },
+        lat: {
+            type: String
+        },
+        lng: {
+            type:String
+        }
     },
     reglamento: { // FOTO
         type: String
@@ -79,7 +88,7 @@ const torneo = new torneoSchema({
                 type: String
             },
             classification: [{
-                players: {
+                player: {
                     type: Schema.Types.ObjectId,
                     ref: 'User'
                 },
@@ -119,8 +128,8 @@ const torneo = new torneoSchema({
             partidos: [{
                 type: Schema.Types.ObjectId,
                 ref: 'Partido'
-            }]/* ,
-            chat: {
+            }]
+            /*chat: {
                 type: Schema.Types.ObjectId,
                 ref: 'Chat'
             } */

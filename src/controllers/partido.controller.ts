@@ -74,7 +74,6 @@ async function addResultados(req: Request, res: Response) {
                 if (cambiar)
                     await Torneo.findOneAndUpdate({"_id": req.body.idTorneo}, {$set: {partidosConfirmados: confirmed}});
 
-                console.log("params: ", sets1, sets2, juegos1, juegos2, ganadores, torneo, partido, ronda, nombreGrupo);
                 //Calculamos las estadisticas
                 calculateStatistics(sets1, sets2, juegos1, juegos2, ganadores, torneo, partido, ronda, nombreGrupo, cambiar).then(async (hecho) => {
                     if(hecho) {
@@ -215,9 +214,6 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
             statsPareja1Viejo.puntos = 1 + sets2v;
         }
     }
-
-    console.log("ParejaVieja1", statsPareja1Viejo);
-    console.log("ParejaVieja2", statsPareja2Viejo);
 
     u1.statistics.partidosJugados = u1.statistics.partidosJugados + statsPareja1.partidosJugados - statsPareja1Viejo.partidosJugados;
     u1.statistics.partidosGanados = u1.statistics.partidosGanados + statsPareja1.partidosGanados - statsPareja1Viejo.partidosGanados;
@@ -378,7 +374,7 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
             if(round.name == ronda) {
                 i = torneo.rondas.indexOf(round);
                 aux = true;
-            } else hecho = false;
+            };
         });
         if(aux) torneo.rondas[i].grupos.forEach((grupo: any) => {
             if(grupo.groupName.toString() == nombreGrupo.toString()) {
@@ -408,10 +404,23 @@ async function calculateStatistics(sets1: any, sets2: any, juegos1: any, juegos2
                         player.statistics.puntos = player.statistics.puntos + statsPareja2.puntos - statsPareja2Viejo.puntos;
                     }
                 })
+                grupo.classification.sort((a: any,b: any) => {
+                    if (a.statistics.puntos > b.statistics.puntos)
+                        return -1;
+        
+                    else if (a.statistics.puntos < b.statistics.puntos)
+                        return 1;
+        
+                    else{
+                        if (a.statistics.juegosDif > b.statistics.juegosDif)
+                            return -1;
+        
+                        else return 1;
+                    }
+                })
             }
         })
     }
-
     return hecho;
 }
 
@@ -474,7 +483,7 @@ function getInfoGrupos(req: Request, res: Response){
     
             else{
                 while (i< data.rondas.length && !enc){
-                    if (data.rondas[i].nombre == req.params.vuelta)
+                    if (data.rondas[i].name == req.params.vuelta)
                         enc = true;
 
                     else
@@ -482,6 +491,7 @@ function getInfoGrupos(req: Request, res: Response){
                 }
 
                 if (enc){
+                    enc = false;
                     let j: number = 0;
                     while (j< data.rondas[i].grupos.length && !enc){
                         if (data.rondas[i].grupos[j].groupName == req.params.grupo){
@@ -492,7 +502,7 @@ function getInfoGrupos(req: Request, res: Response){
                             } 
                         }
                         else
-                            i++;
+                            j++;
                     }
                 }
             }
