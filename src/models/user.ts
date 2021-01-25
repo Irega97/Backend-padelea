@@ -2,6 +2,7 @@ import { IStatistics } from './statistics';
 /* nombre, descripcion, url, responsable */
 import mongoose, { Schema, Document} from 'mongoose';
 import { IPartido } from './partido';
+import { IPublicacion } from './publicacion';
 
 //Modelo de objeto que se guarda en la BBDD de MongoDB
 
@@ -74,6 +75,10 @@ const user = new userSchema({
         type: Schema.Types.ObjectId,
         ref: 'Partido'
     }],
+    publicaciones: [{
+        type: Object,
+        ref: 'Publicacion'
+    }],
     notifications: [
         {
             type: Object,
@@ -111,6 +116,7 @@ export interface IUser extends Document {
     friends: Array<any>;
     torneos: Array<any>;
     partidos: Array<IPartido>;
+    publicaciones: Array<IPublicacion>;
     notifications: Array<any>;
     provider: string;
     chats: Array<any>;
