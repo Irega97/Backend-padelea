@@ -14,6 +14,7 @@ import notificationsRoutes from './routes/notifications.routes';
 import chatRoutes from './routes/chat.routes';
 import adminRoutes from './routes/admin.routes';
 import partidoRoutes from './routes/partido.routes';
+import publicacionRoutes from './routes/publicacion.routes';
 
 //Importamos middlewares
 import passport from 'passport';
@@ -47,6 +48,7 @@ app.use('/notifications', notificationsRoutes);
 app.use('/chat', chatRoutes);
 app.use('/torneo/admin', adminRoutes);
 app.use('/partido', partidoRoutes);
+app.use('/publicaciones', publicacionRoutes);
 
 torneoController.checkStartTorneos();
 
