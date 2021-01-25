@@ -154,6 +154,7 @@ export interface ITorneo extends Document {
     admin: Array<any>;
     maxPlayers: number;
     finalizado: boolean;
+    ganador: any;
     players: Array<any>;
     cola: Array<any>;
     partidosConfirmados: number;
@@ -178,6 +179,7 @@ torneo.methods.torneoToJSON = function(){
         admin : this.admin,
         maxPlayers: this.maxPlayers,
         finalizado: this.finalizado,
+        ganador: this.ganador,
         players : this.players,
         cola: this.cola,
         partidosConfirmados: this.partidosConfirmados,
