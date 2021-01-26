@@ -3,8 +3,8 @@ import User, { IUser } from "../models/user"
 import Publicacion from "../models/publicacion";
 import Comentario, { IComentario } from "../models/comentario";
 
-async function getMyPublications(req: Request, res: Response){
-    User.findOne({"_id": req.user}, {publicaciones: 1}).populate({path: 'publicaciones', populate: {path: 'comments'}}).then((data) => {
+async function getPublicationsUser(req: Request, res: Response){
+    User.findOne({"username": req.params.username}, {publicaciones: 1}).populate({path: 'publicaciones', populate: {path: 'user', select: 'username image'}}).then((data) => {
         console.log("Get mine: ", data);
         return res.status(200).json(data);
     });
@@ -12,11 +12,14 @@ async function getMyPublications(req: Request, res: Response){
 
 async function getHomePublications(req: Request, res: Response){
     let publicaciones: any = [];
-    User.findOne({"_id": req.user}, {friends: 1, publicaciones: 1}).populate({path: 'friends', populate: {path: 'user', select: 'publicaciones', populate: {path: 'publicaciones'}}}).then((data) => {
+    console.log(req.user);
+    User.findOne({"_id": req.user}, {friends: 1, publicaciones: 1}).populate({path: 'friends', populate: {path: 'user', select: 'publicaciones',
+     populate: {path: 'publicaciones', populate: {path: 'user', select: 'username image'}}}})
+    .populate({path: 'publicaciones', populate: {path: 'user', select: 'username image'}}).then((data) => {
         if(data==null) return res.status(404).json({message: "Friends not found"});
         data.publicaciones.forEach((publi) => {
             publicaciones.push(publi);
-        })
+        });
         data.friends.forEach((friend) => {
             console.log("friend: ", friend);
             if(friend.user.publicaciones != []){
@@ -26,7 +29,8 @@ async function getHomePublications(req: Request, res: Response){
                 });
             }
         });
-        console.log(publicaciones);
+        console.log("alo?: ", publicaciones);
+        //ORDENARLAS POR FECHA
         return res.status(200).json(publicaciones);
     });
 }
@@ -94,4 +98,4 @@ async function getComentarios(req: Request, res: Response){
     });
 }
 
-export default { getMyPublications, postPublication, getHomePublications, addLike, addComentario, getComentarios }
+export default { getPublicationsUser, postPublication, getHomePublications, addLike, addComentario, getComentarios }

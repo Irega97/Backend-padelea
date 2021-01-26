@@ -721,7 +721,6 @@ async function createTorneo(req: Request, res: Response){
         admin: [user],
         maxPlayers: maxPlayers,
         finalizado: false,
-        ganador: '',
         players: [user]
     });
     if(participa==false){

@@ -6,7 +6,7 @@ let publicacionSchema = mongoose.Schema;
 const publicacion = new publicacionSchema({
     user: {
         type: Schema.Types.ObjectId,
-        ref: 'User Torneo'
+        ref: 'User'
     },
     /* torneo: {
         type: Schema.Types.ObjectId,
