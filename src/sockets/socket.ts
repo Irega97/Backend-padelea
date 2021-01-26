@@ -44,12 +44,8 @@ io.on('connection', (socket: any) => {
       console.log(socket.username + " se ha desconectado");
       let i = sockets.indexOf(socket);
       sockets.splice(i, 1);
+      //console.log("Socket", socket);
     }
-  });
-
-  socket.on('nuevaSala', (chatid : any) =>{
-    socket.join(chatid);
-    console.log("Sala " + chatid + " creada");
   });
 });
 

@@ -473,8 +473,11 @@ function getInfoGrupos(req: Request, res: Response){
                         enc = true;
                         dataToSend = {
                             grupos: data.previa.grupos[i],
-                            idTorneo: data._id
+                            idTorneo: data._id,
+                            vueltaAbierta: false
                         }
+                        if (data.rondas.length == 0)
+                            dataToSend.vueltaAbierta = true;
                     }
                     else
                         i++;
@@ -498,8 +501,11 @@ function getInfoGrupos(req: Request, res: Response){
                             enc = true;
                             dataToSend = {
                                 grupos: data.rondas[i].grupos[j],
-                                idTorneo: data._id
+                                idTorneo: data._id,
+                                vueltaAbierta: false
                             } 
+                            if (i == data.rondas.length - 1)
+                                dataToSend.vueltaAbierta = true;
                         }
                         else
                             j++;
