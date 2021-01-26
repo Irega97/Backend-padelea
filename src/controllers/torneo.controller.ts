@@ -162,6 +162,15 @@ async function checkStartTorneos(){
                     await Torneo.updateOne({name: torneo.name}, {$set: {players: torneo.players, previa: previaToSave}, $addToSet: {sobra: cola}}).then(async data => {
                         if(data.nModified != 1) console.log("No se ha modificado");
                         else{
+                            Torneo.findOne({name: torneo.name}, {rondas: 1}).populate({path: 'previa', populate: {path: 'grupos', 
+                                populate: {path: 'classification', populate: {path: 'player', select: 'username image'}}}}).then(dataVuelta => {
+                                    const io = require('../sockets/socket').getSocket();
+                                    let info = {
+                                        torneo: dataVuelta?._id,
+                                        vuelta: dataVuelta?.previa
+                                    }
+                                    io.emit('nuevaVuelta', info);
+                                })
                             previaToSave.name = 'previa';
                             await createPartidos(previaToSave, torneo._id);
                         } 
@@ -477,6 +486,15 @@ async function checkStartVueltas(){
                     await Torneo.updateOne({name: torneo.name}, {$addToSet: {rondas: ronda}, $set: {partidosConfirmados: 0}}).then(async data => {
                         if(data.nModified != 1) console.log("No se ha modificado");
                         else{
+                            Torneo.findOne({name: torneo.name}, {rondas: 1}).populate({path: 'rondas', populate: {path: 'grupos', 
+                                populate: {path: 'classification', populate: {path: 'player', select: 'username image'}}}}).then(dataVuelta => {
+                                    const io = require('../sockets/socket').getSocket();
+                                    let info = {
+                                        torneo: dataVuelta?._id,
+                                        vuelta: dataVuelta?.rondas[dataVuelta.rondas.length - 1]
+                                    }
+                                    io.emit('nuevaVuelta', info);
+                                })
                             await createPartidos(ronda, torneoID);
                         } 
                     })
@@ -818,6 +836,15 @@ async function checkStartVueltas(){
                         await Torneo.updateOne({name: torneo.name}, {$addToSet: {rondas: ronda}, $set: {partidosConfirmados: 0}}).then(async data => {
                             if(data.nModified != 1) console.log("No se ha modificado");
                             else{
+                                Torneo.findOne({name: torneo.name}, {rondas: 1}).populate({path: 'rondas', populate: {path: 'grupos', 
+                                populate: {path: 'classification', populate: {path: 'player', select: 'username image'}}}}).then(dataVuelta => {
+                                    const io = require('../sockets/socket').getSocket();
+                                    let info = {
+                                        torneo: dataVuelta?._id,
+                                        vuelta: dataVuelta?.rondas[dataVuelta.rondas.length - 1]
+                                    }
+                                    io.emit('nuevaVuelta', info);
+                                })
                                 await createPartidos(ronda, torneoID);
                                 torneo.rondas[torneo.rondas.length - 1].grupos.forEach(async (grupo:any) => {
                                     await Chat.deleteOne({"_id": grupo.chat}).then(() => {

@@ -33,7 +33,7 @@ async function acceptPlayers(req: Request, res: Response){
         let torneoID: string;
         let message: string;
 
-        const io = require('../sockets/socket').getSocket()
+        const io = require('../sockets/socket').getSocket();
 
         await Torneo.findOne({'name': req.params.name}, {maxPlayers: 1, players: 1, cola: 1}).populate({path: 'cola', select: 'username'}).then((data) => {
             torneoID = data?.id;
