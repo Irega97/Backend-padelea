@@ -482,7 +482,6 @@ async function checkStartVueltas(){
             else{
                 if (Date.parse(torneo.rondas[torneo.rondas.length - 1].fechaFin.toString()) <= Date.now()){
                     if (torneo.rondas.length  == torneo.numRondas){
-                        console.log("entro! lengt: ", torneo.rondas.length);
                         torneoID = torneo._id;
                         let statisticsIniciales = {
                             partidosJugados: 0,
