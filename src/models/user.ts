@@ -90,6 +90,7 @@ const user = new userSchema({
             type: Schema.Types.ObjectId,
             ref: 'Chat'
         },
+        
         ultimoleido: {
             type: Number
         }
