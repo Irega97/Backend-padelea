@@ -138,6 +138,7 @@ async function addResultados(req: Request, res: Response) {
                                         }
                                         const io = require('../sockets/socket').getSocket();
                                         io.emit('clasificacion', clasiToSend);
+                                        io.emit('resPartido', req.body);
                                     }
                                 })
                                 return res.status(200).json(torneo);

@@ -1211,7 +1211,6 @@ async function getRanking(req: Request, res: Response){
     console.log("name ", torneoName);
     Torneo.findOne({"name": torneoName},{players: 1}).populate({path:'players', select: 'torneos username image'}).then((data) => {
         if(data == null) return res.status(404).json({message: "Torneo not found"});
-        console.log("aqui: ", data);
         data.players.forEach((player: any) => {
             player.torneos.forEach((torneo: any) => {
                 if(torneo.torneo.toString() == data._id.toString()){
@@ -1246,21 +1245,18 @@ async function getRanking(req: Request, res: Response){
                 if (a.statistics.puntos > b.statistics.puntos)
                         return -1;
 
-                    else if (a.statistics.puntos < b.statistics.puntos)
-                        return 1;
-                    
-                    else {
-                        if (a.statistics.juegosDif > b.statistics.juegosDif)
-                            return -1;
+                else if (a.statistics.puntos < b.statistics.puntos)
+                    return 1;
+                
+                else {
+                    if (a.statistics.juegosDif > b.statistics.juegosDif)
+                        return -1;
 
-                        else return 1;
-                    }
+                    else return 1;
+                }
             }
-            
         })
-
-        return res.status(200).json({isImage: true, ranking: ranking});
-
+        return res.status(200).json({isImage: true, ranking: ranking, idTorneo: data._id});
     });
 }
 
