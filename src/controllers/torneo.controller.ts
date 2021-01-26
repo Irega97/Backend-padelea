@@ -1220,6 +1220,8 @@ async function getRanking(req: Request, res: Response){
         });
 
         ranking.sort((a: any,b: any) => {
+            console.log("a: ", a);
+            console.log("b: ", b);
             if(a.statistics.puntosExtra != undefined && b.statistics.puntosExtra != undefined){
                 if ((a.statistics.puntosExtra > b.statistics.puntosExtra) && (a.statist))
                 return -1;
