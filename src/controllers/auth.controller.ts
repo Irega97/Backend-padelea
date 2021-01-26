@@ -71,7 +71,7 @@ async function register(req:Request, res:Response) {
                 username: u.username,
                 image: u.image
             }
-            const io = require('../sockets/socket').getSocket()
+            const io = require('../sockets/socket').getSocket();
             io.emit('nuevoUsuario', usuarioToSend);
             return res.status(201).json({token: createToken(data)});
         }).catch((err) => {
