@@ -76,7 +76,7 @@ const user = new userSchema({
         ref: 'Partido'
     }],
     publicaciones: [{
-        type: Object,
+        type: Schema.Types.ObjectId,
         ref: 'Publicacion'
     }],
     notifications: [
@@ -90,6 +90,7 @@ const user = new userSchema({
             type: Schema.Types.ObjectId,
             ref: 'Chat'
         },
+        
         ultimoleido: {
             type: Number
         }

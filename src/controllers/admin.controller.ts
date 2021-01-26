@@ -64,6 +64,8 @@ async function acceptPlayers(req: Request, res: Response){
                                     name: user.name,
                                     image: user.image
                                 }
+
+                                const io = require('../sockets/socket').getSocket();
                                 io.emit('nuevoJugador', playerToSend);
 
                                 let newNotification = {
@@ -125,7 +127,7 @@ function finalizarRonda(req: Request, res: Response){
                 data.previa.fechaFin = fechafin;
                 Torneo.updateOne({"name": req.params.name}, {$set: {previa: data.previa}}).then(data => {
                     torneoController.checkStartVueltas()
-                    return res.status(200).json({data});
+                    return res.status(200).json({message: "Vuelta Finalizada"});
                 });
             }  
 

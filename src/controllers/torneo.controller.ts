@@ -23,6 +23,7 @@ async function checkStartTorneos(){
                 console.log("*******" + torneo.name + "*******");
                 let previa = [];
                 let cola: Array<any> = [];
+                let participanteschat: Array<any> = [];
                 let j = 0;
                 let nameGroups = config.letrasNombreGrupos;
                 
@@ -55,11 +56,12 @@ async function checkStartTorneos(){
                                                 {player: jugadores[1], statistics: statisticsIniciales},
                                                 {player: jugadores[2], statistics: statisticsIniciales}, 
                                                 {player: jugadores[3], statistics: statisticsIniciales}],
-                                partidos: []
+                                partidos: [],
+                                chat: ''
                             }
-                            previa.push(grupo); 
+                            
                             let message1: any = {
-                                body : "Ha empezado la previa del torneo " + torneo.name,
+                                body : "Ha empezado la Previa del torneo " + torneo.name,
                                 date: new Date(Date.now()),
                                 leidos: []
                             }
@@ -70,8 +72,24 @@ async function checkStartTorneos(){
                                 leidos: [] 
                             }
 
+                            participanteschat = jugadores;
+                            torneo.admin.forEach(admin => {
+                                let a: number = 0;
+                                let encchat: boolean = false;
+                                while (a < participanteschat.length && !encchat){
+                                    if (participanteschat[a].toString() == admin.toString())
+                                        encchat = true;
+                                    
+                                    else
+                                        a++;
+                                }
+
+                                if (!encchat)
+                                    participanteschat.push(admin);
+                            });
+
                             let chat = new Chat({
-                                users: jugadores,
+                                users: participanteschat,
                                 name: torneo.name + " Previa " + groupName,
                                 admin: torneo.admin,
                                 image: torneo.image,
@@ -83,20 +101,24 @@ async function checkStartTorneos(){
                                 ultimoleido: 0
                             }
 
-                            chat.save().then(datachat => {
-                                jugadores.forEach(jugador => {
-                                    User.findOneAndUpdate({"_id": jugador}, {$addToSet: {chats: chatuser}}).then(() => {
+                            await chat.save().then(datachat => {
+                                grupo.chat = datachat._id;
+                                chatuser.chat = datachat;
+                                participanteschat.forEach(participante => {
+                                    User.findOneAndUpdate({"_id": participante}, {$addToSet: {chats: chatuser}}).then(() => {
                                         const sockets = require('../sockets/socket').getVectorSockets();
                                         sockets.forEach((socket: any) =>{
-                                            if (socket._id == jugador){
-                                            socket.join(datachat._id);
-                                            const io = require('../sockets/socket').getSocket();
-                                            io.to(jugador).emit('nuevoChat', chatuser.chat);
-                                        }
+                                            if (socket._id == participante){
+                                                socket.join(datachat._id);
+                                                const io = require('../sockets/socket').getSocket();
+                                                io.to(participante).emit('nuevoChat', chatuser.chat);
+                                            }
                                         })
                                     })
                                 });
                             });
+                            previa.push(grupo); 
+                            participanteschat = [];
                         } else {
                             //te los mete en cola
                             for(let i = 0; i < jugadores.length; i++)
@@ -135,8 +157,8 @@ async function checkStartTorneos(){
                     let previaToSave: any = {
                         fechaFin: inicio,
                         grupos: previa
-                        //chat: datachat._id
                     }
+
                     await Torneo.updateOne({name: torneo.name}, {$set: {players: torneo.players, previa: previaToSave}, $addToSet: {sobra: cola}}).then(async data => {
                         if(data.nModified != 1) console.log("No se ha modificado");
                         else{
@@ -240,7 +262,6 @@ async function createPartidos(ronda: any, torneoID: string){
                     console.log("Torneo no actualizado");
                     return;
                 } else {
-                    console.log("Torneo iniciado correctamente!")
                     let newNotification = {
                         type: "Torneo",
                         description: "El torneo " + torneo.name + " ha empezado!",
@@ -268,7 +289,6 @@ async function createPartidos(ronda: any, torneoID: string){
                     console.log("Torneo no actualizado");
                     return;
                 } else {
-                    console.log("Torneo iniciado correctamente!")
                     let newNotification = {
                         type: "Torneo",
                         description: "El torneo " + torneo.name + " ha empezado!",
@@ -295,7 +315,7 @@ async function createPartidos(ronda: any, torneoID: string){
 
 async function checkStartVueltas(){
     let torneoID: string;
-    Torneo.find({"torneoIniciado":true}).then(data => {
+    Torneo.find({"torneoIniciado":true, "finalizado":false}).then(data => {
         data.forEach(async torneo => {
             if (torneo.rondas.length == 0){
                 if (Date.parse(torneo.previa.fechaFin.toString()) <= Date.now()){
@@ -311,21 +331,25 @@ async function checkStartVueltas(){
                         juegosDif: 0,
                         puntos: 0
                     }
+
                     let nameGroups = config.letrasNombreVueltas;
                     let grupos: any = [];
                     let classification: any = [];
+                    let participanteschat: Array<any> = [];
                     let ronda = {
                         name: "Vuelta 1",
                         fechaFin: new Date(Date.now()),
                         grupos: grupos
                     };
+
                     ronda.fechaFin.setDate(ronda.fechaFin.getDate() + torneo.duracionRondas);
                     let i: number = 0;
                     while (i < torneo.previa.grupos.length){
                         let grupo = {
                             groupName: nameGroups[i],
                             classification: classification,
-                            partidos: []
+                            partidos: [],
+                            chat: ''
                         }
                         if (i + 1 < torneo.previa.grupos.length){
                             if (i == 0){
@@ -356,9 +380,96 @@ async function checkStartVueltas(){
                                                         {player: torneo.previa.grupos[i].classification[3].player, statistics: statisticsIniciales}]
                             }
                         }
+
+                        participanteschat.push(grupo.classification[0].player);
+                        participanteschat.push(grupo.classification[1].player);
+                        participanteschat.push(grupo.classification[2].player);
+                        participanteschat.push(grupo.classification[3].player);
+
+                        torneo.admin.forEach(admin => {
+                            let a: number = 0;
+                            let encchat: boolean = false;
+                            while (a < participanteschat.length && !encchat){
+                                if (participanteschat[a].toString() == admin.toString())
+                                    encchat = true;
+                                
+                                else
+                                    a++;
+                            }
+                            if (!encchat)
+                                participanteschat.push(admin);
+                        });
+
+                        let message1: any = {
+                            body : "Ha empezado la Vuelta 1 del torneo " + torneo.name,
+                            date: new Date(Date.now()),
+                            leidos: []
+                        }
+
+                        let message2: any = {
+                            body : "Este es el chat del Grupo " + grupo.groupName,
+                            date: new Date(Date.now()),
+                            leidos: [] 
+                        }
+                        let chat = new Chat({
+                            users: participanteschat,
+                            name: torneo.name + " Vuelta 1 " + grupo.groupName,
+                            admin: torneo.admin,
+                            image: torneo.image,
+                            mensajes: [message1, message2]
+                        });
+                    
+                        let chatuser = {
+                            chat: chat,
+                            ultimoleido: 0
+                        }
+
+                        await chat.save().then(datachat => {
+                            grupo.chat = datachat._id;
+                            chatuser.chat = datachat;
+                            participanteschat.forEach(participante => {
+                                User.findOneAndUpdate({"_id": participante}, {$addToSet: {chats: chatuser}}).then(() => {
+                                    const sockets = require('../sockets/socket').getVectorSockets();
+                                    sockets.forEach((socket: any) =>{
+                                        if (socket._id == participante){
+                                            socket.join(datachat._id);
+                                            const io = require('../sockets/socket').getSocket();
+                                            io.to(participante).emit('nuevoChat', chatuser.chat);
+                                        }
+                                    })
+                                })
+                            });
+                        });
+
                         ronda.grupos.push(grupo);
+                        participanteschat = [];
                         i++;
                     }
+
+                    torneo.previa.grupos.forEach(async (grupo:any) => {
+                        await Chat.deleteOne({"_id": grupo.chat}).then(() => {
+                            grupo.classification.forEach(async (clasi:any) => {
+                                await User.findOne({"_id":clasi.player}, {chats: 1}).then(async (user:any) => {
+                                    let enc: Boolean = false;
+                                    let i: number = 0;
+                                    if (user != undefined){
+                                        while (i<user?.chats.length && !enc){
+                                            if (user.chats[i].chat.toString() == grupo.chat.toString())
+                                                enc = true;
+
+                                            else
+                                                i++;
+                                        }
+
+                                        if (enc) {
+                                            user.chats.splice(i, 1);
+                                            await User.updateOne({"_id":user._id}, {$set: {chats: user.chats}});
+                                        }   
+                                    }
+                                })
+                            })
+                        })
+                    })
 
                     await Torneo.updateOne({name: torneo.name}, {$addToSet: {rondas: ronda}, $set: {partidosConfirmados: 0}}).then(async data => {
                         if(data.nModified != 1) console.log("No se ha modificado");
@@ -371,7 +482,6 @@ async function checkStartVueltas(){
             else{
                 if (Date.parse(torneo.rondas[torneo.rondas.length - 1].fechaFin.toString()) <= Date.now()){
                     if (torneo.rondas.length  == torneo.numRondas){
-                        console.log("entro! lengt: ", torneo.rondas.length);
                         torneoID = torneo._id;
                         let statisticsIniciales = {
                             partidosJugados: 0,
@@ -439,8 +549,8 @@ async function checkStartVueltas(){
                                         if (torneo.torneo.toString() == torneoID.toString()){
                                             torneo.statistics.puntosExtra = torneo.statistics.puntosExtra + puntosExtra[0];
                                             puntosExtra.splice(0, 1);
-                                            console.log("Puntos", data?.torneos);
                                             torneo.status = 2;
+                                            console.log("puntos");
                                             await User.updateOne({"_id": clasi.player}, {$set: {torneos: data?.torneos}});
                                         }
                                     })
@@ -448,14 +558,12 @@ async function checkStartVueltas(){
                             })
                             i++;
                         }
-                        await Torneo.updateOne({name: torneo.name}, {$set: {partidosConfirmados: 0, rondas: torneo.rondas, finalizado: true}}).then(async data => {
-                            if(data.nModified != 1) console.log("No se ha modificado");
-                            else{
-                                let ganador = getGanador(torneo.name);
-                                console.log("ganador: ", ganador);
-                                await Torneo.updateOne({name: torneo.name}, {$set: {ganador: ganador}});
-                            } 
-                        });                        
+                        getGanador(torneo.name).then(async data => {
+                            console.log("Data", data);
+                            await Torneo.updateOne({name: torneo.name}, {$set: {rondas: torneo.rondas, finalizado: true, ganador: data}}).then(async data => {
+                                if(data.nModified != 1) console.log("No se ha modificado");
+                            }); 
+                        });                      
                     }
 
                     else{
@@ -471,11 +579,13 @@ async function checkStartVueltas(){
                             juegosDif: 0,
                             puntos: 0
                         }
+
                         let nameGroups = config.letrasNombreVueltas;
                         let grupos: any = [];
                         let numGrupo: number = 0;
                         let puntosExtra: number[] = [];
                         let classification: any = [];
+                        let participanteschat: Array<any> = [];
                         let ronda = {
                             name: "Vuelta " + (torneo.rondas.length + 1),
                             fechaFin: new Date(Date.now()),
@@ -488,7 +598,8 @@ async function checkStartVueltas(){
                             let grupo = {
                                 groupName: nameGroups[i],
                                 classification: classification,
-                                partidos: []
+                                partidos: [],
+                                chat: ''
                             }
                             if(i == 0){
                                 grupo.classification = [{player: torneo.rondas[torneo.rondas.length - 1].grupos[i].classification[0].player, statistics: statisticsIniciales}];
@@ -597,25 +708,113 @@ async function checkStartVueltas(){
                                     }
                                 }
                             }
+
+                            participanteschat.push(grupo.classification[0].player);
+                            participanteschat.push(grupo.classification[1].player);
+                            participanteschat.push(grupo.classification[2].player);
+                            participanteschat.push(grupo.classification[3].player);
+
+                            torneo.admin.forEach(admin => {
+                                let a: number = 0;
+                                let encchat: boolean = false;
+                                while (a < participanteschat.length && !encchat){
+                                    if (participanteschat[a].toString() == admin.toString())
+                                        encchat = true;
+                                    
+                                    else
+                                        a++;
+                                }
+                                if (!encchat)
+                                    participanteschat.push(admin);
+                            });
+
+                            let message1: any = {
+                                body : "Ha empezado la " + ronda.name + " del " + torneo.name,
+                                date: new Date(Date.now()),
+                                leidos: []
+                            }
+
+                            let message2: any = {
+                                body : "Este es el chat del Grupo " + grupo.groupName,
+                                date: new Date(Date.now()),
+                                leidos: [] 
+                            }
+
+                            let chat = new Chat({
+                                users: participanteschat,
+                                name: torneo.name + " " + ronda.name + " " + grupo.groupName,
+                                admin: torneo.admin,
+                                image: torneo.image,
+                                mensajes: [message1, message2]
+                            });
+                        
+                            let chatuser = {
+                                chat: chat,
+                                ultimoleido: 0
+                            }
+
+                            await chat.save().then(datachat => {
+                                grupo.chat = datachat._id;
+                                chatuser.chat = datachat;
+                                participanteschat.forEach(participante => {
+                                    User.findOneAndUpdate({"_id": participante}, {$addToSet: {chats: chatuser}}).then(() => {
+                                        const sockets = require('../sockets/socket').getVectorSockets();
+                                        sockets.forEach((socket: any) =>{
+                                            if (socket._id == participante){
+                                                socket.join(datachat._id);
+                                                const io = require('../sockets/socket').getSocket();
+                                                io.to(participante).emit('nuevoChat', chatuser.chat);
+                                            }
+                                        })
+                                    })
+                                });
+                            });
+
                             grupo.classification.forEach(async (clasi:any) => {
                                 await User.findOne({"_id": clasi.player}, {torneo: 1}).populate('torneos').then(data => {
                                     data?.torneos.forEach(async torneo => {
                                         if (torneo.torneo.toString() == torneoID.toString()){
                                             torneo.statistics.puntosExtra = torneo.statistics.puntosExtra + puntosExtra[0];
                                             puntosExtra.splice(0, 1);
-                                            console.log("Puntos", data?.torneos);
                                             await User.updateOne({"_id": clasi.player}, {$set: {torneos: data?.torneos}});
                                         }
                                     })
                                 })
                             })
+
                             ronda.grupos.push(grupo);
+                            participanteschat = [];
                             i++;
                         }
+
                         await Torneo.updateOne({name: torneo.name}, {$addToSet: {rondas: ronda}, $set: {partidosConfirmados: 0}}).then(async data => {
                             if(data.nModified != 1) console.log("No se ha modificado");
                             else{
                                 await createPartidos(ronda, torneoID);
+                                torneo.rondas[torneo.rondas.length - 1].grupos.forEach(async (grupo:any) => {
+                                    await Chat.deleteOne({"_id": grupo.chat}).then(() => {
+                                        grupo.classification.forEach(async (clasi:any) => {
+                                            await User.findOne({"_id":clasi.player}, {chats: 1}).then(async (user:any) => {
+                                                let enc: Boolean = false;
+                                                let i: number = 0;
+                                                if (user != undefined){
+                                                    while (i<user?.chats.length && !enc){
+                                                        if (user.chats[i].chat.toString() == grupo.chat.toString())
+                                                            enc = true;
+        
+                                                        else
+                                                            i++;
+                                                    }
+        
+                                                    if (enc) {
+                                                        user.chats.splice(i, 1);
+                                                        await User.updateOne({"_id":user._id}, {$set: {chats: user.chats}});
+                                                    }   
+                                                }
+                                            })
+                                        })
+                                    })
+                                })
                             } 
                         })
                     }
@@ -719,9 +918,9 @@ async function createTorneo(req: Request, res: Response){
         numRondas: numRondas,
         duracionRondas: duracionRondas, 
         admin: [user],
+        ganador: null,
         maxPlayers: maxPlayers,
         finalizado: false,
-        ganador: '',
         players: [user]
     });
     if(participa==false){
@@ -738,6 +937,7 @@ async function createTorneo(req: Request, res: Response){
         }
         const io = require('../sockets/socket').getSocket();
         io.emit('nuevoTorneo', torneo);
+
         return res.status(201).json(data);
     }, (error) =>{
         console.log(error);
@@ -907,6 +1107,7 @@ async function leaveTorneo(req: Request, res: Response){
                             username: u.username,
                             torneo: t.name
                         }
+
                         io.emit('player-left', jugador);
                         return res.status(200).json({message: "Has abandonado " + t?.name});
                     }
@@ -941,7 +1142,6 @@ async function getVueltas(req: Request, res: Response){
             
             return res.status(200).json(dataToSend);
         } else {
-            return res.status(404).json({message: "Torneo not found"});
             return res.status(404).json({message: "Torneo not found"});
         }
     })
@@ -993,42 +1193,43 @@ async function getRanking(req: Request, res: Response){
 async function getGanador(torneoName: string) : Promise<any>{
     const torneo = torneoName;
     let ranking: Array<any> = [];
-    Torneo.findOne({"name": torneo},{players: 1}).populate({path:'players', select: 'torneos username image'}).then((data) => {
-        if(data == null) return [];
-        data.players.forEach((player: any) => {
-            player.torneos.forEach((torneo: any) => {
-                if(torneo.torneo.toString() == data._id.toString()){
-                    ranking.push({player: player, statistics: torneo.statistics});
-                }
-            })
-        });
+    return new Promise(function (resolve) {
+        Torneo.findOne({"name": torneo},{players: 1}).populate({path:'players', select: 'torneos username image'}).then((data) => {
+            if(data == null) return [];
+            data.players.forEach((player: any) => {
+                player.torneos.forEach((torneo: any) => {
+                    if(torneo.torneo.toString() == data._id.toString()){
+                        ranking.push({player: player, statistics: torneo.statistics});
+                    }
+                })
+            });
 
-        ranking.sort((a: any,b: any) => {
-            if (a.statistics.puntosExtra > b.statistics.puntosExtra)
-                return -1;
-
-            else if (a.statistics.puntosExtra < b.statistics.puntosExtra)
-                return 1;
-
-            else{
-                if (a.statistics.puntos > b.statistics.puntos)
+            ranking.sort((a: any,b: any) => {
+                if (a.statistics.puntosExtra > b.statistics.puntosExtra)
                     return -1;
 
-                else if (a.statistics.puntos < b.statistics.puntos)
+                else if (a.statistics.puntosExtra < b.statistics.puntosExtra)
                     return 1;
-                
-                else {
-                    if (a.statistics.juegosDif > b.statistics.juegosDif)
+
+                else{
+                    if (a.statistics.puntos > b.statistics.puntos)
                         return -1;
 
-                    else return 1;
-                }
-            }
-        })
-        console.log(ranking[0].player._id);
-        return ranking[0].player._id;
+                    else if (a.statistics.puntos < b.statistics.puntos)
+                        return 1;
+                    
+                    else {
+                        if (a.statistics.juegosDif > b.statistics.juegosDif)
+                            return -1;
 
-    });
+                        else return 1;
+                    }
+                }
+            })
+            console.log("Ranking", ranking[0].player._id);
+            resolve(ranking[0].player._id);
+        });
+    })
 }
 
 export default { getTorneo, getTorneos, getTorneosUser, getGanador, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, checkStartVueltas, getVueltas, getRanking }
