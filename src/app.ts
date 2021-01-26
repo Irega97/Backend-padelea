@@ -22,7 +22,6 @@ import passportMiddleware from './middlewares/passport';
 
 //Borrar cuando tengamos implementado el checkStartTorneos bien
 import torneoController from './controllers/torneo.controller';
-import torneo from './models/torneo';
 
 //Inicializamos express
 const app = express();
