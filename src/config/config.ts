@@ -1,6 +1,7 @@
 //Configuraciones para conexion con BBDD
 export default {
     DB: {
+
         URI: process.env.MONGODB_URI || 'mongodb://localhost/proyectoEA',
         //URI: process.env.MONGODB_URI || 'mongodb://147.83.7.156:27017/bbdd',
     },
@@ -9,3 +10,4 @@ export default {
     letrasNombreGrupos: ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'],
     letrasNombreVueltas: ['A1','A2','B1','B2','C1','C2','D1','D2','E1','E2','F1','F2']
 }
+

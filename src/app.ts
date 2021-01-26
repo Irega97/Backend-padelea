@@ -51,6 +51,7 @@ app.use('/partido', partidoRoutes);
 app.use('/publicaciones', publicacionRoutes);
 
 torneoController.checkStartTorneos();
+torneoController.getGanador("test4");
 
 //Exportamos fichero como 'app'
 export default app;
