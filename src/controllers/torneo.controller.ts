@@ -315,7 +315,7 @@ async function createPartidos(ronda: any, torneoID: string){
 
 async function checkStartVueltas(){
     let torneoID: string;
-    Torneo.find({"torneoIniciado":true}).then(data => {
+    Torneo.find({"torneoIniciado":true, "finalizado":false}).then(data => {
         data.forEach(async torneo => {
             if (torneo.rondas.length == 0){
                 if (Date.parse(torneo.previa.fechaFin.toString()) <= Date.now()){
@@ -549,8 +549,8 @@ async function checkStartVueltas(){
                                         if (torneo.torneo.toString() == torneoID.toString()){
                                             torneo.statistics.puntosExtra = torneo.statistics.puntosExtra + puntosExtra[0];
                                             puntosExtra.splice(0, 1);
-                                            console.log("Puntos", data?.torneos);
                                             torneo.status = 2;
+                                            console.log("puntos");
                                             await User.updateOne({"_id": clasi.player}, {$set: {torneos: data?.torneos}});
                                         }
                                     })
@@ -558,14 +558,12 @@ async function checkStartVueltas(){
                             })
                             i++;
                         }
-                        await Torneo.updateOne({name: torneo.name}, {$set: {partidosConfirmados: 0, rondas: torneo.rondas, finalizado: true}}).then(async data => {
-                            if(data.nModified != 1) console.log("No se ha modificado");
-                            else{
-                                let ganador = getGanador(torneo.name);
-                                console.log("ganador: ", ganador);
-                                await Torneo.updateOne({name: torneo.name}, {$set: {ganador: ganador}});
-                            } 
-                        });                        
+                        getGanador(torneo.name).then(async data => {
+                            console.log("Data", data);
+                            await Torneo.updateOne({name: torneo.name}, {$set: {rondas: torneo.rondas, finalizado: true, ganador: data}}).then(async data => {
+                                if(data.nModified != 1) console.log("No se ha modificado");
+                            }); 
+                        });                      
                     }
 
                     else{
@@ -920,9 +918,9 @@ async function createTorneo(req: Request, res: Response){
         numRondas: numRondas,
         duracionRondas: duracionRondas, 
         admin: [user],
+        ganador: null,
         maxPlayers: maxPlayers,
         finalizado: false,
-        ganador: '',
         players: [user]
     });
     if(participa==false){
@@ -1145,7 +1143,6 @@ async function getVueltas(req: Request, res: Response){
             return res.status(200).json(dataToSend);
         } else {
             return res.status(404).json({message: "Torneo not found"});
-            return res.status(404).json({message: "Torneo not found"});
         }
     })
 }
@@ -1196,42 +1193,43 @@ async function getRanking(req: Request, res: Response){
 async function getGanador(torneoName: string) : Promise<any>{
     const torneo = torneoName;
     let ranking: Array<any> = [];
-    Torneo.findOne({"name": torneo},{players: 1}).populate({path:'players', select: 'torneos username image'}).then((data) => {
-        if(data == null) return [];
-        data.players.forEach((player: any) => {
-            player.torneos.forEach((torneo: any) => {
-                if(torneo.torneo.toString() == data._id.toString()){
-                    ranking.push({player: player, statistics: torneo.statistics});
-                }
-            })
-        });
+    return new Promise(function (resolve) {
+        Torneo.findOne({"name": torneo},{players: 1}).populate({path:'players', select: 'torneos username image'}).then((data) => {
+            if(data == null) return [];
+            data.players.forEach((player: any) => {
+                player.torneos.forEach((torneo: any) => {
+                    if(torneo.torneo.toString() == data._id.toString()){
+                        ranking.push({player: player, statistics: torneo.statistics});
+                    }
+                })
+            });
 
-        ranking.sort((a: any,b: any) => {
-            if (a.statistics.puntosExtra > b.statistics.puntosExtra)
-                return -1;
-
-            else if (a.statistics.puntosExtra < b.statistics.puntosExtra)
-                return 1;
-
-            else{
-                if (a.statistics.puntos > b.statistics.puntos)
+            ranking.sort((a: any,b: any) => {
+                if (a.statistics.puntosExtra > b.statistics.puntosExtra)
                     return -1;
 
-                else if (a.statistics.puntos < b.statistics.puntos)
+                else if (a.statistics.puntosExtra < b.statistics.puntosExtra)
                     return 1;
-                
-                else {
-                    if (a.statistics.juegosDif > b.statistics.juegosDif)
+
+                else{
+                    if (a.statistics.puntos > b.statistics.puntos)
                         return -1;
 
-                    else return 1;
-                }
-            }
-        })
-        console.log(ranking[0].player._id);
-        return ranking[0].player._id;
+                    else if (a.statistics.puntos < b.statistics.puntos)
+                        return 1;
+                    
+                    else {
+                        if (a.statistics.juegosDif > b.statistics.juegosDif)
+                            return -1;
 
-    });
+                        else return 1;
+                    }
+                }
+            })
+            console.log("Ranking", ranking[0].player._id);
+            resolve(ranking[0].player._id);
+        });
+    })
 }
 
 export default { getTorneo, getTorneos, getTorneosUser, getGanador, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, checkStartVueltas, getVueltas, getRanking }
