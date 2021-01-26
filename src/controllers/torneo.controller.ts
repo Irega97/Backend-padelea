@@ -1221,26 +1221,42 @@ async function getRanking(req: Request, res: Response){
         });
 
         ranking.sort((a: any,b: any) => {
-            if (a.statistics.puntosExtra > b.statistics.puntosExtra)
+            if(a.statistics.puntosExtra != undefined && b.statistics.puntosExtra != undefined){
+                if ((a.statistics.puntosExtra > b.statistics.puntosExtra) && (a.statist))
                 return -1;
 
-            else if (a.statistics.puntosExtra < b.statistics.puntosExtra)
-                return 1;
-
-            else{
-                if (a.statistics.puntos > b.statistics.puntos)
-                    return -1;
-
-                else if (a.statistics.puntos < b.statistics.puntos)
+                else if (a.statistics.puntosExtra < b.statistics.puntosExtra)
                     return 1;
-                
-                else {
-                    if (a.statistics.juegosDif > b.statistics.juegosDif)
+
+                else{
+                    if (a.statistics.puntos > b.statistics.puntos)
                         return -1;
 
-                    else return 1;
+                    else if (a.statistics.puntos < b.statistics.puntos)
+                        return 1;
+                    
+                    else {
+                        if (a.statistics.juegosDif > b.statistics.juegosDif)
+                            return -1;
+
+                        else return 1;
+                    }
                 }
+            } else {
+                if (a.statistics.puntos > b.statistics.puntos)
+                        return -1;
+
+                    else if (a.statistics.puntos < b.statistics.puntos)
+                        return 1;
+                    
+                    else {
+                        if (a.statistics.juegosDif > b.statistics.juegosDif)
+                            return -1;
+
+                        else return 1;
+                    }
             }
+            
         })
 
         return res.status(200).json({isImage: true, ranking: ranking});
@@ -1262,16 +1278,31 @@ async function getGanador(torneoName: string) : Promise<any>{
                 })
             });
 
-            ranking.sort((a: any,b: any) => {
-                if (a.statistics.puntosExtra > b.statistics.puntosExtra)
+            ranking.sort((a, b) => {
+                if(a.statistics.puntosExtra != undefined && b.statistics.puntosExtra != undefined){
+                    if (a.statistics.puntosExtra > b.statistics.puntosExtra)
                     return -1;
 
-                else if (a.statistics.puntosExtra < b.statistics.puntosExtra)
-                    return 1;
+                    else if (a.statistics.puntosExtra < b.statistics.puntosExtra)
+                        return 1;
 
-                else{
+                    else{
+                        if (a.statistics.puntos > b.statistics.puntos)
+                            return -1;
+
+                        else if (a.statistics.puntos < b.statistics.puntos)
+                            return 1;
+                        
+                        else {
+                            if (a.statistics.juegosDif > b.statistics.juegosDif)
+                                return -1;
+
+                            else return 1;
+                        }
+                    }
+                } else {
                     if (a.statistics.puntos > b.statistics.puntos)
-                        return -1;
+                    return -1;
 
                     else if (a.statistics.puntos < b.statistics.puntos)
                         return 1;
@@ -1282,7 +1313,7 @@ async function getGanador(torneoName: string) : Promise<any>{
 
                         else return 1;
                     }
-                }
+                }                
             })
             console.log("Ranking", ranking[0].player._id);
             resolve(ranking[0].player._id);

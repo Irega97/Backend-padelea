@@ -6,6 +6,19 @@ import Comentario, { IComentario } from "../models/comentario";
 async function getPublicationsUser(req: Request, res: Response){
     User.findOne({"username": req.params.username}, {publicaciones: 1}).populate({path: 'publicaciones', populate: {path: 'user', select: 'username image'}}).then((data) => {
         console.log("Get mine: ", data);
+        if(data == null) return res.status(404).json({message: "User not found"});
+        if(data?.publicaciones.length > 1){
+            data?.publicaciones.sort((a: any, b: any) => {
+                if (a.date < b.date)
+                return 1;
+                
+                else if (a.date > b.date)
+                return -1;
+        
+                else
+                return 0;
+            });
+        }  
         return res.status(200).json(data);
     });
 }
@@ -30,7 +43,18 @@ async function getHomePublications(req: Request, res: Response){
             }
         });
         console.log("alo?: ", publicaciones);
-        //ORDENARLAS POR FECHA
+        if(publicaciones.length > 1){
+            publicaciones.sort((a: any, b: any) => {
+                if (a.date < b.date)
+                return 1;
+                
+                else if (a.date > b.date)
+                return -1;
+        
+                else
+                return 0;
+            });
+        }        
         return res.status(200).json(publicaciones);
     });
 }
@@ -46,10 +70,13 @@ async function postPublication(req: Request, res: Response){
     });
     publication.save().then((publi) => {
         User.updateOne({"_id": req.user}, {$addToSet: {publicaciones: publi._id}}).then((data) => {
-            console.log(data);
-            return res.status(200).json(data);
+            if(data.nModified != 1) return res.status(400).json({message: "Bad request"});
+            Publicacion.findById(publi._id).populate('user').then((data) => {
+                if(data == null) return res.status(404).json({message: "Publication not found"});
+                return res.status(200).json(data);
+            })
         })
-    })
+    });
 }
 
 async function addLike(req: Request, res: Response){
