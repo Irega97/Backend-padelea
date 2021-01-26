@@ -76,7 +76,7 @@ const user = new userSchema({
         ref: 'Partido'
     }],
     publicaciones: [{
-        type: Object,
+        type: Schema.Types.ObjectId,
         ref: 'Publicacion'
     }],
     notifications: [
