@@ -300,7 +300,7 @@ async function createPartidos(ronda: any, torneoID: string){
                 } else {
                     let newNotification = {
                         type: "Torneo",
-                        description: "El torneo " + torneo.name + " ha empezado!",
+                        description: "El torneo " + torneo.name + " ha pasado a la " + torneo.rondas[torneo.rondas.length - 1].name,
                         status: 1,
                         origen: torneo.name,
                         image: torneo.image
@@ -606,11 +606,48 @@ async function checkStartVueltas(){
                             })
                         })
 
-                        getGanador(torneo.name).then(async data => {
-                            await Torneo.updateOne({name: torneo.name}, {$set: {finalizado: true, ganador: data}}).then(data => {
-                                if(data.nModified != 1) console.log("No se ha modificado");
+                        const io = require('../sockets/socket').getSocket();
+                        getGanador(torneo.name).then(async ganador => {
+                            await Torneo.updateOne({name: torneo.name}, {$set: {finalizado: true, ganador: ganador}}).then(dataTorneo => {
+                                if(dataTorneo.nModified != 1) console.log("No se ha modificado");
+                                else{
+                                    let newNotification = {
+                                        type: "Torneo",
+                                        description: "Enhorabuena!! Has ganado el torneo " + torneo.name,
+                                        status: 1,
+                                        origen: torneo.name,
+                                        image: torneo.image
+                                    }
+                                    User.updateOne({"_id": ganador},{$addToSet: {notifications: newNotification}}).then(dataUser =>{
+                                        if (dataUser.nModified == 1){
+                                            io.to(ganador).emit('nuevaNotificacion', newNotification);
+                                        }
+                                        
+                                        else{
+                                            return;
+                                        }
+                                    });
+                                }
                             }); 
-                        });                      
+                        }); 
+                        
+                        let newNotification = {
+                            type: "Torneo",
+                            description: "El torneo " + torneo.name + " ha finalizado",
+                            status: 1,
+                            origen: torneo.name,
+                            image: torneo.image
+                        }
+                        torneo.players.forEach((player) => {
+                            User.updateOne({"_id": player._id},{$addToSet: {notifications: newNotification}}).then(data =>{
+                                if (data.nModified == 1){
+                                    io.to(player._id).emit('nuevaNotificacion', newNotification);
+                                }
+                                else{
+                                    return;
+                                }
+                            });
+                        });
                     }
 
                     else{
