@@ -111,7 +111,7 @@ async function checkStartTorneos(){
                                             if (socket._id == participante){
                                                 socket.join(datachat._id);
                                                 const io = require('../sockets/socket').getSocket();
-                                                io.to(participante).emit('nuevoChat', chatuser.chat);
+                                                io.to(participante).emit('nuevoChatGrupo', chatuser.chat);
                                             }
                                         })
                                     })
@@ -434,7 +434,7 @@ async function checkStartVueltas(){
                                         if (socket._id == participante){
                                             socket.join(datachat._id);
                                             const io = require('../sockets/socket').getSocket();
-                                            io.to(participante).emit('nuevoChat', chatuser.chat);
+                                            io.to(participante).emit('nuevoChatGrupo', chatuser.chat);
                                         }
                                     })
                                 })
@@ -463,7 +463,10 @@ async function checkStartVueltas(){
 
                                         if (enc) {
                                             user.chats.splice(i, 1);
-                                            await User.updateOne({"_id":user._id}, {$set: {chats: user.chats}});
+                                            await User.updateOne({"_id":user._id}, {$set: {chats: user.chats}}).then(() => {
+                                                const io = require('../sockets/socket').getSocket();
+                                                io.to(user._id).emit('borrarChat', grupo.chat);
+                                            });
                                         }   
                                     }
                                 })
@@ -494,14 +497,13 @@ async function checkStartVueltas(){
                             juegosDif: 0,
                             puntos: 0
                         }
-                        let nameGroups = config.letrasNombreVueltas;
+
                         let numGrupo: number = 0;
                         let puntosExtra: number[] = [];
                         
                         let i: number = 0;
                         while (i < torneo.rondas[torneo.rondas.length - 1].grupos.length){
                             let grupo = {
-                                groupName: nameGroups[i],
                                 classification: torneo.rondas[torneo.rondas.length - 1].grupos[i].classification,
                                 partidos: torneo.rondas[torneo.rondas.length - 1].grupos[i].partidos
                             }
@@ -550,7 +552,6 @@ async function checkStartVueltas(){
                                             torneo.statistics.puntosExtra = torneo.statistics.puntosExtra + puntosExtra[0];
                                             puntosExtra.splice(0, 1);
                                             torneo.status = 2;
-                                            console.log("puntos");
                                             await User.updateOne({"_id": clasi.player}, {$set: {torneos: data?.torneos}});
                                         }
                                     })
@@ -558,9 +559,37 @@ async function checkStartVueltas(){
                             })
                             i++;
                         }
+                        
+                        torneo.rondas[torneo.rondas.length - 1].grupos.forEach(async (grupo:any) => {
+                            await Chat.deleteOne({"_id": grupo.chat}).then(() => {
+                                grupo.classification.forEach(async (clasi:any) => {
+                                    await User.findOne({"_id":clasi.player}, {chats: 1}).then(async (user:any) => {
+                                        let enc: Boolean = false;
+                                        let i: number = 0;
+                                        if (user != undefined){
+                                            while (i<user?.chats.length && !enc){
+                                                if (user.chats[i].chat.toString() == grupo.chat.toString())
+                                                    enc = true;
+
+                                                else
+                                                    i++;
+                                            }
+
+                                            if (enc) {
+                                                user.chats.splice(i, 1);
+                                                await User.updateOne({"_id":user._id}, {$set: {chats: user.chats}}).then(() => {
+                                                    const io = require('../sockets/socket').getSocket();
+                                                    io.to(user._id).emit('borrarChat', grupo.chat);
+                                                });
+                                            }   
+                                        }
+                                    })
+                                })
+                            })
+                        })
+
                         getGanador(torneo.name).then(async data => {
-                            console.log("Data", data);
-                            await Torneo.updateOne({name: torneo.name}, {$set: {rondas: torneo.rondas, finalizado: true, ganador: data}}).then(async data => {
+                            await Torneo.updateOne({name: torneo.name}, {$set: {finalizado: true, ganador: data}}).then(data => {
                                 if(data.nModified != 1) console.log("No se ha modificado");
                             }); 
                         });                      
@@ -632,7 +661,6 @@ async function checkStartVueltas(){
                                 }
                             }
 
-                            //PUEDE QUE AQUI HAYA ALGO MAL
                             else if (i == 1){
                                 grupo.classification = [{player: torneo.rondas[torneo.rondas.length - 1].grupos[i - 1].classification[1].player, statistics: statisticsIniciales}]; 
                                 puntosExtra.push(57);
@@ -763,7 +791,7 @@ async function checkStartVueltas(){
                                             if (socket._id == participante){
                                                 socket.join(datachat._id);
                                                 const io = require('../sockets/socket').getSocket();
-                                                io.to(participante).emit('nuevoChat', chatuser.chat);
+                                                io.to(participante).emit('nuevoChatGrupo', chatuser.chat);
                                             }
                                         })
                                     })
@@ -808,7 +836,10 @@ async function checkStartVueltas(){
         
                                                     if (enc) {
                                                         user.chats.splice(i, 1);
-                                                        await User.updateOne({"_id":user._id}, {$set: {chats: user.chats}});
+                                                        await User.updateOne({"_id":user._id}, {$set: {chats: user.chats}}).then(() => {
+                                                            const io = require('../sockets/socket').getSocket();
+                                                            io.to(user._id).emit('borrarChat', grupo.chat);
+                                                        });
                                                     }   
                                                 }
                                             })

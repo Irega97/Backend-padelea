@@ -6,7 +6,7 @@ import notificationsController from "./notifications.controller";
 
 async function getColaPlayers(req: Request, res: Response){
     try {
-        Torneo.findOne({'name': req.params.name}, {cola: 1, players: 1, maxPlayers: 1, torneoIniciado: 1, numRondas: 1, rondas: 1}).populate({path: 'cola', select: 'username name image'}).then((data) => {
+        Torneo.findOne({'name': req.params.name}, {cola: 1, players: 1, maxPlayers: 1, torneoIniciado: 1, numRondas: 1, rondas: 1, finalizado: 1}).populate({path: 'cola', select: 'username name image'}).then((data) => {
             if(data==null) return res.status(404).json({message: "Cola not found"});
             let dataToSend = {
                 cola: data.cola,
@@ -14,7 +14,8 @@ async function getColaPlayers(req: Request, res: Response){
                 max: data.maxPlayers,
                 torneoIniciado: data.torneoIniciado,
                 numRondas: data.numRondas,
-                rondas: data.rondas.length
+                rondas: data.rondas.length,
+                finalizado: data.finalizado
             }
             return res.status(200).json(dataToSend);
         })
@@ -65,7 +66,6 @@ async function acceptPlayers(req: Request, res: Response){
                                     image: user.image
                                 }
 
-                                const io = require('../sockets/socket').getSocket();
                                 io.emit('nuevoJugador', playerToSend);
 
                                 let newNotification = {
