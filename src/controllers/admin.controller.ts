@@ -66,7 +66,6 @@ async function acceptPlayers(req: Request, res: Response){
                                     image: user.image
                                 }
 
-                                const io = require('../sockets/socket').getSocket();
                                 io.emit('nuevoJugador', playerToSend);
 
                                 let newNotification = {

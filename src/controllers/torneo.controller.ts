@@ -111,7 +111,7 @@ async function checkStartTorneos(){
                                             if (socket._id == participante){
                                                 socket.join(datachat._id);
                                                 const io = require('../sockets/socket').getSocket();
-                                                io.to(participante).emit('nuevoChat', chatuser.chat);
+                                                io.to(participante).emit('nuevoChatGrupo', chatuser.chat);
                                             }
                                         })
                                     })
@@ -434,7 +434,7 @@ async function checkStartVueltas(){
                                         if (socket._id == participante){
                                             socket.join(datachat._id);
                                             const io = require('../sockets/socket').getSocket();
-                                            io.to(participante).emit('nuevoChat', chatuser.chat);
+                                            io.to(participante).emit('nuevoChatGrupo', chatuser.chat);
                                         }
                                     })
                                 })
@@ -463,7 +463,10 @@ async function checkStartVueltas(){
 
                                         if (enc) {
                                             user.chats.splice(i, 1);
-                                            await User.updateOne({"_id":user._id}, {$set: {chats: user.chats}});
+                                            await User.updateOne({"_id":user._id}, {$set: {chats: user.chats}}).then(() => {
+                                                const io = require('../sockets/socket').getSocket();
+                                                io.to(user._id).emit('borrarChat', grupo.chat);
+                                            });
                                         }   
                                     }
                                 })
@@ -574,7 +577,10 @@ async function checkStartVueltas(){
 
                                             if (enc) {
                                                 user.chats.splice(i, 1);
-                                                await User.updateOne({"_id":user._id}, {$set: {chats: user.chats}});
+                                                await User.updateOne({"_id":user._id}, {$set: {chats: user.chats}}).then(() => {
+                                                    const io = require('../sockets/socket').getSocket();
+                                                    io.to(user._id).emit('borrarChat', grupo.chat);
+                                                });
                                             }   
                                         }
                                     })
@@ -785,7 +791,7 @@ async function checkStartVueltas(){
                                             if (socket._id == participante){
                                                 socket.join(datachat._id);
                                                 const io = require('../sockets/socket').getSocket();
-                                                io.to(participante).emit('nuevoChat', chatuser.chat);
+                                                io.to(participante).emit('nuevoChatGrupo', chatuser.chat);
                                             }
                                         })
                                     })
@@ -830,7 +836,10 @@ async function checkStartVueltas(){
         
                                                     if (enc) {
                                                         user.chats.splice(i, 1);
-                                                        await User.updateOne({"_id":user._id}, {$set: {chats: user.chats}});
+                                                        await User.updateOne({"_id":user._id}, {$set: {chats: user.chats}}).then(() => {
+                                                            const io = require('../sockets/socket').getSocket();
+                                                            io.to(user._id).emit('borrarChat', grupo.chat);
+                                                        });
                                                     }   
                                                 }
                                             })

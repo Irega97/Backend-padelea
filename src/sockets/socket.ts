@@ -39,12 +39,12 @@ io.on('connection', (socket: any) => {
         "user": socket.username,
         "estado": false 
       }
+      
       authController.setOnlineStatus(socket._id, false);
       io.emit('actConectado', info);
       console.log(socket.username + " se ha desconectado");
       let i = sockets.indexOf(socket);
       sockets.splice(i, 1);
-      //console.log("Socket", socket);
     }
   });
 });
