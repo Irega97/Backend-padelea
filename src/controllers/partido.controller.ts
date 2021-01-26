@@ -79,7 +79,69 @@ async function addResultados(req: Request, res: Response) {
                     if(hecho) {
                         await Torneo.updateOne({"_id":torneo._id},{$set: {previa: torneo.previa, rondas: torneo.rondas}}).then((data) => {
                             if(data.nModified!=1) return res.status(400).json({message: "Bad Request"});
-                            else return res.status(200).json(torneo);
+                            else{
+                                Torneo.findOne({"_id": torneo._id}, {previa: 1, rondas: 1}).populate({path: 'previa rondas', populate: {path: 'grupos', 
+                                populate: {path:'classification', populate: {path:'player', select: 'username image'}}}}).then(datatorneo => {
+                                    if (datatorneo != undefined){
+                                        let enc: Boolean = false;
+                                        let i: number = 0;
+                                        let clasiToSend;
+                                        if (ronda == "previa"){
+                                            while(i < datatorneo?.previa.grupos.length && !enc){
+                                                if (datatorneo.previa.grupos[i].groupName == nombreGrupo)
+                                                    enc = true;
+
+                                                else
+                                                    i++;
+                                            }
+
+                                            if (enc){
+                                                clasiToSend = {
+                                                    idTorneo: torneo._id,
+                                                    vuelta: 'previa',
+                                                    groupName: nombreGrupo,
+                                                    clasificacion: datatorneo.previa.grupos[i].classification
+                                                }
+                                            }
+                                        }
+
+                                        else{
+                                            while (i < datatorneo?.rondas.length && !enc){
+                                                if (datatorneo.rondas[i].name == ronda)
+                                                    enc = true;
+
+                                                else
+                                                    i++;
+                                            }
+
+                                            if (enc){
+                                                enc = false;
+                                                let j: number = 0;
+
+                                                while (j < datatorneo.rondas[i].grupos.length && !enc){
+                                                    if (datatorneo.rondas[i].grupos[j].groupName == nombreGrupo)
+                                                        enc = true;
+
+                                                    else
+                                                        j++;
+                                                }
+
+                                                if (enc){
+                                                    clasiToSend = {
+                                                        idTorneo: torneo._id,
+                                                        vuelta: ronda,
+                                                        groupName: nombreGrupo,
+                                                        clasificacion: datatorneo.rondas[i].grupos[j].classification
+                                                    } 
+                                                }
+                                            }
+                                        }
+                                        const io = require('../sockets/socket').getSocket();
+                                        io.emit('clasificacion', clasiToSend);
+                                    }
+                                })
+                                return res.status(200).json(torneo);
+                            } 
                         });
                     }
                     else return res.status(400).json({message: "Bad Request"});
