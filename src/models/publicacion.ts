@@ -4,14 +4,17 @@ import { IComentario} from './comentario';
 
 let publicacionSchema = mongoose.Schema;
 const publicacion = new publicacionSchema({
+    type: {
+        type: String
+    },
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User'
     },
-    /* torneo: {
+    torneo: {
         type: Schema.Types.ObjectId,
         ref: 'Torneo'
-    }, */
+    },
     mensaje: {
         type: String    
     },

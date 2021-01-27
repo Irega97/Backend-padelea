@@ -1373,7 +1373,7 @@ async function getNearTorneos(req: Request, res: Response){
 
             //{ubicacion:{ $nearSphere:{$geometry: { type: "Point",  coordinates: [41.38185776201328, 2.1362400054931645] }}}}
         const torneos = await Torneo.find(query);// mongoose method   
-        console.log(torneos);
+        console.log("near: ", torneos);
         return res.status(200).json(torneos);
     } catch (err) {
         return res.status(500).json(err);

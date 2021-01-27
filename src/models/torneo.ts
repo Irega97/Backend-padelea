@@ -136,7 +136,11 @@ const torneo = new torneoSchema({
                 ref: 'Chat'
             } 
         }]
-    }
+    },
+    publicaciones: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Publicacion'
+    }]
 });
 
 //Interfaz para tratar respuesta como documento
@@ -162,6 +166,7 @@ export interface ITorneo extends Document {
     partidosConfirmados: number;
     rondas: Array<any>;
     previa: any;
+    publicaciones: Array<any>
     torneoToJson(): JSON;
 }
 
@@ -186,7 +191,8 @@ torneo.methods.torneoToJSON = function(){
         cola: this.cola,
         partidosConfirmados: this.partidosConfirmados,
         rondas: this.rondas,
-        previa: this.previa
+        previa: this.previa,
+        publicaciones: this.publicaciones
     };
 }
 

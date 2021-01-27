@@ -20,7 +20,7 @@ async function getUser(req:Request, res:Response) {
     const me = await User.findById(req.user, {friends: 1});
     let numTorneos=0;
     let numAmigos=0;
-    User.findOne({"username":req.params.username}, {username : 1, image : 1, email : 1, online: 1, name: 1, friends: 1, torneos: 1, chat: 1}).then((data)=>{
+    User.findOne({"username":req.params.username}, {username : 1, image : 1, email : 1, online: 1, name: 1, friends: 1, torneos: 1, chat: 1, private: 1}).then((data)=>{
         if(data==null) return res.status(404).json({message: "User not found"});
         let friendStatus = -1;
         me?.friends.forEach((item) => {
@@ -47,7 +47,8 @@ async function getUser(req:Request, res:Response) {
             name: data.name,
             friendStatus: friendStatus,
             numAmigos: numAmigos,
-            numTorneos: numTorneos
+            numTorneos: numTorneos,
+            private: data.private
         }
         return res.status(200).json(dataToSend);
     }).catch((err) => {
