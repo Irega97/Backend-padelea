@@ -300,7 +300,7 @@ async function createPartidos(ronda: any, torneoID: string){
                 } else {
                     let newNotification = {
                         type: "Torneo",
-                        description: "El torneo " + torneo.name + " ha empezado!",
+                        description: "El torneo " + torneo.name + " ha pasado a la " + torneo.rondas[torneo.rondas.length - 1].name,
                         status: 1,
                         origen: torneo.name,
                         image: torneo.image
@@ -606,11 +606,48 @@ async function checkStartVueltas(){
                             })
                         })
 
-                        getGanador(torneo.name).then(async data => {
-                            await Torneo.updateOne({name: torneo.name}, {$set: {finalizado: true, ganador: data}}).then(data => {
-                                if(data.nModified != 1) console.log("No se ha modificado");
+                        const io = require('../sockets/socket').getSocket();
+                        getGanador(torneo.name).then(async ganador => {
+                            await Torneo.updateOne({name: torneo.name}, {$set: {finalizado: true, ganador: ganador}}).then(dataTorneo => {
+                                if(dataTorneo.nModified != 1) console.log("No se ha modificado");
+                                else{
+                                    let newNotification = {
+                                        type: "Torneo",
+                                        description: "Enhorabuena!! Has ganado el torneo " + torneo.name,
+                                        status: 1,
+                                        origen: torneo.name,
+                                        image: torneo.image
+                                    }
+                                    User.updateOne({"_id": ganador},{$addToSet: {notifications: newNotification}}).then(dataUser =>{
+                                        if (dataUser.nModified == 1){
+                                            io.to(ganador).emit('nuevaNotificacion', newNotification);
+                                        }
+                                        
+                                        else{
+                                            return;
+                                        }
+                                    });
+                                }
                             }); 
-                        });                      
+                        }); 
+                        
+                        let newNotification = {
+                            type: "Torneo",
+                            description: "El torneo " + torneo.name + " ha finalizado",
+                            status: 1,
+                            origen: torneo.name,
+                            image: torneo.image
+                        }
+                        torneo.players.forEach((player) => {
+                            User.updateOne({"_id": player._id},{$addToSet: {notifications: newNotification}}).then(data =>{
+                                if (data.nModified == 1){
+                                    io.to(player._id).emit('nuevaNotificacion', newNotification);
+                                }
+                                else{
+                                    return;
+                                }
+                            });
+                        });
                     }
 
                     else{
@@ -1211,7 +1248,6 @@ async function getRanking(req: Request, res: Response){
     console.log("name ", torneoName);
     Torneo.findOne({"name": torneoName},{players: 1}).populate({path:'players', select: 'torneos username image'}).then((data) => {
         if(data == null) return res.status(404).json({message: "Torneo not found"});
-        console.log("aqui: ", data);
         data.players.forEach((player: any) => {
             player.torneos.forEach((torneo: any) => {
                 if(torneo.torneo.toString() == data._id.toString()){
@@ -1248,21 +1284,18 @@ async function getRanking(req: Request, res: Response){
                 if (a.statistics.puntos > b.statistics.puntos)
                         return -1;
 
-                    else if (a.statistics.puntos < b.statistics.puntos)
-                        return 1;
-                    
-                    else {
-                        if (a.statistics.juegosDif > b.statistics.juegosDif)
-                            return -1;
+                else if (a.statistics.puntos < b.statistics.puntos)
+                    return 1;
+                
+                else {
+                    if (a.statistics.juegosDif > b.statistics.juegosDif)
+                        return -1;
 
-                        else return 1;
-                    }
+                    else return 1;
+                }
             }
-            
         })
-
-        return res.status(200).json({isImage: true, ranking: ranking});
-
+        return res.status(200).json({isImage: true, ranking: ranking, idTorneo: data._id});
     });
 }
 
@@ -1323,4 +1356,32 @@ async function getGanador(torneoName: string) : Promise<any>{
     })
 }
 
-export default { getTorneo, getTorneos, getTorneosUser, getGanador, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, checkStartVueltas, getVueltas, getRanking }
+async function getNearTorneos(req: Request, res: Response){
+    try{
+        //let distance = req.params.distance;
+        let lat = req.body.lat;
+        let lng = req.body.lng;
+        let query =  {
+            ubicacion:
+                { $nearSphere:
+                    {
+                    $geometry: { type: "Point",  coordinates: [ lat, lng ] },
+                    $maxDistance: 100000
+                    }
+                }
+            }
+
+            //{ubicacion:{ $nearSphere:{$geometry: { type: "Point",  coordinates: [41.38185776201328, 2.1362400054931645] }}}}
+        const torneos = await Torneo.find(query);// mongoose method   
+        console.log(torneos);
+        return res.status(200).json(torneos);
+    } catch (err) {
+        return res.status(500).json(err);
+    }  
+}
+
+//[41.38185776201328, 2.1362400054931645]
+
+
+export default { getTorneo, getTorneos, getTorneosUser, getGanador, createTorneo, joinTorneo, 
+                 leaveTorneo, checkStartTorneos, checkStartVueltas, getVueltas, getRanking, getNearTorneos }

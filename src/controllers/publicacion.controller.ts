@@ -118,9 +118,20 @@ async function addComentario(req: Request, res: Response){
 
 async function getComentarios(req: Request, res: Response){
     const publiID = req.body.publicacion;
+    console.log("comment: ", publiID);
 
-    Publicacion.findOne({"_id": publiID}, {comments: 1}).populate('comments').then((data) => {
+    Publicacion.findOne({"_id": publiID}, {comments: 1}).populate({path: 'comments', populate: {path: 'user', select: 'username image'}}).then((data) => {
         if(data == null) return res.status(404).json({message: "Publicacion not found"});
+        data.comments.sort((a: any, b: any) => {
+            if (a.date < b.date)
+            return 1;
+            
+            else if (a.date > b.date)
+            return -1;
+    
+            else
+            return 0;
+        });
         return res.status(200).json(data);
     });
 }
