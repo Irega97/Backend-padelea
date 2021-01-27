@@ -11,7 +11,7 @@ async function getPartidosTorneo(req: Request, res: Response){
 }
 
 async function getPartidosUser(req: Request, res: Response){
-    User.find({"username": req.body.username}).populate('partidos').then((data) => {
+    User.findOne({"username": req.params.username}, {partidos: 1}).populate({path: 'partidos', populate: {path: 'jugadores', populate: {path: 'pareja1 pareja2', select: 'username image'}}}).then((data) => {
         if(data == null) return res.status(404).json({message: 'Partidos not found'});
         return res.status(200).json(data);
     });
