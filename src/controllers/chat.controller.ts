@@ -129,9 +129,6 @@ function addAdmin(req:Request, res:Response): void {
     })
 }
 
-function addParticipante(req:Request, res:Response): void {
-}
-
 function getIdMyChats(id: string): any {
     return User.findById(id, {chats:1}).populate('chats');
 }
@@ -242,6 +239,49 @@ function sendMessage(req:Request, res:Response): void {
     })
 }
 
+async function abandonarChat(req:Request, res:Response) {
+    let chatBBDD = await Chat.findOne({"_id": req.params.id});
+    User.findOne({"_id": req.user}, {chats: 1, username: 1}).then(data => {
+        data?.chats.forEach(chat => {
+            if (chat.chat.toString() == req.params.id.toString()){
+                data.chats.splice(data.chats.indexOf(chat), 1);
+
+                chatBBDD?.users.forEach((user:any) => {
+                    if (user == req.user){
+                        chatBBDD?.users.splice(chatBBDD.users.indexOf(user), 1);
+                        
+                        let message:any = {
+                            body : data.username + " ha abandonado el chat",
+                            date: new Date(Date.now()),
+                            leidos: [],
+                        }
+
+                        Chat.updateOne({"_id": req.params.id}, {$set: {users: chatBBDD?.users}, $addToSet: {mensajes: message}}).then(() => {
+                            User.updateOne({"_id": req.user}, {$set: {chats: data.chats}}).then(() => {
+                                let mensaje = {
+                                    chat: req.params.id,
+                                    mensaje: message
+                                }
+
+                                const io = require('../sockets/socket').getSocket()
+                                io.to(req.params.id).emit('nuevoMensaje', mensaje);
+                                let info = {
+                                    chat: req.params.id,
+                                    user: req.user
+                                }
+                                io.to(req.params.id).emit('abandonopart', info);
+                                return res.status(200).json({message: "Abandonado"});
+                            })
+                        })
+                    }
+                })
+            }
+        })
+    })
+}
+
+//function addParticipante(req:Request, res:Response): void {}
+
 /*function delChat(req:Request, res:Response): void {
     User.findById(req.user, {chats : 1}).populate({path: 'chats', populate: 
     {path: 'user', select: 'username'}}).then((data)=>{ 
@@ -259,4 +299,4 @@ function sendMessage(req:Request, res:Response): void {
     })
 }*/
 
-export default{getChat, getMyChats, getChatsSinLeer, addChat, sendMessage, leerChat, addAdmin, addParticipante, /*delChat,*/ getIdMyChats }
+export default{getChat, getMyChats, getChatsSinLeer, addChat, sendMessage, leerChat, addAdmin, abandonarChat, /*addParticipante,*/ /*delChat,*/ getIdMyChats }
