@@ -97,6 +97,7 @@ async function addLike(req: Request, res: Response){
 
 async function addComentario(req: Request, res: Response){ 
     const publiID = req.body.publicacion;
+    const publi = await Publicacion.findOne({"_id":publiID}, {user: 1});
     const comentario = req.body.comentario;
     let comment = new Comentario({
         publicacion: publiID,
@@ -111,6 +112,31 @@ async function addComentario(req: Request, res: Response){
         let commentID = data._id;
         Publicacion.updateOne({"_id": publiID}, {$addToSet: {comments: commentID}}).then((data) => {
             if(data.nModified != 1) return res.status(404).json({message: "Bad request"});
+            let info = {
+                comentario: comment,
+                publicacion: publiID
+            }
+            User.findOne({"_id": comment.user}, {image: 1, username: 1}).then(dataUser => {
+                if (dataUser != null)
+                    info.comentario.user = dataUser;
+                
+                const io = require('../sockets/socket').getSocket();
+                io.emit('nuevoComentario', info);
+
+                if (req.user != publi?.user){
+                    let newNotification = {
+                        type: "Publicacion",
+                        description: dataUser?.username + " ha comentado una publicación tuya",
+                        status: 1,
+                        origen: publiID,
+                        image: dataUser?.image
+                    }
+                    User.updateOne({"_id": publi?.user}, {$addToSet: {notifications: newNotification}}).then(data =>{
+                        if (data.nModified == 1)
+                            io.to(publi?.user).emit('nuevaNotificacion', newNotification);
+                    });
+                }
+            })
             return res.status(200).json(data);
         })
     });
@@ -118,20 +144,9 @@ async function addComentario(req: Request, res: Response){
 
 async function getComentarios(req: Request, res: Response){
     const publiID = req.body.publicacion;
-    console.log("comment: ", publiID);
 
     Publicacion.findOne({"_id": publiID}, {comments: 1}).populate({path: 'comments', populate: {path: 'user', select: 'username image'}}).then((data) => {
         if(data == null) return res.status(404).json({message: "Publicacion not found"});
-        data.comments.sort((a: any, b: any) => {
-            if (a.date < b.date)
-            return 1;
-            
-            else if (a.date > b.date)
-            return -1;
-    
-            else
-            return 0;
-        });
         return res.status(200).json(data);
     });
 }
