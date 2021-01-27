@@ -9,6 +9,6 @@ router.get('/user/:username', passport.authenticate("jwt", {session: false}), pu
 router.get('/all', passport.authenticate("jwt", {session: false}), publicacionController.getHomePublications);
 router.post('/like', passport.authenticate("jwt", {session: false}), publicacionController.addLike);
 router.post('/comment', passport.authenticate("jwt", {session: false}), publicacionController.addComentario);
-router.get('/comments/all', passport.authenticate("jwt", {session: false}), publicacionController.getComentarios);
+router.post('/comments/all', passport.authenticate("jwt", {session: false}), publicacionController.getComentarios);
 
 export default router;
