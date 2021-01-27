@@ -31,12 +31,14 @@ const torneo = new torneoSchema({
         name:{
             type:String
         },
-        lat: {
+        type: { //"Point"
             type: String
         },
-        lng: {
-            type:String
-        }
+        // [{lat: '4.3', lng: '5.8'}]
+        // [4.3, 5.8]
+        coordinates: [{
+            type: Number,
+        }]
     },
     reglamento: { // FOTO
         type: String
@@ -187,6 +189,8 @@ torneo.methods.torneoToJSON = function(){
         previa: this.previa
     };
 }
+
+torneo.index({ ubicacion: "2dsphere" });
 
 //Exportamos modelo para poder usarlo
 export default mongoose.model<ITorneo>('Torneo', torneo);
