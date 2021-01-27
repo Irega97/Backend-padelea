@@ -1361,6 +1361,9 @@ async function getNearTorneos(req: Request, res: Response){
         //let distance = req.params.distance;
         let lat = req.body.lat;
         let lng = req.body.lng;
+        if(!lat || !lng){
+            setTimeout('1000');
+        }
         let query =  {
             ubicacion:
                 { $nearSphere:
