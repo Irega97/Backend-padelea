@@ -1323,4 +1323,32 @@ async function getGanador(torneoName: string) : Promise<any>{
     })
 }
 
-export default { getTorneo, getTorneos, getTorneosUser, getGanador, createTorneo, joinTorneo, leaveTorneo, checkStartTorneos, checkStartVueltas, getVueltas, getRanking }
+async function getNearTorneos(req: Request, res: Response){
+    try{
+        //let distance = req.params.distance;
+        let lat = req.body.lat;
+        let lng = req.body.lng;
+        let query =  {
+            ubicacion:
+                { $nearSphere:
+                    {
+                    $geometry: { type: "Point",  coordinates: [ lat, lng ] },
+                    $maxDistance: 100000
+                    }
+                }
+            }
+
+            //{ubicacion:{ $nearSphere:{$geometry: { type: "Point",  coordinates: [41.38185776201328, 2.1362400054931645] }}}}
+        const torneos = await Torneo.find(query);// mongoose method   
+        console.log(torneos);
+        return res.status(200).json(torneos);
+    } catch (err) {
+        return res.status(500).json(err);
+    }  
+}
+
+//[41.38185776201328, 2.1362400054931645]
+
+
+export default { getTorneo, getTorneos, getTorneosUser, getGanador, createTorneo, joinTorneo, 
+                 leaveTorneo, checkStartTorneos, checkStartVueltas, getVueltas, getRanking, getNearTorneos }
